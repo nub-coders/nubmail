@@ -111,9 +111,9 @@ function DnsVerificationDialog() {
         ))}
       </div>
       <DialogFooter>
-        <DialogTrigger asChild>
+        <DialogClose asChild>
           <Button variant="outline">Close</Button>
-        </DialogTrigger>
+        </DialogClose>
         <Button>Verify DNS</Button>
       </DialogFooter>
     </DialogContent>
@@ -187,11 +187,9 @@ export default function DomainsPage() {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
+                <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <DialogClose asChild>
-                <Button onClick={handleAddDomain}>Add Domain</Button>
-              </DialogClose>
+              <Button onClick={handleAddDomain}>Add Domain</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
