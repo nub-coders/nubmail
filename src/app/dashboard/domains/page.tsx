@@ -52,7 +52,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useCollection, useFirebase, useMemoFirebase, useUser } from '@/firebase';
+import { useEffect, useState } from 'react';
+import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import type { Domain } from '@/lib/types';
 
