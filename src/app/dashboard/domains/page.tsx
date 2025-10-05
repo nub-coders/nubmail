@@ -38,6 +38,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -54,7 +55,6 @@ import { useCollection, useFirebase, useMemoFirebase, useUser } from '@/firebase
 import { useToast } from '@/components/ui/use-toast';
 import type { Domain } from '@/lib/types';
 
-// Corrected regex to allow hyphens in domain names
 const formSchema = z.object({
   domainName: z.string().min(3, {
     message: "Domain name must be at least 3 characters.",
@@ -181,7 +181,7 @@ export default function DomainsPage() {
               createdAt: serverTimestamp(),
           });
           form.reset();
-          setAddDomainOpen(false);
+          setAddDomainOpen(false); // Close the dialog on success
           toast({
             title: "Domain added successfully!",
             description: `Your domain ${values.domainName} has been added.`,
