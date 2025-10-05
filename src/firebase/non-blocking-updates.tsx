@@ -34,10 +34,10 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
 /**
  * Initiates an addDoc operation for a collection reference.
  * Does NOT await the write operation internally.
- * Returns the Promise for the new doc ref, but typically not awaited by caller.
+ * Returns void, caller should not await.
  */
-export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
-  const promise = addDoc(colRef, data)
+export function addDocumentNonBlocking(colRef: CollectionReference, data: any): void {
+  addDoc(colRef, data)
     .catch(error => {
       errorEmitter.emit(
         'permission-error',
@@ -47,10 +47,7 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
           requestResourceData: data,
         })
       );
-      // Propagate the error to be caught by the caller if needed
-      throw error;
     });
-  return promise;
 }
 
 
