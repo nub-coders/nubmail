@@ -38,7 +38,6 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -181,7 +180,7 @@ export default function DomainsPage() {
               createdAt: serverTimestamp(),
           });
           form.reset();
-          setAddDomainOpen(false); // Close the dialog on success
+          setAddDomainOpen(false);
           toast({
             title: "Domain added successfully!",
             description: `Your domain ${values.domainName} has been added.`,
