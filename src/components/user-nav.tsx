@@ -27,7 +27,7 @@ import { useAuthClient } from '@/lib/auth-provider';
 
 export function UserNav() {
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
-  const { setToken } = useAuthClient();
+  const { user, setToken } = useAuthClient();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -49,16 +49,16 @@ export function UserNav() {
                   data-ai-hint={userAvatar.imageHint}
                 />
             )}
-            <AvatarFallback>NU</AvatarFallback>
+            <AvatarFallback>{user?.email ? user.email.slice(0,2).toUpperCase() : 'NU'}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Nub Coder</p>
+            <p className="text-sm font-medium leading-none">{user?.fullName ?? 'User'}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              nubcoders@gmail.com
+              {user?.email ?? 'Not signed in'}
             </p>
           </div>
         </DropdownMenuLabel>
