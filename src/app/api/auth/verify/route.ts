@@ -8,7 +8,10 @@ export async function GET(req: NextRequest) {
     const token = url.searchParams.get('token');
     if (!token) return NextResponse.json({ error: 'Token required' }, { status: 400 });
 
-    const secret = process.env.JWT_SECRET || 'dev-secret';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
     let payload: any;
     try {
       payload = verify(token, secret) as any;

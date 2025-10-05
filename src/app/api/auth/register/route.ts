@@ -23,8 +23,13 @@ export async function POST(req: NextRequest) {
     const hashed = await bcrypt.hash(password, 10);
     const result = await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName: fullName || null, emailVerified: false, createdAt: new Date() });
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
     const payload = { sub: String(result.insertedId), email };
-    const token = sign(payload, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
+    const token = sign(payload, secret, { expiresIn: '7d' });
 
     return NextResponse.json({ token, user: { id: String(result.insertedId), email, fullName } });
   } catch (err) {

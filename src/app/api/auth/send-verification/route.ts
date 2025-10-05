@@ -9,7 +9,10 @@ export async function POST(req: NextRequest) {
     const token = auth.replace(/^Bearer\s+/i, '') || null;
     if (!token) return NextResponse.json({ error: 'No token provided' }, { status: 401 });
 
-    const secret = process.env.JWT_SECRET || 'dev-secret';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
     let payload: any;
     try {
       payload = verify(token, secret) as any;
