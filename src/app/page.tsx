@@ -37,7 +37,29 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error', err);
-      toast({ title: 'Sign in failed', description: err?.message ?? 'Unable to sign in', variant: 'destructive' });
+      const code = err?.code || err?.message || '';
+      let description = 'Unable to sign in.';
+
+      if (String(code).includes('network-request-failed') || String(code).includes('auth/network-request-failed')) {
+        description = 'Network error: please check your internet connection or disable ad-blockers/proxy.';
+      } else if (String(code).includes('user-not-found')) {
+        description = 'No account found with that email. Please sign up first.';
+      } else if (String(code).includes('wrong-password')) {
+        description = 'Incorrect password. Use the Forgot password link to reset it.';
+      } else if (String(code).includes('invalid-email')) {
+        description = 'Invalid email address.';
+      } else if (String(code).includes('too-many-requests')) {
+        description = 'Too many attempts. Try again later.';
+      } else if (String(code).includes('invalid-api-key') || String(code).includes('auth/invalid-api-key')) {
+        description = 'Authentication configuration error. Contact the system administrator.';
+      } else if (String(code).includes('INVALID_LOGIN_CREDENTIALS')) {
+        description = 'Invalid credentials. Please verify your email and password.';
+      } else {
+        description = err?.message ?? description;
+      }
+
+      toast({ title: 'Sign in failed', description, variant: 'destructive' });
+      console.debug('Firebase auth error code:', code);
     } finally {
       setLoading(false);
     }
