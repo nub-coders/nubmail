@@ -159,7 +159,7 @@ export default function DomainsPage() {
         </div>
         <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="ml-auto gap-1">
+            <Button size="sm" className="ml-auto gap-1" onClick={() => setAddDomainOpen(true)}>
               <PlusCircle className="h-4 w-4" />
               Add Domain
             </Button>
@@ -186,9 +186,7 @@ export default function DomainsPage() {
               </div>
             </div>
             <DialogFooter>
-              <DialogClose asChild>
-                 <Button variant="outline">Cancel</Button>
-              </DialogClose>
+              <Button variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
               <Button onClick={handleAddDomain}>Add Domain</Button>
             </DialogFooter>
           </DialogContent>
