@@ -24,13 +24,30 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { user, setToken } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
 
+  const passwordIsValid = (pw: string) => {
+    // At least 8 chars, one uppercase, one lowercase, one digit, one special char
+    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    return re.test(pw);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
+
+    if (!passwordIsValid(password)) {
+      const message = 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.';
+      setErrorMessage(message);
+      toast({ title: 'Invalid password', description: message, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName }) });
       let data: any = null;
@@ -40,7 +57,9 @@ export default function RegisterPage() {
         console.warn('Failed to parse JSON response', e);
       }
       if (!res.ok) {
-        toast({ title: 'Registration failed', description: (data && data.error) ? data.error : 'Unable to register', variant: 'destructive' });
+        const message = (res.status === 409) ? 'An account with this email already exists.' : (data && data.error) ? data.error : 'Unable to register';
+        setErrorMessage(message);
+        toast({ title: 'Registration failed', description: message, variant: 'destructive' });
         return;
       }
       setToken(data?.token ?? null);
@@ -48,14 +67,14 @@ export default function RegisterPage() {
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Registration error', err);
-      toast({ title: 'Registration failed', description: err?.message ?? 'Network error', variant: 'destructive' });
+      const message = err?.message ?? 'Network error';
+      setErrorMessage(message);
+      toast({ title: 'Registration failed', description: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  // Always render the register form server-side and client-side to avoid hydration mismatches.
-  // Redirect to dashboard on the client when the user becomes available.
   useEffect(() => {
     if (user) router.push('/dashboard');
   }, [user, router]);
@@ -84,7 +103,13 @@ export default function RegisterPage() {
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              <div className="text-sm text-muted-foreground">Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.</div>
             </div>
+            {errorMessage && (
+              <div role="alert" aria-live="polite" className="text-sm text-destructive">
+                {errorMessage}
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Creating...' : 'Create an account'}</Button>
           </form>
           <div className="mt-4 text-center text-sm">Already have an account? <Link href="/" className="underline">Login</Link></div>
