@@ -133,17 +133,21 @@ export default function DomainsPage() {
 
     const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
 
-    const handleAddDomain = () => {
+    const handleAddDomain = async () => {
         if (user && domainName) {
             const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
-            addDocumentNonBlocking(domainsRef, {
-                domainName,
-                verificationStatus: 'pending',
-                userId: user.uid,
-                createdAt: new Date().toISOString().split('T')[0],
-            });
-            setDomainName('');
-            setAddDomainOpen(false);
+            try {
+                await addDocumentNonBlocking(domainsRef, {
+                    domainName,
+                    verificationStatus: 'pending',
+                    userId: user.uid,
+                    createdAt: new Date().toISOString().split('T')[0],
+                });
+                setDomainName('');
+                setAddDomainOpen(false);
+            } catch (error) {
+                console.error("Error adding domain: ", error);
+            }
         }
     };
 
