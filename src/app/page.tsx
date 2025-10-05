@@ -48,11 +48,11 @@ export default function LoginPage() {
     }
   };
 
-  if (!user && typeof window === 'undefined') return <div className="py-8 text-center">Checking authentication...</div>;
-  if (user) {
-    router.push('/dashboard');
-    return null;
-  }
+  // Always render the login form server-side and client-side to avoid hydration mismatches.
+  // Redirect to dashboard on the client when the user becomes available.
+  React.useEffect(() => {
+    if (user) router.push('/dashboard');
+  }, [user, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
