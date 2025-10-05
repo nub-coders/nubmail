@@ -1,0 +1,294 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user account in the email server system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "verificationToken": {
+          "type": "string",
+          "description": "Token used for email verification."
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "Indicates whether the user's email has been verified."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "verificationToken",
+        "isVerified"
+      ]
+    },
+    "Domain": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Domain",
+      "type": "object",
+      "description": "Represents a domain managed by the email server system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the domain entity."
+        },
+        "domainName": {
+          "type": "string",
+          "description": "The domain name."
+        },
+        "verificationStatus": {
+          "type": "string",
+          "description": "Status of the domain verification process (pending, verified, failed)."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Domain)"
+        }
+      },
+      "required": [
+        "id",
+        "domainName",
+        "verificationStatus",
+        "userId"
+      ]
+    },
+    "EmailAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmailAccount",
+      "type": "object",
+      "description": "Represents an email account within a managed domain.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the email account entity."
+        },
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address of the account."
+        },
+        "storageQuota": {
+          "type": "number",
+          "description": "Storage quota allocated to the email account (in MB)."
+        },
+        "domainId": {
+          "type": "string",
+          "description": "Reference to Domain. (Relationship: Domain 1:N EmailAccount)"
+        }
+      },
+      "required": [
+        "id",
+        "emailAddress",
+        "storageQuota",
+        "domainId"
+      ]
+    },
+    "EmailMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmailMessage",
+      "type": "object",
+      "description": "Represents an email message stored in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the email message entity."
+        },
+        "sender": {
+          "type": "string",
+          "description": "Email address of the sender."
+        },
+        "recipients": {
+          "type": "array",
+          "description": "Email addresses of the recipients.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject of the email message."
+        },
+        "body": {
+          "type": "string",
+          "description": "Content of the email message."
+        },
+        "sentAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the email was sent.",
+          "format": "date-time"
+        },
+        "emailAccountId": {
+          "type": "string",
+          "description": "Reference to EmailAccount. (Relationship: EmailAccount 1:N EmailMessage)"
+        }
+      },
+      "required": [
+        "id",
+        "sender",
+        "recipients",
+        "subject",
+        "body",
+        "sentAt",
+        "emailAccountId"
+      ]
+    },
+    "ActivityLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ActivityLog",
+      "type": "object",
+      "description": "Represents an activity log entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the activity log entry."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the activity log entry.",
+          "format": "date-time"
+        },
+        "action": {
+          "type": "string",
+          "description": "Description of the action performed."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N ActivityLog)"
+        }
+      },
+      "required": [
+        "id",
+        "timestamp",
+        "action",
+        "userId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user account information. Path-based ownership for private user data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/domains/{domainId}",
+        "definition": {
+          "entityName": "Domain",
+          "schema": {
+            "$ref": "#/backend/entities/Domain"
+          },
+          "description": "Stores domain information for a specific user. Enforces ownership through the path. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "domainId",
+              "description": "The unique identifier for the domain."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/domains/{domainId}/emailAccounts/{emailAccountId}",
+        "definition": {
+          "entityName": "EmailAccount",
+          "schema": {
+            "$ref": "#/backend/entities/EmailAccount"
+          },
+          "description": "Stores email account information within a domain. Inherits ownership from the user and domain. Includes denormalized 'userId' and 'domainId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "domainId",
+              "description": "The unique identifier for the domain."
+            },
+            {
+              "name": "emailAccountId",
+              "description": "The unique identifier for the email account."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/domains/{domainId}/emailAccounts/{emailAccountId}/emailMessages/{emailMessageId}",
+        "definition": {
+          "entityName": "EmailMessage",
+          "schema": {
+            "$ref": "#/backend/entities/EmailMessage"
+          },
+          "description": "Stores email messages for a specific email account. Inherits ownership from the user, domain, and email account. Includes denormalized 'userId', 'domainId', and 'emailAccountId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "domainId",
+              "description": "The unique identifier for the domain."
+            },
+            {
+              "name": "emailAccountId",
+              "description": "The unique identifier for the email account."
+            },
+            {
+              "name": "emailMessageId",
+              "description": "The unique identifier for the email message."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/activityLogs/{activityLogId}",
+        "definition": {
+          "entityName": "ActivityLog",
+          "schema": {
+            "$ref": "#/backend/entities/ActivityLog"
+          },
+          "description": "Stores activity logs for a specific user. Enforces ownership through the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "activityLogId",
+              "description": "The unique identifier for the activity log."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the email server management system, NubMail, focusing on secure and scalable data management.  Authorization Independence is achieved by using path-based ownership for user-specific data and membership maps for collaborative data. This eliminates the need for `get()` calls in security rules.  Structural Segregation ensures that each collection has a homogeneous security posture.  Access Modeling employs consistent patterns for authorization, with path-based ownership for User-owned data and membership maps where collaboration is needed.  The design supports QAPs through structural segregation, enabling secure `list` operations.\n\n*   User data is stored under `/users/{userId}`, ensuring that each user's data is isolated and access is controlled based on the authenticated user ID.\n*   Domains are stored as subcollections of users (`/users/{userId}/domains/{domainId}`), enforcing ownership and simplifying access control.\n*   Email accounts are nested under domains (`/users/{userId}/domains/{domainId}/emailAccounts/{emailAccountId}`), maintaining the hierarchical relationship and owner context.\n*   Email messages are stored within email accounts (`/users/{userId}/domains/{domainId}/emailAccounts/{emailAccountId}/emailMessages/{emailMessageId}`), creating a clear and secure structure for email data.\n*   Activity logs are kept at the user level (`/users/{userId}/activityLogs/{activityLogId}`), allowing for easy auditing and monitoring of user actions.\n\nThis structure guarantees that security rules can be written clearly and efficiently, without relying on complex data relationships or server-side filtering."
+  }
+}
