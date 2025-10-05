@@ -1,8 +1,7 @@
 "use client";
 
 import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
-import { useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -52,7 +51,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useEffect, useState } from 'react';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import type { Domain } from '@/lib/types';
@@ -136,8 +134,7 @@ function DnsVerificationDialog({ domainName }: { domainName?: string }) {
 }
 
 export default function DomainsPage() {
-  const { firestore } = useFirebase();
-  const { user, isUserLoading } = useUser();
+  const { user } = useAuthClient();
   const [isAddDomainOpen, setAddDomainOpen] = useState(false);
   const { toast } = useToast();
 
@@ -146,12 +143,27 @@ export default function DomainsPage() {
     defaultValues: { domainName: '' },
   });
 
-  const domainsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    return collection(firestore, `/users/${user.uid}/domains`);
-  }, [firestore, user]);
+  const [domains, setDomains] = useState<Domain[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/domains', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        if (res.ok) setDomains(data.domains || []);
+        else setDomains([]);
+      } catch (e) {
+        console.error('Load domains failed', e);
+        setDomains([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [user]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
@@ -159,26 +171,19 @@ export default function DomainsPage() {
       return;
     }
 
-    const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
     try {
-      await addDoc(domainsRef, {
-        domainName: values.domainName,
-        verificationStatus: 'pending',
-        userId: user.uid,
-        createdAt: serverTimestamp(),
-      });
+      const res = await fetch('/api/domains', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify({ domainName: values.domainName }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add domain');
       form.reset();
       setAddDomainOpen(false);
+      setDomains(prev => (prev ? [data, ...prev] : [data]));
       toast({ title: 'Domain added successfully!', description: `Your domain ${values.domainName} has been added.` });
-    } catch (error) {
-      console.error('Error adding document: ', error);
-      toast({ title: 'Error adding domain', description: error instanceof Error ? error.message : 'An unexpected error occurred.', variant: 'destructive' });
+    } catch (error: any) {
+      console.error('Error adding domain: ', error);
+      toast({ title: 'Error adding domain', description: error?.message ?? 'An unexpected error occurred.', variant: 'destructive' });
     }
   };
-
-  if (isUserLoading) {
-    return <div className="py-8 text-center">Checking authentication...</div>;
-  }
 
   if (!user) {
     return (
@@ -284,7 +289,7 @@ export default function DomainsPage() {
                           {item.verificationStatus}
                         </Badge>
                       </TableCell>
-                      <TableCell>{item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : 'Just now'}</TableCell>
+                      <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <Dialog>
                           <DropdownMenu>
