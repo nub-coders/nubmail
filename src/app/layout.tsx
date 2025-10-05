@@ -19,9 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>
-        <FirebaseClientProvider>
+        <AuthClientProvider>
           {children}
-        </FirebaseClientProvider>
+        </AuthClientProvider>
         <Toaster />
       </body>
     </html>
