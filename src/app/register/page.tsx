@@ -16,16 +16,15 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser } from '@/firebase';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthClient } from '@/lib/auth-provider';
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
+  const { user, setToken } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -33,25 +32,24 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      if (fullName) {
-        try {
-          await updateProfile(cred.user, { displayName: fullName });
-        } catch (e) {
-          console.warn('Update profile failed', e);
-        }
+      const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName }) });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: 'Registration failed', description: data.error || 'Unable to register', variant: 'destructive' });
+        return;
       }
+      setToken(data.token);
       toast({ title: 'Account created', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Registration error', err);
-      toast({ title: 'Registration failed', description: err?.message ?? 'Unable to register', variant: 'destructive' });
+      toast({ title: 'Registration failed', description: 'Network error', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  if (isUserLoading) return <div className="py-8 text-center">Checking authentication...</div>;
+  if (!user && typeof window === 'undefined') return <div className="py-8 text-center">Checking authentication...</div>;
   if (user) {
     router.push('/dashboard');
     return null;
