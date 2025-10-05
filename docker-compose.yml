@@ -50,6 +50,8 @@ services:
     image: node:20-alpine
     container_name: nubmail-app-dev
     working_dir: /app
+    expose:
+      - "5000"
     environment:
       PORT: 5000
       NODE_ENV: development
