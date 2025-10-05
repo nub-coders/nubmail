@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 import { ArrowUpRight } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
-import { collection, collectionGroup, getDocs, query } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 import {
   Card,
@@ -17,8 +17,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Progress } from '@/components/ui/progress';
-import { useFirebase, useUser } from '@/firebase';
-import { useEffect, useState } from 'react';
+import { useAuthClient } from '@/lib/auth-provider';
 
 const CHART_DATA = [
   { month: 'January', desktop: 186 },
@@ -37,71 +36,33 @@ const CHART_CONFIG = {
 };
 
 export default function Dashboard() {
-    const { firestore } = useFirebase();
-    const { user } = useUser();
-    const [stats, setStats] = useState({
-        domains: 0,
-        accounts: 0,
-        emailsSent: 0,
-    });
-    const [loading, setLoading] = useState(true);
+  const { user } = useAuthClient();
+  const [stats, setStats] = useState({ domains: 0, accounts: 0, emailsSent: 0 });
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            if (!user || !firestore) return;
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user) return;
+      setLoading(true);
+      try {
+        const res = await fetch('/api/stats', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        if (res.ok) setStats({ domains: data.domains || 0, accounts: data.accounts || 0, emailsSent: data.emailsSent || 0 });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            try {
-                const domainsQuery = query(collection(firestore, `users/${user.uid}/domains`));
-                const domainsSnapshot = await getDocs(domainsQuery);
-                const domainsCount = domainsSnapshot.size;
-
-                const accountsQuery = query(collectionGroup(firestore, 'emailAccounts'));
-                // Note: This is a simplified query. In a real app with many users,
-                // you&apos;d want to scope this to the current user&apos;s domains for security and performance.
-                const accountsSnapshot = await getDocs(accountsQuery);
-                const accountsCount = accountsSnapshot.size;
-                
-                const emailsQuery = query(collectionGroup(firestore, 'emailMessages'));
-                 const emailsSnapshot = await getDocs(emailsQuery);
-                const emailsCount = emailsSnapshot.size;
-
-
-                setStats({
-                    domains: domainsCount,
-                    accounts: accountsCount,
-                    emailsSent: emailsCount,
-                });
-            } catch (error) {
-                console.error("Error fetching stats:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-    }, [user, firestore]);
+    fetchStats();
+  }, [user]);
 
   const dashboardStats = [
-    {
-      title: 'Total Domains',
-      value: loading ? '...' : stats.domains,
-      description: '',
-    },
-    {
-      title: 'Total Email Accounts',
-      value: loading ? '...' : stats.accounts,
-      description: '',
-    },
-    {
-      title: 'Storage Usage',
-      value: '0 GB', // Placeholder, needs real calculation
-      description: 'of 60 GB',
-    },
-    {
-      title: 'Emails Sent',
-      value: loading ? '...' : stats.emailsSent,
-      description: 'total',
-    },
+    { title: 'Total Domains', value: loading ? '...' : stats.domains, description: '' },
+    { title: 'Total Email Accounts', value: loading ? '...' : stats.accounts, description: '' },
+    { title: 'Storage Usage', value: '0 GB', description: 'of 60 GB' },
+    { title: 'Emails Sent', value: loading ? '...' : stats.emailsSent, description: 'total' },
   ];
 
   return (
@@ -115,59 +76,32 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
               {stat.title === 'Storage Usage' && (
                 <>
                   <Progress value={0} className="mt-2 h-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stat.description}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
                 </>
               )}
             </CardContent>
           </Card>
         ))}
       </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Storage Usage History</CardTitle>
-            <CardDescription>
-              Monthly storage usage over the last 6 months.
-            </CardDescription>
+            <CardDescription>Monthly storage usage over the last 6 months.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={CHART_CONFIG} className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={CHART_DATA}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <XAxis
-                    dataKey="month"
-                    stroke="hsl(var(--foreground))"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="hsl(var(--foreground))"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${value} GB`}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Bar
-                    dataKey="desktop"
-                    fill="hsl(var(--primary))"
-                    radius={[4, 4, 0, 0]}
-                  />
+                <BarChart data={CHART_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} GB`} />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                  <Bar dataKey="desktop" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -176,33 +110,25 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              A log of recent activities on your account.
-            </CardDescription>
+            <CardDescription>A log of recent activities on your account.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center">
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    New domain &apos;example.com&apos; added.
-                  </p>
+                  <p className="text-sm font-medium leading-none">New domain 'example.com' added.</p>
                   <p className="text-sm text-muted-foreground">2 hours ago</p>
                 </div>
               </div>
               <div className="flex items-center">
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Email account &apos;test@nub-coder.tech&apos; created.
-                  </p>
+                  <p className="text-sm font-medium leading-none">Email account 'test@nub-coder.tech' created.</p>
                   <p className="text-sm text-muted-foreground">1 day ago</p>
                 </div>
               </div>
               <div className="flex items-center">
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Password changed.
-                  </p>
+                  <p className="text-sm font-medium leading-none">Password changed.</p>
                   <p className="text-sm text-muted-foreground">3 days ago</p>
                 </div>
               </div>
