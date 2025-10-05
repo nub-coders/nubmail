@@ -1,6 +1,6 @@
 'use client';
 import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,7 +38,6 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -58,7 +57,7 @@ import type { Domain } from '@/lib/types';
 const formSchema = z.object({
   domainName: z.string().min(3, {
     message: "Domain name must be at least 3 characters.",
-  }).regex(/^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*(\.[a-zA-Z]{2,})+$/, {
+  }).regex(/^[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/, {
     message: "Please enter a valid domain name.",
   }),
 });
@@ -145,7 +144,7 @@ function DnsVerificationDialog() {
 export default function DomainsPage() {
     const { firestore } = useFirebase();
     const { user } = useUser();
-    const [open, setOpen] = useState(false);
+    const [isAddDomainOpen, setAddDomainOpen] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -181,7 +180,7 @@ export default function DomainsPage() {
               createdAt: serverTimestamp(),
           });
           form.reset();
-          setOpen(false);
+          setAddDomainOpen(false);
           toast({
             title: "Domain added successfully!",
             description: `Your domain ${values.domainName} has been added.`,
@@ -205,7 +204,7 @@ export default function DomainsPage() {
             Add and manage your custom domains.
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="ml-auto gap-1">
               <PlusCircle className="h-4 w-4" />
@@ -235,9 +234,7 @@ export default function DomainsPage() {
                   )}
                 />
                 <DialogFooter>
-                  <DialogClose asChild>
-                     <Button type="button" variant="outline">Cancel</Button>
-                  </DialogClose>
+                   <Button type="button" variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
                   <Button type="submit" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting ? "Adding..." : "Add Domain"}
                   </Button>
@@ -335,5 +332,3 @@ export default function DomainsPage() {
     </div>
   );
 }
-
-    
