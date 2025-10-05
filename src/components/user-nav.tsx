@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   CreditCard,
   LogOut,
@@ -20,9 +23,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuthClient } from '@/lib/auth-provider';
 
 export function UserNav() {
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const { setToken } = useAuthClient();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    setToken(null);
+    router.push('/');
+  };
 
   return (
     <DropdownMenu>
@@ -72,10 +83,10 @@ export function UserNav() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/">
+          <button onClick={handleLogout} className="w-full text-left">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
-          </Link>
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
