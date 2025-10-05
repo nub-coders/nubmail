@@ -1,6 +1,9 @@
 'use client';
 import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,15 +39,33 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useCollection, useFirebase, useMemoFirebase, useUser } from '@/firebase';
 import { useState } from 'react';
 import type { Domain } from '@/lib/types';
+import { useToast } from '@/components/ui/use-toast';
+
+const formSchema = z.object({
+  domainName: z.string().min(3, {
+    message: "Domain name must be at least 3 characters.",
+  }).regex(/^[a-zA-Z0-9]+([\-\.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/, {
+    message: "Please enter a valid domain name.",
+  }),
+});
 
 
 function DnsVerificationDialog() {
+  const { toast } = useToast();
   const dnsRecords = [
     {
       type: 'TXT',
@@ -60,7 +81,11 @@ function DnsVerificationDialog() {
   ];
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Copied to clipboard!",
+      });
+    });
   };
 
   return (
@@ -68,7 +93,7 @@ function DnsVerificationDialog() {
       <DialogHeader>
         <DialogTitle>Domain Verification Setup</DialogTitle>
         <DialogDescription>
-          To verify your domain, add the following DNS records to your domain's
+          To verify your domain, add the following DNS records to your domain&apos;s
           DNS settings.
         </DialogDescription>
       </DialogHeader>
@@ -85,7 +110,7 @@ function DnsVerificationDialog() {
               <code>{record.name}</code>
               <span className="text-muted-foreground">Value:</span>
               <div className="flex items-center gap-2">
-                <code className="truncate ...">{record.value}</code>
+                <code className="truncate">{record.value}</code>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -122,8 +147,15 @@ function DnsVerificationDialog() {
 export default function DomainsPage() {
     const { firestore } = useFirebase();
     const { user } = useUser();
-    const [domainName, setDomainName] = useState('');
     const [isAddDomainOpen, setAddDomainOpen] = useState(false);
+    const { toast } = useToast();
+
+    const form = useForm<z.infer<typeof formSchema>>({
+      resolver: zodResolver(formSchema),
+      defaultValues: {
+        domainName: "",
+      },
+    });
 
     const domainsQuery = useMemoFirebase(() => {
         if (!user) return null;
@@ -132,21 +164,29 @@ export default function DomainsPage() {
 
     const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
 
-    const handleAddDomain = async () => {
-        if (user && domainName) {
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (user) {
             const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
             try {
               await addDoc(domainsRef, {
-                  domainName,
+                  domainName: values.domainName,
                   verificationStatus: 'pending',
                   userId: user.uid,
                   createdAt: new Date().toISOString().split('T')[0],
               });
-              setDomainName('');
+              form.reset();
               setAddDomainOpen(false);
+              toast({
+                title: "Domain added successfully!",
+                description: `Your domain ${values.domainName} has been added.`,
+              });
             } catch (error) {
               console.error("Error adding document: ", error);
-              // Optionally: show an error toast to the user
+              toast({
+                title: "Error adding domain",
+                description: "There was an error adding your domain. Please try again.",
+                variant: "destructive",
+              });
             }
         }
     };
@@ -163,7 +203,7 @@ export default function DomainsPage() {
         </div>
         <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="ml-auto gap-1" onClick={() => setAddDomainOpen(true)}>
+            <Button size="sm" className="ml-auto gap-1">
               <PlusCircle className="h-4 w-4" />
               Add Domain
             </Button>
@@ -175,26 +215,29 @@ export default function DomainsPage() {
                 Enter the domain name you want to add.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="domain-name" className="text-right">
-                  Domain
-                </Label>
-                <Input
-                  id="domain-name"
-                  placeholder="example.com"
-                  className="col-span-3"
-                  value={domainName}
-                  onChange={(e) => setDomainName(e.target.value)}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <FormField
+                  control={form.control}
+                  name="domainName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Domain Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            </div>
-            <DialogFooter>
-               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button onClick={handleAddDomain}>Add Domain</Button>
-            </DialogFooter>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button type="submit">Add Domain</Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -223,7 +266,7 @@ export default function DomainsPage() {
                 <TableBody>
                 {(domains || []).map((item) => (
                     <TableRow key={item.id}>
-                    <TableCell className="font-medium flex items-center gap-2">
+                    <TableCell className="font-medium flex items-center gap-.2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         {item.domainName}
                     </TableCell>

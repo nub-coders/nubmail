@@ -57,7 +57,7 @@ export default function Dashboard() {
 
                 const accountsQuery = query(collectionGroup(firestore, 'emailAccounts'));
                 // Note: This is a simplified query. In a real app with many users,
-                // you'd want to scope this to the current user's domains for security and performance.
+                // you&apos;d want to scope this to the current user&apos;s domains for security and performance.
                 const accountsSnapshot = await getDocs(accountsQuery);
                 const accountsCount = accountsSnapshot.size;
                 
@@ -185,7 +185,7 @@ export default function Dashboard() {
               <div className="flex items-center">
                 <div className="ml-4 space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    New domain 'example.com' added.
+                    New domain &apos;example.com&apos; added.
                   </p>
                   <p className="text-sm text-muted-foreground">2 hours ago</p>
                 </div>
@@ -193,7 +193,7 @@ export default function Dashboard() {
               <div className="flex items-center">
                 <div className="ml-4 space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    Email account 'test@nub-coder.tech' created.
+                    Email account &apos;test@nub-coder.tech&apos; created.
                   </p>
                   <p className="text-sm text-muted-foreground">1 day ago</p>
                 </div>
