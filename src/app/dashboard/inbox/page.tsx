@@ -7,25 +7,25 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
-import { useCollection, useFirebase, useMemoFirebase, useUser } from '@/firebase';
-import { collectionGroup, query } from 'firebase/firestore';
+import { useAuthClient } from '@/lib/auth-provider';
 
 export default function InboxPage() {
-  const { firestore } = useFirebase();
-  const { user } = useUser();
+  const { user } = useAuthClient();
 
-  const emailsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    // This query is expensive, in a real app you'd likely limit and paginate
-    return query(collectionGroup(firestore, 'emailMessages'));
-  }, [firestore, user]);
-
-  const { data: emails, isLoading } = useCollection(emailsQuery);
-
-  const unreadCount = emails?.filter(e => !(e as any).read).length || 0;
+  if (!user) {
+    return (
+      <div className="py-8 text-center">You must be signed in to view your inbox.</div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Inbox</h1>
+          <p className="text-muted-foreground">Inbox view is not yet migrated from Firebase. Please check back later.</p>
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Inbox</h1>
