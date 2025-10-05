@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowUpRight } from 'lucide-react';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { useEffect, useState } from 'react';
 
 import {
@@ -11,29 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import { Progress } from '@/components/ui/progress';
 import { useAuthClient } from '@/lib/auth-provider';
 
-const CHART_DATA = [
-  { month: 'January', desktop: 186 },
-  { month: 'February', desktop: 305 },
-  { month: 'March', desktop: 237 },
-  { month: 'April', desktop: 73 },
-  { month: 'May', desktop: 209 },
-  { month: 'June', desktop: 214 },
-];
-
-const CHART_CONFIG = {
-  desktop: {
-    label: 'Usage',
-    color: 'hsl(var(--primary))',
-  },
-};
 
 export default function Dashboard() {
   const { user } = useAuthClient();
@@ -59,83 +37,48 @@ export default function Dashboard() {
   }, [user]);
 
   const dashboardStats = [
-    { title: 'Total Domains', value: loading ? '...' : stats.domains, description: '' },
-    { title: 'Total Email Accounts', value: loading ? '...' : stats.accounts, description: '' },
-    { title: 'Storage Usage', value: '0 GB', description: 'of 60 GB' },
-    { title: 'Emails Sent', value: loading ? '...' : stats.emailsSent, description: 'total' },
+    { title: 'Total Domains', value: loading ? '...' : stats.domains, description: 'active domains' },
+    { title: 'Total Email Accounts', value: loading ? '...' : stats.accounts, description: 'email accounts' },
+    { title: 'Emails Sent', value: loading ? '...' : stats.emailsSent, description: 'messages sent' },
   ];
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {dashboardStats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              {stat.title !== 'Storage Usage' && <ArrowUpRight className="h-4 w-4 text-muted-foreground" />}
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <p className="text-xs text-muted-foreground">{stat.description}</p>
-              {stat.title === 'Storage Usage' && (
-                <>
-                  <Progress value={0} className="mt-2 h-2" />
-                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
-                </>
-              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Storage Usage History</CardTitle>
-            <CardDescription>Monthly storage usage over the last 6 months.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={CHART_CONFIG} className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={CHART_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} GB`} />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                  <Bar dataKey="desktop" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>A log of recent activities on your account.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">New domain 'example.com' added.</p>
-                  <p className="text-sm text-muted-foreground">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Email account 'test@nub-coder.tech' created.</p>
-                  <p className="text-sm text-muted-foreground">1 day ago</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Password changed.</p>
-                  <p className="text-sm text-muted-foreground">3 days ago</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common tasks to get you started</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <a href="/dashboard/domains" className="flex flex-col items-center gap-2 p-4 border rounded-lg hover:bg-accent transition-colors">
+            <div className="text-sm font-medium">Add Domain</div>
+            <div className="text-xs text-muted-foreground text-center">Register a new domain</div>
+          </a>
+          <a href="/dashboard/compose" className="flex flex-col items-center gap-2 p-4 border rounded-lg hover:bg-accent transition-colors">
+            <div className="text-sm font-medium">Compose Email</div>
+            <div className="text-xs text-muted-foreground text-center">Send a new message</div>
+          </a>
+          <a href="/dashboard/inbox" className="flex flex-col items-center gap-2 p-4 border rounded-lg hover:bg-accent transition-colors">
+            <div className="text-sm font-medium">View Inbox</div>
+            <div className="text-xs text-muted-foreground text-center">Check your messages</div>
+          </a>
+        </CardContent>
+      </Card>
     </div>
   );
 }

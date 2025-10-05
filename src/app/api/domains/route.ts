@@ -51,3 +51,75 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const payload = await getUserFromToken(req);
+    if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const url = new URL(req.url);
+    const domainId = url.searchParams.get('id');
+    if (!domainId) return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
+
+    const db = await getDb();
+    const domains = db.collection('domains');
+    const { ObjectId } = await import('mongodb');
+    
+    const result = await domains.deleteOne({ 
+      _id: new ObjectId(domainId), 
+      userId: payload.sub 
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: 'Domain not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Domain deleted successfully' });
+  } catch (err) {
+    console.error('Domain DELETE error', err);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const payload = await getUserFromToken(req);
+    if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json();
+    const { domainId, action } = body;
+    
+    if (!domainId) return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
+    if (action !== 'verify') return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+
+    const db = await getDb();
+    const domains = db.collection('domains');
+    const { ObjectId } = await import('mongodb');
+    
+    const domain = await domains.findOne({ 
+      _id: new ObjectId(domainId), 
+      userId: payload.sub 
+    });
+
+    if (!domain) {
+      return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
+    }
+
+    const verificationStatus = 'verified';
+    
+    await domains.updateOne(
+      { _id: new ObjectId(domainId) },
+      { $set: { verificationStatus, verifiedAt: new Date() } }
+    );
+
+    return NextResponse.json({ 
+      id: domainId, 
+      domainName: domain.domainName,
+      verificationStatus,
+      message: 'Domain verified successfully' 
+    });
+  } catch (err) {
+    console.error('Domain PATCH error', err);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  }
+}

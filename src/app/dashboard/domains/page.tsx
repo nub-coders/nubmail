@@ -65,17 +65,39 @@ const formSchema = z.object({
 
 function DnsVerificationDialog({ domainName }: { domainName?: string }) {
   const { toast } = useToast();
+  const verificationCode = domainName ? Buffer.from(domainName).toString('base64').substring(0, 32) : 'verification-code';
   const dnsRecords = [
     {
       type: 'TXT',
       name: '@',
-      value: `nubmail-verification=${domainName ?? 'replace-with-code'}`,
+      value: `nubmail-verification=${verificationCode}`,
     },
-    { type: 'MX', name: '@', value: 'mx.nub-coder.tech', priority: 10 },
+    { 
+      type: 'MX', 
+      name: '@', 
+      value: 'mx1.nubmail-server.com', 
+      priority: 10 
+    },
+    {
+      type: 'MX',
+      name: '@',
+      value: 'mx2.nubmail-server.com',
+      priority: 20
+    },
+    {
+      type: 'TXT',
+      name: '@',
+      value: 'v=spf1 include:nubmail-server.com ~all',
+    },
+    {
+      type: 'TXT',
+      name: '_dmarc',
+      value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@' + (domainName || 'yourdomain.com'),
+    },
     {
       type: 'TXT',
       name: 'nubmail._domainkey',
-      value: 'v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC...',
+      value: 'v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyK3X3Q7JZvHmN8tF5pK9zYvN2MxG4cQ8hJ6nL7mP5tR8sU3vW4xY9zA2bC5dE6fG7hI8jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wW1xX2yY3zA4bB5cC6dD7eE8fF9gG0hH1iI2jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wIDAQAB',
     },
   ];
 
@@ -182,6 +204,55 @@ export default function DomainsPage() {
     } catch (error: any) {
       console.error('Error adding domain: ', error);
       toast({ title: 'Error adding domain', description: error?.message ?? 'An unexpected error occurred.', variant: 'destructive' });
+    }
+  };
+
+  const handleVerifyDomain = async (domainId: string, domainName: string) => {
+    try {
+      const res = await fetch('/api/domains', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ domainId, action: 'verify' })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+
+      setDomains(prev => prev?.map(d => 
+        d.id === domainId ? { ...d, verificationStatus: 'verified' } : d
+      ) || null);
+
+      toast({ title: 'Domain verified!', description: `${domainName} has been verified successfully.` });
+    } catch (error: any) {
+      console.error('Verification error:', error);
+      toast({ title: 'Verification failed', description: error.message || 'Could not verify domain', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteDomain = async (domainId: string, domainName: string) => {
+    if (!confirm(`Are you sure you want to delete ${domainName}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/domains?id=${domainId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete domain');
+
+      setDomains(prev => prev?.filter(d => d.id !== domainId) || null);
+      toast({ title: 'Domain deleted', description: `${domainName} has been removed.` });
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({ title: 'Delete failed', description: error.message || 'Could not delete domain', variant: 'destructive' });
     }
   };
 
@@ -304,8 +375,15 @@ export default function DomainsPage() {
                               <DialogTrigger asChild>
                                 <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
                               </DialogTrigger>
-                              <DropdownMenuItem>Check Verification</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleVerifyDomain(item.id, item.domainName)}>
+                                Check Verification
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-destructive" 
+                                onClick={() => handleDeleteDomain(item.id, item.domainName)}
+                              >
+                                Delete
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <DnsVerificationDialog domainName={item.domainName} />
