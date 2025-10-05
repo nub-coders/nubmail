@@ -1,10 +1,12 @@
-'use client';
+"use client";
+
 import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
 import { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,20 +58,19 @@ import type { Domain } from '@/lib/types';
 
 const formSchema = z.object({
   domainName: z.string().min(3, {
-    message: "Domain name must be at least 3 characters.",
+    message: 'Domain name must be at least 3 characters.',
   }).regex(/^[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/, {
-    message: "Please enter a valid domain name.",
+    message: 'Please enter a valid domain name.',
   }),
 });
 
-
-function DnsVerificationDialog() {
+function DnsVerificationDialog({ domainName }: { domainName?: string }) {
   const { toast } = useToast();
   const dnsRecords = [
     {
       type: 'TXT',
       name: '@',
-      value: 'nubmail-verification=a1b2c3d4-e5f6-7890-1234-567890abcdef',
+      value: `nubmail-verification=${domainName ?? 'replace-with-code'}`,
     },
     { type: 'MX', name: '@', value: 'mx.nub-coder.tech', priority: 10 },
     {
@@ -79,12 +80,13 @@ function DnsVerificationDialog() {
     },
   ];
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast({
-        title: "Copied to clipboard!",
-      });
-    });
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: 'Copied to clipboard!' });
+    } catch (err) {
+      toast({ title: 'Unable to copy', description: 'Clipboard access failed.', variant: 'destructive' });
+    }
   };
 
   return (
@@ -92,8 +94,7 @@ function DnsVerificationDialog() {
       <DialogHeader>
         <DialogTitle>Domain Verification Setup</DialogTitle>
         <DialogDescription>
-          To verify your domain, add the following DNS records to your domain&apos;s
-          DNS settings.
+          To verify your domain, add the following DNS records to your domain's DNS settings.
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4 py-4">
@@ -103,33 +104,25 @@ function DnsVerificationDialog() {
               <Dna className="h-4 w-4" /> {record.type} Record
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Type:</span>{' '}
+              <span className="text-muted-foreground">Type:</span>
               <span>{record.type}</span>
-              <span className="text-muted-foreground">Name:</span>{' '}
+              <span className="text-muted-foreground">Name:</span>
               <code>{record.name}</code>
               <span className="text-muted-foreground">Value:</span>
               <div className="flex items-center gap-2">
                 <code className="truncate">{record.value}</code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => copyToClipboard(record.value)}
-                >
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(record.value)}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
               {record.priority && (
                 <>
-                  {' '}
-                  <span className="text-muted-foreground">Priority:</span>{' '}
+                  <span className="text-muted-foreground">Priority:</span>
                   <span>{record.priority}</span>
                 </>
               )}
             </div>
-            {index < dnsRecords.length - 1 && (
-              <Separator className="mt-4" />
-            )}
+            {index < dnsRecords.length - 1 && <Separator className="mt-4" />}
           </div>
         ))}
       </div>
@@ -142,67 +135,80 @@ function DnsVerificationDialog() {
 }
 
 export default function DomainsPage() {
-    const { firestore } = useFirebase();
-    const { user } = useUser();
-    const [isAddDomainOpen, setAddDomainOpen] = useState(false);
-    const { toast } = useToast();
+  const { firestore } = useFirebase();
+  const { user, isUserLoading } = useUser();
+  const [isAddDomainOpen, setAddDomainOpen] = useState(false);
+  const { toast } = useToast();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-      resolver: zodResolver(formSchema),
-      defaultValues: {
-        domainName: "",
-      },
-    });
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { domainName: '' },
+  });
 
-    const domainsQuery = useMemoFirebase(() => {
-        if (!user) return null;
-        return collection(firestore, `/users/${user.uid}/domains`);
-    }, [firestore, user]);
+  const domainsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, `/users/${user.uid}/domains`);
+  }, [firestore, user]);
 
-    const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
+  const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!user) {
-            toast({
-                title: "Authentication Error",
-                description: "You must be logged in to add a domain.",
-                variant: "destructive",
-            });
-            return;
-        }
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) {
+      toast({ title: 'Authentication Error', description: 'You must be logged in to add a domain.', variant: 'destructive' });
+      return;
+    }
 
-        const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
-        try {
-          await addDoc(domainsRef, {
-              domainName: values.domainName,
-              verificationStatus: 'pending',
-              userId: user.uid,
-              createdAt: serverTimestamp(),
-          });
-          form.reset();
-          setAddDomainOpen(false);
-          toast({
-            title: "Domain added successfully!",
-            description: `Your domain ${values.domainName} has been added.`,
-          });
-        } catch (error) {
-          console.error("Error adding document: ", error);
-          toast({
-            title: "Error adding domain",
-            description: error instanceof Error ? error.message : "An unexpected error occurred.",
-            variant: "destructive",
-          });
-        }
-    };
+    const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
+    try {
+      await addDoc(domainsRef, {
+        domainName: values.domainName,
+        verificationStatus: 'pending',
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+      });
+      form.reset();
+      setAddDomainOpen(false);
+      toast({ title: 'Domain added successfully!', description: `Your domain ${values.domainName} has been added.` });
+    } catch (error) {
+      console.error('Error adding document: ', error);
+      toast({ title: 'Error adding domain', description: error instanceof Error ? error.message : 'An unexpected error occurred.', variant: 'destructive' });
+    }
+  };
+
+  if (isUserLoading) {
+    return <div className="py-8 text-center">Checking authentication...</div>;
+  }
+
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Domain Management</CardTitle>
+          <CardDescription>You must be signed in to manage domains.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center gap-4 py-6">
+            <p className="text-muted-foreground">Please sign in to add and manage custom domains.</p>
+            <div className="flex w-full max-w-xs gap-2">
+              <Link href="/register" className="w-full">
+                <Button className="w-full">Sign up</Button>
+              </Link>
+              <Link href="/" className="w-full">
+                <Button variant="outline" className="w-full">Sign in</Button>
+              </Link>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Domain Management</h1>
-          <p className="text-muted-foreground">
-            Add and manage your custom domains.
-          </p>
+          <p className="text-muted-foreground">Add and manage your custom domains.</p>
         </div>
         <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>
           <DialogTrigger asChild>
@@ -214,9 +220,7 @@ export default function DomainsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Domain</DialogTitle>
-              <DialogDescription>
-                Enter the domain name you want to add.
-              </DialogDescription>
+              <DialogDescription>Enter the domain name you want to add.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -234,10 +238,8 @@ export default function DomainsPage() {
                   )}
                 />
                 <DialogFooter>
-                   <Button type="button" variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "Adding..." : "Add Domain"}
-                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
+                  <Button type="submit" disabled={form.formState.isSubmitting}>{form.formState.isSubmitting ? 'Adding...' : 'Add Domain'}</Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -248,85 +250,71 @@ export default function DomainsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Your Domains</CardTitle>
-          <CardDescription>
-            An overview of all your registered domains and their verification status.
-          </CardDescription>
+          <CardDescription>An overview of all your registered domains and their verification status.</CardDescription>
         </CardHeader>
         <CardContent>
-            {isLoading ? <p className="text-center text-muted-foreground">Loading domains...</p> : (
+          {isLoading ? (
+            <p className="text-center text-muted-foreground">Loading domains...</p>
+          ) : (
             <Table>
-                <TableHeader>
+              <TableHeader>
                 <TableRow>
-                    <TableHead>Domain</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>
+                  <TableHead>Domain</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>
                     <span className="sr-only">Actions</span>
-                    </TableHead>
+                  </TableHead>
                 </TableRow>
-                </TableHeader>
-                <TableBody>
-                {(domains && domains.length > 0) ? domains.map((item: any) => (
+              </TableHeader>
+              <TableBody>
+                {domains && domains.length > 0 ? (
+                  domains.map((item: any) => (
                     <TableRow key={item.id}>
-                    <TableCell className="font-medium flex items-center gap-2">
+                      <TableCell className="font-medium flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         {item.domainName}
-                    </TableCell>
-                    <TableCell>
+                      </TableCell>
+                      <TableCell>
                         <Badge
-                        variant={
-                            item.verificationStatus === 'verified'
-                            ? 'default'
-                            : item.verificationStatus === 'pending'
-                            ? 'secondary'
-                            : 'destructive'
-                        }
-                        className={
-                            item.verificationStatus === 'verified'
-                            ? 'bg-green-500/20 text-green-700 border-green-500/30'
-                            : ''
-                        }
+                          variant={item.verificationStatus === 'verified' ? 'default' : item.verificationStatus === 'pending' ? 'secondary' : 'destructive'}
+                          className={item.verificationStatus === 'verified' ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}
                         >
-                        {item.verificationStatus}
+                          {item.verificationStatus}
                         </Badge>
-                    </TableCell>
-                    <TableCell>{item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : 'Just now'}</TableCell>
-                    <TableCell>
+                      </TableCell>
+                      <TableCell>{item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : 'Just now'}</TableCell>
+                      <TableCell>
                         <Dialog>
-                        <DropdownMenu>
+                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                            <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                            >
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Toggle menu</span>
-                            </Button>
+                              </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DialogTrigger asChild>
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DialogTrigger asChild>
                                 <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
-                            </DialogTrigger>
-                            <DropdownMenuItem>Check Verification</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                                Delete
-                            </DropdownMenuItem>
+                              </DialogTrigger>
+                              <DropdownMenuItem>Check Verification</DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                             </DropdownMenuContent>
-                        </DropdownMenu>
-                        <DnsVerificationDialog />
+                          </DropdownMenu>
+                          <DnsVerificationDialog domainName={item.domainName} />
                         </Dialog>
-                    </TableCell>
+                      </TableCell>
                     </TableRow>
-                )) : (
+                  ))
+                ) : (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center h-24">No domains added yet.</TableCell>
                   </TableRow>
                 )}
-                </TableBody>
+              </TableBody>
             </Table>
-            )}
+          )}
         </CardContent>
       </Card>
     </div>
