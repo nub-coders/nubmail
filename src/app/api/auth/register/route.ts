@@ -21,12 +21,17 @@ export async function POST(req: NextRequest) {
     if (existing) return NextResponse.json({ error: 'User already exists' }, { status: 409 });
 
     const hashed = await bcrypt.hash(password, 10);
-    const result = await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName: fullName || null, createdAt: new Date() });
+    const result = await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName: fullName || null, emailVerified: false, createdAt: new Date() });
 
     const payload = { sub: String(result.insertedId), email };
     const token = sign(payload, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
 
-    return NextResponse.json({ token, user: { id: String(result.insertedId), email, fullName } });
+    // In development return a verification link so it's easy to test. In production this should be emailed.
+    const verifyToken = sign({ sub: String(result.insertedId), type: 'verify' }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
+    const host = process.env.PROTOCOL ? (process.env.PROTOCOL + '://' + (process.env.DOMAIN || 'localhost')) : ('http://' + (process.env.DOMAIN || 'localhost'));
+    const verificationUrl = `${host}/api/auth/verify?token=${verifyToken}`;
+
+    return NextResponse.json({ token, user: { id: String(result.insertedId), email, fullName }, verificationUrl });
   } catch (err) {
     console.error('Register error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
