@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   // Always render the login form server-side and client-side to avoid hydration mismatches.
   // Redirect to dashboard on the client when the user becomes available.
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) router.push('/dashboard');
   }, [user, router]);
 
