@@ -21,7 +21,7 @@ export default function AccountsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Accounts</CardTitle>
-          <CardDescription>This section is being migrated from Firebase to the new backend. Functionality will be available soon.</CardDescription>
+          <CardDescription>Account management functionality will be available soon.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="py-6 text-center">Accounts management is temporarily unavailable.</div>
