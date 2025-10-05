@@ -34,6 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -185,8 +186,12 @@ export default function DomainsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddDomain}>Add Domain</Button>
+              <DialogClose asChild>
+                <Button variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button onClick={handleAddDomain}>Add Domain</Button>
+              </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
