@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { verify } from 'jsonwebtoken';
+import { promises as dns } from 'dns';
 
 async function getUserFromToken(req: NextRequest) {
   const auth = req.headers.get('authorization') || '';
@@ -105,19 +106,51 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
     }
 
-    const verificationStatus = 'verified';
+    const verificationCode = Buffer.from(domain.domainName).toString('base64').substring(0, 32);
+    const expectedTxtRecord = `nubmail-verification=${verificationCode}`;
     
-    await domains.updateOne(
-      { _id: new ObjectId(domainId) },
-      { $set: { verificationStatus, verifiedAt: new Date() } }
-    );
-
-    return NextResponse.json({ 
-      id: domainId, 
-      domainName: domain.domainName,
-      verificationStatus,
-      message: 'Domain verified successfully' 
-    });
+    let verificationStatus = 'pending';
+    let txtRecordFound = false;
+    
+    try {
+      const txtRecords = await dns.resolveTxt(domain.domainName);
+      
+      for (const record of txtRecords) {
+        const recordValue = Array.isArray(record) ? record.join('') : record;
+        if (recordValue === expectedTxtRecord) {
+          txtRecordFound = true;
+          break;
+        }
+      }
+      
+      if (txtRecordFound) {
+        verificationStatus = 'verified';
+        await domains.updateOne(
+          { _id: new ObjectId(domainId) },
+          { $set: { verificationStatus, verifiedAt: new Date() } }
+        );
+        
+        return NextResponse.json({ 
+          id: domainId, 
+          domainName: domain.domainName,
+          verificationStatus,
+          message: 'Domain verified successfully' 
+        });
+      } else {
+        return NextResponse.json({ 
+          error: 'DNS verification failed',
+          message: `TXT record not found. Please add the following TXT record to your DNS: ${expectedTxtRecord}`,
+          verificationStatus: 'pending'
+        }, { status: 400 });
+      }
+    } catch (dnsError: any) {
+      console.error('DNS verification error:', dnsError);
+      return NextResponse.json({ 
+        error: 'DNS lookup failed',
+        message: `Could not resolve DNS records for ${domain.domainName}. Error: ${dnsError.code || dnsError.message}`,
+        verificationStatus: 'pending'
+      }, { status: 400 });
+    }
   } catch (err) {
     console.error('Domain PATCH error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
