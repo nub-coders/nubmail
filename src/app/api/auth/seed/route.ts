@@ -9,10 +9,23 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Accept JSON body if provided. If not provided, fall back to ADMIN_EMAIL/ADMIN_PASS env vars.
     const body = await req.json().catch(() => ({}));
-    const email = body?.email || 'dev@nub-coder.tech';
-    const password = body?.password || 'Air8858@';
-    const fullName = body?.fullName || 'Dev User';
+    let email = body?.email;
+    let password = body?.password;
+    const fullName = body?.fullName || 'Admin User';
+
+    if (!email || !password) {
+      // Use explicit admin env vars if available
+      if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASS) {
+        email = process.env.ADMIN_EMAIL;
+        password = process.env.ADMIN_PASS;
+      }
+    }
+
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password required for seeding' }, { status: 400 });
+    }
 
     const db = await getDb();
     const users = db.collection('users');
@@ -23,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 10);
     await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName, createdAt: new Date() });
-    return NextResponse.json({ message: 'Seeded user', user: { email, password } });
+    return NextResponse.json({ message: 'Seeded user', user: { email } });
   } catch (err) {
     console.error('Seed error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
