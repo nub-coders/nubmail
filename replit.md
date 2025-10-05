@@ -98,8 +98,3 @@ Preferred communication style: Simple, everyday language.
   - images.unsplash.com
   - picsum.photos
 
-**Firebase Legacy**
-- Firebase SDK present but deprecated in favor of custom backend
-- Migration in progress from Firestore to MongoDB
-- Firebase error handling and hooks remain but throw errors directing to new API endpoints
-- Custom event emitter system for error propagation
