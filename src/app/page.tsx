@@ -16,15 +16,14 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser } from '@/firebase';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthClient } from '@/lib/auth-provider';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
+  const { user, setToken } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -32,42 +31,25 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: 'Sign in failed', description: data.error || 'Unable to sign in', variant: 'destructive' });
+        return;
+      }
+      setToken(data.token);
       toast({ title: 'Signed in', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error', err);
-      const code = err?.code || err?.message || '';
-      let description = 'Unable to sign in.';
-
-      if (String(code).includes('network-request-failed') || String(code).includes('auth/network-request-failed')) {
-        description = 'Network error: please check your internet connection or disable ad-blockers/proxy.';
-      } else if (String(code).includes('user-not-found')) {
-        description = 'No account found with that email. Please sign up first.';
-      } else if (String(code).includes('wrong-password')) {
-        description = 'Incorrect password. Use the Forgot password link to reset it.';
-      } else if (String(code).includes('invalid-email')) {
-        description = 'Invalid email address.';
-      } else if (String(code).includes('too-many-requests')) {
-        description = 'Too many attempts. Try again later.';
-      } else if (String(code).includes('invalid-api-key') || String(code).includes('auth/invalid-api-key')) {
-        description = 'Authentication configuration error. Contact the system administrator.';
-      } else if (String(code).includes('INVALID_LOGIN_CREDENTIALS')) {
-        description = 'Invalid credentials. Please verify your email and password.';
-      } else {
-        description = err?.message ?? description;
-      }
-
-      toast({ title: 'Sign in failed', description, variant: 'destructive' });
-      console.debug('Firebase auth error code:', code);
+      toast({ title: 'Sign in failed', description: 'Network error', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  if (isUserLoading) return <div className="py-8 text-center">Checking authentication...</div>;
+  if (!user && typeof window === 'undefined') return <div className="py-8 text-center">Checking authentication...</div>;
   if (user) {
-    // If already signed in redirect
     router.push('/dashboard');
     return null;
   }
