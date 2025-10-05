@@ -9,8 +9,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: nubmail
       MONGO_INITDB_ROOT_PASSWORD: nubmail
       MONGO_INITDB_DATABASE: nubmail
-    ports:
-      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -52,8 +50,6 @@ services:
     image: node:20-alpine
     container_name: nubmail-app-dev
     working_dir: /app
-    ports:
-      - "5000:5000"
     environment:
       PORT: 5000
       NODE_ENV: development
