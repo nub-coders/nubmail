@@ -1,6 +1,6 @@
 'use client';
 import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
-import { collection } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,6 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useCollection, useFirebase, useMemoFirebase, useUser } from '@/firebase';
 import { useState } from 'react';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Domain } from '@/lib/types';
 
 
@@ -133,17 +132,22 @@ export default function DomainsPage() {
 
     const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
 
-    const handleAddDomain = () => {
+    const handleAddDomain = async () => {
         if (user && domainName) {
             const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
-            addDocumentNonBlocking(domainsRef, {
-                domainName,
-                verificationStatus: 'pending',
-                userId: user.uid,
-                createdAt: new Date().toISOString().split('T')[0],
-            });
-            setDomainName('');
-            setAddDomainOpen(false);
+            try {
+              await addDoc(domainsRef, {
+                  domainName,
+                  verificationStatus: 'pending',
+                  userId: user.uid,
+                  createdAt: new Date().toISOString().split('T')[0],
+              });
+              setDomainName('');
+              setAddDomainOpen(false);
+            } catch (error) {
+              console.error("Error adding document: ", error);
+              // Optionally: show an error toast to the user
+            }
         }
     };
 
@@ -159,7 +163,7 @@ export default function DomainsPage() {
         </div>
         <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="ml-auto gap-1">
+            <Button size="sm" className="ml-auto gap-1" onClick={() => setAddDomainOpen(true)}>
               <PlusCircle className="h-4 w-4" />
               Add Domain
             </Button>
