@@ -1,9 +1,9 @@
 "use client";
 
+"use client";
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { Mail } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
