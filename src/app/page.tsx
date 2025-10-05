@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { user, setToken } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
@@ -30,6 +31,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
     try {
       const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
       let data: any = null;
@@ -39,7 +41,9 @@ export default function LoginPage() {
         console.warn('Failed to parse JSON response', e);
       }
       if (!res.ok) {
-        toast({ title: 'Sign in failed', description: (data && data.error) ? data.error : 'Unable to sign in', variant: 'destructive' });
+        const message = 'Invalid email or password. Please try again.';
+        setErrorMessage(message);
+        toast({ title: 'Sign in failed', description: message, variant: 'destructive' });
         return;
       }
       setToken(data?.token ?? null);
@@ -47,14 +51,14 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error', err);
-      toast({ title: 'Sign in failed', description: err?.message ?? 'Network error', variant: 'destructive' });
+      const message = err?.message ?? 'Network error';
+      setErrorMessage(message);
+      toast({ title: 'Sign in failed', description: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  // Always render the login form server-side and client-side to avoid hydration mismatches.
-  // Redirect to dashboard on the client when the user becomes available.
   useEffect(() => {
     if (user) router.push('/dashboard');
   }, [user, router]);
@@ -83,6 +87,11 @@ export default function LoginPage() {
               </div>
               <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
+            {errorMessage && (
+              <div role="alert" aria-live="polite" className="text-sm text-destructive">
+                {errorMessage}
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Signing in...' : 'Login'}</Button>
           </form>
           <div className="mt-4 text-center text-sm">
