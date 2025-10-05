@@ -1,6 +1,7 @@
 'use client';
 import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
-import { collection, addDoc } from 'firebase/firestore';
+import { useState } from 'react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,7 +38,6 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -51,14 +51,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useCollection, useFirebase, useMemoFirebase, useUser } from '@/firebase';
-import { useState } from 'react';
-import type { Domain } from '@/lib/types';
 import { useToast } from '@/components/ui/use-toast';
+import type { Domain } from '@/lib/types';
 
+// Corrected regex to allow hyphens in domain names
 const formSchema = z.object({
   domainName: z.string().min(3, {
     message: "Domain name must be at least 3 characters.",
-  }).regex(/^[a-zA-Z0-9]+([\-\.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/, {
+  }).regex(/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$/, {
     message: "Please enter a valid domain name.",
   }),
 });
@@ -135,9 +135,7 @@ function DnsVerificationDialog() {
         ))}
       </div>
       <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="outline">Close</Button>
-        </DialogClose>
+        <Button onClick={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} variant="outline">Close</Button>
         <Button>Verify DNS</Button>
       </DialogFooter>
     </DialogContent>
@@ -165,32 +163,38 @@ export default function DomainsPage() {
     const { data: domains, isLoading } = useCollection<Domain>(domainsQuery);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (user) {
-            const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
-            try {
-              await addDoc(domainsRef, {
-                  domainName: values.domainName,
-                  verificationStatus: 'pending',
-                  userId: user.uid,
-                  createdAt: new Date().toISOString().split('T')[0],
-              });
-              form.reset();
-              setAddDomainOpen(false);
-              toast({
-                title: "Domain added successfully!",
-                description: `Your domain ${values.domainName} has been added.`,
-              });
-            } catch (error) {
-              console.error("Error adding document: ", error);
-              toast({
-                title: "Error adding domain",
-                description: "There was an error adding your domain. Please try again.",
+        if (!user) {
+            toast({
+                title: "Authentication Error",
+                description: "You must be logged in to add a domain.",
                 variant: "destructive",
-              });
-            }
+            });
+            return;
+        }
+
+        const domainsRef = collection(firestore, `/users/${user.uid}/domains`);
+        try {
+          await addDoc(domainsRef, {
+              domainName: values.domainName,
+              verificationStatus: 'pending',
+              userId: user.uid,
+              createdAt: serverTimestamp(),
+          });
+          form.reset();
+          setAddDomainOpen(false);
+          toast({
+            title: "Domain added successfully!",
+            description: `Your domain ${values.domainName} has been added.`,
+          });
+        } catch (error) {
+          console.error("Error adding document: ", error);
+          toast({
+            title: "Error adding domain",
+            description: error instanceof Error ? error.message : "An unexpected error occurred.",
+            variant: "destructive",
+          });
         }
     };
-
 
   return (
     <div className="flex flex-col gap-8">
@@ -216,7 +220,7 @@ export default function DomainsPage() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="domainName"
@@ -231,10 +235,10 @@ export default function DomainsPage() {
                   )}
                 />
                 <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button type="submit">Add Domain</Button>
+                  <Button type="button" variant="outline" onClick={() => setAddDomainOpen(false)}>Cancel</Button>
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? "Adding..." : "Add Domain"}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -246,12 +250,11 @@ export default function DomainsPage() {
         <CardHeader>
           <CardTitle>Your Domains</CardTitle>
           <CardDescription>
-            An overview of all your registered domains and their verification
-            status.
+            An overview of all your registered domains and their verification status.
           </CardDescription>
         </CardHeader>
         <CardContent>
-            {isLoading ? <p>Loading domains...</p> : (
+            {isLoading ? <p className="text-center text-muted-foreground">Loading domains...</p> : (
             <Table>
                 <TableHeader>
                 <TableRow>
@@ -264,9 +267,9 @@ export default function DomainsPage() {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {(domains || []).map((item) => (
+                {(domains && domains.length > 0) ? domains.map((item: any) => (
                     <TableRow key={item.id}>
-                    <TableCell className="font-medium flex items-center gap-.2">
+                    <TableCell className="font-medium flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         {item.domainName}
                     </TableCell>
@@ -288,7 +291,7 @@ export default function DomainsPage() {
                         {item.verificationStatus}
                         </Badge>
                     </TableCell>
-                    <TableCell>{item.createdAt}</TableCell>
+                    <TableCell>{item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : 'Just now'}</TableCell>
                     <TableCell>
                         <Dialog>
                         <DropdownMenu>
@@ -307,7 +310,7 @@ export default function DomainsPage() {
                             <DialogTrigger asChild>
                                 <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
                             </DialogTrigger>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem>Check Verification</DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive">
                                 Delete
                             </DropdownMenuItem>
@@ -317,7 +320,11 @@ export default function DomainsPage() {
                         </Dialog>
                     </TableCell>
                     </TableRow>
-                ))}
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center h-24">No domains added yet.</TableCell>
+                  </TableRow>
+                )}
                 </TableBody>
             </Table>
             )}
