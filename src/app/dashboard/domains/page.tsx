@@ -147,6 +147,7 @@ export default function DomainsPage() {
                 setAddDomainOpen(false);
             } catch (error) {
                 console.error("Error adding domain: ", error);
+                // Optionally, show an error toast to the user
             }
         }
     };
@@ -191,7 +192,7 @@ export default function DomainsPage() {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                 <Button variant="outline">Cancel</Button>
               </DialogClose>
               <Button onClick={handleAddDomain}>Add Domain</Button>
             </DialogFooter>
