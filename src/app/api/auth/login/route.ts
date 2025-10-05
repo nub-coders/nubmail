@@ -18,8 +18,13 @@ export async function POST(req: NextRequest) {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
     const payload = { sub: String(user._id), email: user.email };
-    const token = sign(payload, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
+    const token = sign(payload, secret, { expiresIn: '7d' });
 
     return NextResponse.json({ token, user: { id: String(user._id), email: user.email, fullName: user.fullName } });
   } catch (err) {
