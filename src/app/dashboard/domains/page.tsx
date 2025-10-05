@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, PlusCircle, Globe, Dna, Copy } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Globe, Dna, Copy, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -63,41 +63,50 @@ const formSchema = z.object({
   }),
 });
 
-function DnsVerificationDialog({ domainName }: { domainName?: string }) {
+function DnsVerificationDialog({ domainName, domainId, onVerify }: { domainName?: string; domainId?: string; onVerify?: (id: string, name: string) => void }) {
   const { toast } = useToast();
+  const [verifying, setVerifying] = useState(false);
+  const [recordStatus, setRecordStatus] = useState<{ [key: number]: 'verified' | 'failed' | 'checking' | null }>({});
+  
   const verificationCode = domainName ? Buffer.from(domainName).toString('base64').substring(0, 32) : 'verification-code';
   const dnsRecords = [
     {
       type: 'TXT',
       name: '@',
       value: `nubmail-verification=${verificationCode}`,
+      key: 'verification',
     },
     { 
       type: 'MX', 
       name: '@', 
       value: 'mx1.nubmail-server.com', 
-      priority: 10 
+      priority: 10,
+      key: 'mx1',
     },
     {
       type: 'MX',
       name: '@',
       value: 'mx2.nubmail-server.com',
-      priority: 20
+      priority: 20,
+      key: 'mx2',
     },
     {
       type: 'TXT',
       name: '@',
       value: 'v=spf1 include:nubmail-server.com ~all',
+      key: 'spf',
     },
     {
       type: 'TXT',
       name: '_dmarc',
       value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@' + (domainName || 'yourdomain.com'),
+      key: 'dmarc',
     },
     {
       type: 'TXT',
       name: 'nubmail._domainkey',
       value: 'v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyK3X3Q7JZvHmN8tF5pK9zYvN2MxG4cQ8hJ6nL7mP5tR8sU3vW4xY9zA2bC5dE6fG7hI8jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wW1xX2yY3zA4bB5cC6dD7eE8fF9gG0hH1iI2jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wIDAQAB',
+      key: 'dkim',
     },
   ];
 
@@ -108,6 +117,34 @@ function DnsVerificationDialog({ domainName }: { domainName?: string }) {
     } catch (err) {
       toast({ title: 'Unable to copy', description: 'Clipboard access failed.', variant: 'destructive' });
     }
+  };
+
+  const handleVerify = async () => {
+    if (!domainId || !domainName || !onVerify) return;
+    
+    setVerifying(true);
+    setRecordStatus({ 0: 'checking' });
+    
+    try {
+      await onVerify(domainId, domainName);
+      setRecordStatus({ 0: 'verified' });
+    } catch (error) {
+      setRecordStatus({ 0: 'failed' });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const getStatusIcon = (index: number) => {
+    const status = recordStatus[index];
+    if (status === 'verified') {
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    } else if (status === 'failed') {
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    } else if (status === 'checking') {
+      return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+    }
+    return null;
   };
 
   return (
@@ -123,6 +160,7 @@ function DnsVerificationDialog({ domainName }: { domainName?: string }) {
           <div key={index} className="space-y-2">
             <Label className="font-semibold flex items-center gap-2">
               <Dna className="h-4 w-4" /> {record.type} Record
+              <span className="ml-auto">{getStatusIcon(index)}</span>
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] items-center gap-2 text-sm">
               <span className="text-muted-foreground">Type:</span>
@@ -149,7 +187,16 @@ function DnsVerificationDialog({ domainName }: { domainName?: string }) {
       </div>
       <DialogFooter>
         <Button onClick={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} variant="outline">Close</Button>
-        <Button>Verify DNS</Button>
+        <Button onClick={handleVerify} disabled={verifying || !domainId}>
+          {verifying ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Verifying...
+            </>
+          ) : (
+            'Check Verification'
+          )}
+        </Button>
       </DialogFooter>
     </DialogContent>
   );
@@ -208,28 +255,26 @@ export default function DomainsPage() {
   };
 
   const handleVerifyDomain = async (domainId: string, domainName: string) => {
-    try {
-      const res = await fetch('/api/domains', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ domainId, action: 'verify' })
-      });
+    const res = await fetch('/api/domains', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ domainId, action: 'verify' })
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Verification failed');
-
-      setDomains(prev => prev?.map(d => 
-        d.id === domainId ? { ...d, verificationStatus: 'verified' } : d
-      ) || null);
-
-      toast({ title: 'Domain verified!', description: `${domainName} has been verified successfully.` });
-    } catch (error: any) {
-      console.error('Verification error:', error);
-      toast({ title: 'Verification failed', description: error.message || 'Could not verify domain', variant: 'destructive' });
+    const data = await res.json();
+    if (!res.ok) {
+      toast({ title: 'Verification failed', description: data.message || data.error || 'Could not verify domain', variant: 'destructive' });
+      throw new Error(data.message || data.error || 'Verification failed');
     }
+
+    setDomains(prev => prev?.map(d => 
+      d.id === domainId ? { ...d, verificationStatus: 'verified' } : d
+    ) || null);
+
+    toast({ title: 'Domain verified!', description: `${domainName} has been verified successfully.` });
   };
 
   const handleDeleteDomain = async (domainId: string, domainName: string) => {
@@ -375,9 +420,6 @@ export default function DomainsPage() {
                               <DialogTrigger asChild>
                                 <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
                               </DialogTrigger>
-                              <DropdownMenuItem onClick={() => handleVerifyDomain(item.id, item.domainName)}>
-                                Check Verification
-                              </DropdownMenuItem>
                               <DropdownMenuItem 
                                 className="text-destructive" 
                                 onClick={() => handleDeleteDomain(item.id, item.domainName)}
@@ -386,7 +428,11 @@ export default function DomainsPage() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                          <DnsVerificationDialog domainName={item.domainName} />
+                          <DnsVerificationDialog 
+                            domainName={item.domainName} 
+                            domainId={item.id}
+                            onVerify={handleVerifyDomain}
+                          />
                         </Dialog>
                       </TableCell>
                     </TableRow>
