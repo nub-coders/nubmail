@@ -26,6 +26,7 @@ services:
     expose:
       - "5000"
     environment:
+      PORT: 5000
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-g1hpWCNI514bk2otc3XzGSLspUU1EGVFJ6IixTYY4X8}
       MONGODB_URI: mongodb://nubmail:nubmail@mongodb:27017/nubmail?authSource=admin
