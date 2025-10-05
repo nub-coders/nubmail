@@ -35,9 +35,15 @@ export async function POST(req: NextRequest) {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    // If seeding an admin via ADMIN_EMAIL, mark as verified. Otherwise default to false.
     const isAdmin = process.env.ADMIN_EMAIL && email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase();
-    await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName, emailVerified: Boolean(isAdmin), createdAt: new Date() });
+    await users.insertOne({ 
+      email: email.toLowerCase(), 
+      password: hashed, 
+      fullName, 
+      emailVerified: Boolean(isAdmin), 
+      isAdmin: Boolean(isAdmin),
+      createdAt: new Date() 
+    });
     return NextResponse.json({ message: 'Seeded user', user: { email } });
   } catch (err) {
     console.error('Seed error', err);
