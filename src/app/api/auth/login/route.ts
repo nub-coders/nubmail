@@ -11,7 +11,17 @@ export async function POST(req: NextRequest) {
 
     const db = await getDb();
     const users = db.collection('users');
-    const user = await users.findOne({ email: email.toLowerCase() });
+    let user = await users.findOne({ email: email.toLowerCase() });
+
+    // Auto-seed development user when not found to make local testing easier
+    if (!user && process.env.NODE_ENV !== 'production') {
+      const devPassword = process.env.DEV_SEED_PASSWORD || 'Air8858@';
+      const hashed = await bcrypt.hash(devPassword, 10);
+      const res = await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName: 'Dev User', createdAt: new Date() });
+      user = await users.findOne({ _id: res.insertedId });
+      console.info('Auto-seeded dev user:', email.toLowerCase());
+    }
+
     if (!user) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
 
     const ok = await bcrypt.compare(password, user.password);
