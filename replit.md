@@ -4,6 +4,31 @@
 
 NubMail is a comprehensive email server management platform built with Next.js 15, providing users with the ability to manage custom domains, email accounts, and messages. The application features a modern, responsive interface with authentication, domain verification, and email composition capabilities.
 
+**Status**: Fully functional MVP with all critical bugs fixed and Firebase completely removed.
+
+## Recent Changes (October 2025)
+
+### Bug Fixes & Security Improvements
+- Fixed critical email retrieval bug: Inbox now properly filters emails by recipient email address
+- Fixed security vulnerability: Email API now prevents unauthorized access to other users' emails with proper user ownership checks
+- Fixed sent folder: Now correctly filters emails by sender email address
+- Fixed read/unread status: Users can now mark inbox emails as read (previously restricted)
+- Added default query filter to prevent unauthorized email access via unknown folder parameters
+
+### Feature Enhancements
+- Implemented complete email composition with send functionality via Replit Mail service
+- Added inbox and sent mail viewing with search and filtering capabilities
+- Created email accounts management (create, view, delete)
+- Implemented domain verification with proper DNS records (SPF, DKIM, DMARC)
+- Added domain deletion capability
+- Removed all hardcoded mock data from dashboard and other pages
+- Generated proper DNS verification records with complete DKIM keys
+
+### Code Quality
+- Removed all Firebase references and dependencies
+- Fixed duplicate "use client" directives in page components
+- Improved error handling across all API endpoints
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
