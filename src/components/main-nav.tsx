@@ -11,6 +11,8 @@ import {
   Shield,
   Trash2,
   Users,
+  ShieldCheck,
+  UserCog,
 } from 'lucide-react';
 
 import {
@@ -22,9 +24,33 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { useAuthClient } from '@/lib/auth-provider';
+import { useEffect, useState } from 'react';
 
 export function MainNav({ className }: { className?: string }) {
   const pathname = usePathname();
+  const { user } = useAuthClient();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/admin/users', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setIsAdmin(res.status !== 403);
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdmin();
+  }, [user]);
 
   const isActive = (path: string) => pathname === path;
 
@@ -131,6 +157,47 @@ export function MainNav({ className }: { className?: string }) {
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
+      
+      {isAdmin && (
+        <SidebarMenu className="mt-4">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/admin')}
+              tooltip="Admin Dashboard"
+            >
+              <Link href="/dashboard/admin">
+                <ShieldCheck />
+                <span>Admin</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/admin/users')}
+              tooltip="Manage Users"
+            >
+              <Link href="/dashboard/admin/users">
+                <UserCog />
+                <span>Manage Users</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/admin/domains')}
+              tooltip="Manage Domains"
+            >
+              <Link href="/dashboard/admin/domains">
+                <Globe />
+                <span>Manage Domains</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      )}
     </nav>
   );
 }
