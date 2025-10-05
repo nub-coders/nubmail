@@ -9,6 +9,12 @@ export async function POST(req: NextRequest) {
     const { email, password, fullName } = body;
     if (!email || !password) return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
 
+    // Password policy: at least 8 characters, includes uppercase, lowercase, digit and symbol
+    const pwRe = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!pwRe.test(password)) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol' }, { status: 400 });
+    }
+
     const db = await getDb();
     const users = db.collection('users');
     const existing = await users.findOne({ email: email.toLowerCase() });
