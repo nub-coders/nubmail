@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const user = await users.findOne({ _id: new (await import('mongodb')).ObjectId(payload.sub) });
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    return NextResponse.json({ user: { id: String(user._id), email: user.email, fullName: user.fullName } });
+    return NextResponse.json({ user: { id: String(user._id), email: user.email, fullName: user.fullName, emailVerified: !!user.emailVerified } });
   } catch (err) {
     console.error('Me error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
