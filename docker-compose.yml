@@ -65,13 +65,20 @@ services:
       PROTOCOL: ${PROTOCOL:-http}
       ADMIN_PASS: ${ADMIN_PASS}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
+      VIRTUAL_HOST: mails.nub-coder.tech
+      VIRTUAL_PORT: 5000
+      LETSENCRYPT_HOST: mails.nub-coder.tech
+      LETSENCRYPT_EMAIL: dev@nub-coder.tech
     volumes:
       - .:/app
       - /app/node_modules
       - /app/.next
     command: sh -c "npm install && npm run dev -- -p 5000"
+    depends_on:
+      - mongodb
     networks:
       - nubmail-network
+      - web
     profiles:
       - dev
 
