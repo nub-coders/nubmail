@@ -32,17 +32,22 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        console.warn('Failed to parse JSON response', e);
+      }
       if (!res.ok) {
-        toast({ title: 'Sign in failed', description: data.error || 'Unable to sign in', variant: 'destructive' });
+        toast({ title: 'Sign in failed', description: (data && data.error) ? data.error : 'Unable to sign in', variant: 'destructive' });
         return;
       }
-      setToken(data.token);
+      setToken(data?.token ?? null);
       toast({ title: 'Signed in', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error', err);
-      toast({ title: 'Sign in failed', description: 'Network error', variant: 'destructive' });
+      toast({ title: 'Sign in failed', description: err?.message ?? 'Network error', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
