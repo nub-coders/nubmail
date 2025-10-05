@@ -33,17 +33,22 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName }) });
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        console.warn('Failed to parse JSON response', e);
+      }
       if (!res.ok) {
-        toast({ title: 'Registration failed', description: data.error || 'Unable to register', variant: 'destructive' });
+        toast({ title: 'Registration failed', description: (data && data.error) ? data.error : 'Unable to register', variant: 'destructive' });
         return;
       }
-      setToken(data.token);
+      setToken(data?.token ?? null);
       toast({ title: 'Account created', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Registration error', err);
-      toast({ title: 'Registration failed', description: 'Network error', variant: 'destructive' });
+      toast({ title: 'Registration failed', description: err?.message ?? 'Network error', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
