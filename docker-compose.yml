@@ -78,6 +78,7 @@ services:
       - mongodb
     networks:
       - nubmail-network
+      - web
     profiles:
       - dev
 
