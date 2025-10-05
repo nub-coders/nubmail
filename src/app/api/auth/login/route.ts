@@ -13,13 +13,17 @@ export async function POST(req: NextRequest) {
     const users = db.collection('users');
     let user = await users.findOne({ email: email.toLowerCase() });
 
-    // Auto-seed development user when not found to make local testing easier
-    if (!user && process.env.NODE_ENV !== 'production') {
+    // Determine whether auto-seeding is allowed. Allow in development or on preview hosts
+    const host = (req.headers.get('host') || '').toLowerCase();
+    const allowSeed = process.env.NODE_ENV !== 'production' || host.includes('projects.builder.codes') || host.includes('fly.dev') || host.includes('localhost');
+
+    // Auto-seed development/preview user when not found to make testing easier
+    if (!user && allowSeed) {
       const devPassword = process.env.DEV_SEED_PASSWORD || 'Air8858@';
       const hashed = await bcrypt.hash(devPassword, 10);
       const res = await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName: 'Dev User', createdAt: new Date() });
       user = await users.findOne({ _id: res.insertedId });
-      console.info('Auto-seeded dev user:', email.toLowerCase());
+      console.info('Auto-seeded dev user for host', host, email.toLowerCase());
     }
 
     if (!user) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
