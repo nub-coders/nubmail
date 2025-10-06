@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Mail, Trash } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,9 @@ interface EmailAccount {
 }
 
 export default function AccountsPage() {
-  const { user } = useAuthClient();
+  const { user, token, loading: authLoading } = useAuthClient();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,32 +39,45 @@ export default function AccountsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      if (!token || authLoading) return;
       
-      setLoading(true);
+      setDataLoading(true);
       try {
         const [accountsRes, domainsRes] = await Promise.all([
-          fetch('/api/accounts', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-          fetch('/api/domains', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+          fetch('/api/accounts', { 
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store'
+          }),
+          fetch('/api/domains', { 
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store'
+          })
         ]);
+
+        if (!accountsRes.ok || !domainsRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
 
         const accountsData = await accountsRes.json();
         const domainsData = await domainsRes.json();
 
-        if (accountsRes.ok) setAccounts(accountsData.accounts || []);
-        if (domainsRes.ok) {
-          const verifiedDomains = domainsData.domains?.filter((d: Domain) => d.verificationStatus === 'verified') || [];
-          setDomains(verifiedDomains);
-        }
+        setAccounts(accountsData.accounts || []);
+        const verifiedDomains = domainsData.domains?.filter((d: Domain) => d.verificationStatus === 'verified') || [];
+        setDomains(verifiedDomains);
       } catch (error) {
         console.error('Failed to fetch data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load accounts and domains',
+          variant: 'destructive'
+        });
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     };
 
     fetchData();
-  }, [user]);
+  }, [token, authLoading, toast]);
 
   const handleCreateAccount = async () => {
     if (!localPart || !selectedDomainId) {
@@ -142,7 +155,19 @@ export default function AccountsPage() {
     }
   };
 
-  if (!user) {
+  if (authLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Email Accounts</h1>
+        <div className="animate-pulse">
+          <div className="h-12 bg-gray-200 rounded mb-4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !token) {
     return <div className="py-8 text-center">You must be signed in to manage accounts.</div>;
   }
 
@@ -174,7 +199,7 @@ export default function AccountsPage() {
                   id="localpart"
                   placeholder="info, support, hello"
                   value={localPart}
-                  onChange={(e) => setLocalPart(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalPart(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''))}
                 />
               </div>
               <div className="grid gap-2">
@@ -207,7 +232,7 @@ export default function AccountsPage() {
                       id="smtpHost"
                       placeholder="smtp.example.com"
                       value={smtpHost}
-                      onChange={(e) => setSmtpHost(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpHost(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -217,7 +242,7 @@ export default function AccountsPage() {
                       type="number"
                       placeholder="587"
                       value={smtpPort}
-                      onChange={(e) => setSmtpPort(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPort(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -226,7 +251,7 @@ export default function AccountsPage() {
                       id="smtpUser"
                       placeholder="username or email"
                       value={smtpUser}
-                      onChange={(e) => setSmtpUser(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpUser(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -236,7 +261,7 @@ export default function AccountsPage() {
                       type="password"
                       placeholder="••••••••"
                       value={smtpPass}
-                      onChange={(e) => setSmtpPass(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPass(e.target.value)}
                     />
                   </div>
                 </div>
@@ -260,7 +285,7 @@ export default function AccountsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {dataLoading ? (
             <div className="py-6 text-center">Loading accounts...</div>
           ) : accounts.length === 0 ? (
             <div className="py-6 text-center text-muted-foreground">

@@ -4,71 +4,65 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
 
-interface User { id: string; email: string; fullName?: string | null; isAdmin?: boolean }
+interface User { id: string; email: string; fullName?: string | null; emailVerified?: boolean }
 
-const AuthContext = createContext<{ user: User | null; token: string | null; setToken: (t: string | null) => Promise<void>; isLoading: boolean }>({ 
-  user: null, 
-  token: null, 
-  setToken: async () => {}, 
-  isLoading: false 
+const AuthContext = createContext<{
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  setToken: (t: string | null) => void;
+}>({
+  user: null,
+  token: null,
+  loading: true,
+  setToken: () => {}
 });
 
 export default function AuthClientProvider({ children }: { children: React.ReactNode }) {
-  const [token, setTokenState] = useState<string | null>(typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
 
-  const setToken = async (newToken: string | null) => {
-    setTokenState(newToken);
-    if (newToken) {
-      localStorage.setItem('token', newToken);
-      setIsLoading(true);
-      try {
-        const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${newToken}` } });
-        if (!res.ok) {
-          throw new Error('Failed to verify token');
-        }
-        const data = await res.json();
-        setUser(data.user);
-      } catch (err) {
-        console.error('Auth verification failed', err);
-        setTokenState(null);
-        localStorage.removeItem('token');
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      localStorage.removeItem('token');
-      setUser(null);
+  // Initialize token from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const load = async () => {
       if (!token) {
         setUser(null);
+        setLoading(false);
         return;
       }
+      
       try {
-        const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/auth/me', { 
+          headers: { Authorization: `Bearer ${token}` },
+          // Prevent caching of auth check
+          cache: 'no-store'
+        });
+        
         if (!res.ok) {
           setToken(null);
           localStorage.removeItem('token');
           setUser(null);
           return;
         }
+        
         const data = await res.json();
         setUser(data.user);
 
-        // Route protection can be based on user role if needed
+        // If user exists but email not verified, and trying to access dashboard or protected routes, redirect to verification page
         const protectedPrefix = '/dashboard';
-        const adminPrefix = '/dashboard/admin';
-        if (data.user && !data.user.isAdmin && pathname && pathname.startsWith(adminPrefix)) {
-          router.push('/dashboard');
+        if (data.user && data.user.emailVerified === false && pathname && pathname.startsWith(protectedPrefix)) {
+          router.push('/verify-email');
         }
       } catch (err) {
         console.error('Auth load failed', err);
@@ -84,9 +78,17 @@ export default function AuthClientProvider({ children }: { children: React.React
     else localStorage.removeItem('token');
   }, [token]);
 
-  return <AuthContext.Provider value={{ user, token, setToken, isLoading }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, token, loading, setToken }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuthClient() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuthClient must be used within an AuthClientProvider');
+  }
+  return context;
 }
