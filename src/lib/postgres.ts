@@ -1,9 +1,13 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 if (!connectionString) {
-  throw new Error('POSTGRES_URL (or DATABASE_URL) must be set');
+  throw new Error('DATABASE_URL or POSTGRES_URL must be set');
 }
+
+// Log which env variable is being used (do not log the connection string itself)
+const connectionSource = process.env.DATABASE_URL ? 'DATABASE_URL' : 'POSTGRES_URL';
+console.log(`[startup] Postgres connection source: ${connectionSource}`);
 
 let pool: Pool | null = null;
 
@@ -41,5 +45,3 @@ export async function pgQuery<T extends QueryResultRow = any>(text: string, para
   const client = getPgPool();
   return client.query<T>(text, params);
 }
-
-
