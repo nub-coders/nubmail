@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { to, subject, text, html } = body;
+    const { to, subject, text, html, from } = body;
     
     if (!to || !subject || (!text && !html)) {
       return NextResponse.json({ error: 'Missing required fields: to, subject, and message body' }, { status: 400 });
@@ -17,14 +17,27 @@ export async function POST(req: NextRequest) {
 
     const db = await getDb();
     const users = db.collection('users');
+    const accounts = db.collection('emailAccounts');
     const user = await users.findOne({ _id: new (await import('mongodb')).ObjectId(payload.sub) });
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    if (!from) {
+      return NextResponse.json({ error: 'Please select a sender account (from).' }, { status: 400 });
+    }
+
+    const ownedFrom = await accounts.findOne({
+      emailAddress: String(from).toLowerCase(),
+      userId: payload.sub,
+    });
+    if (!ownedFrom) {
+      return NextResponse.json({ error: 'Invalid sender account.' }, { status: 403 });
+    }
+
     const result = await sendSmtpEmail({
-      from: user.email,
+      from,
       to,
       subject,
       text: text || html?.replace(/<[^>]*>/g, ''),
@@ -34,7 +47,7 @@ export async function POST(req: NextRequest) {
     const emailMessages = db.collection('emailMessages');
     const now = new Date();
     await emailMessages.insertOne({
-      sender: user.email,
+      sender: String(from).toLowerCase(),
       recipients: Array.isArray(to) ? to : [to],
       subject,
       body: html || text,
