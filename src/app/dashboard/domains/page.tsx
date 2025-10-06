@@ -64,7 +64,7 @@ const formSchema = z.object({
   }),
 });
 
-function DnsVerificationDialog({ domainName, domainId, verificationToken, onVerify }: { domainName?: string; domainId?: string; verificationToken?: string; onVerify?: (id: string, name: string) => void }) {
+function DnsVerificationDialog({ domainName, domainId, verificationToken, verificationStatus, onVerify }: { domainName?: string; domainId?: string; verificationToken?: string; verificationStatus?: string; onVerify?: (id: string, name: string) => void }) {
   const { toast } = useToast();
   const [verifying, setVerifying] = useState(false);
   const [recordStatus, setRecordStatus] = useState<{ [key: number]: 'verified' | 'failed' | 'checking' | null }>({});
@@ -109,6 +109,18 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, onVeri
       key: 'dkim',
     },
   ];
+
+  useEffect(() => {
+    if (verificationStatus === 'verified') {
+      const verifiedStatus: { [key: number]: 'verified' } = {};
+      dnsRecords.forEach((_, index) => {
+        verifiedStatus[index] = 'verified';
+      });
+      setRecordStatus(verifiedStatus);
+    } else if (verificationStatus === 'pending') {
+      setRecordStatus({});
+    }
+  }, [verificationStatus]);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -446,6 +458,7 @@ export default function DomainsPage() {
                             domainName={item.domainName} 
                             domainId={item.id}
                             verificationToken={item.verificationToken}
+                            verificationStatus={item.verificationStatus}
                             onVerify={handleVerifyDomain}
                           />
                         </Dialog>

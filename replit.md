@@ -8,12 +8,28 @@ NubMail is a comprehensive email server management platform built with Next.js 1
 
 ## Recent Changes (October 2025)
 
+### DNS Verification System Rebuild (Latest)
+- **Rebuilt DNS verification logic with secure token-based verification**
+  - Each domain now gets a unique, cryptographically random 64-character verification token
+  - Verification only succeeds if the exact TXT record with the token is found in DNS
+  - Added strict validation to prevent false positives (empty DNS arrays now properly fail)
+  - Implemented 10-second DNS lookup timeout to prevent hanging requests
+  - Added status gating to prevent re-verification of already verified domains
+  - Domain names are now normalized (lowercase, trimmed, trailing dot removed)
+- **Enhanced DNS verification UX**
+  - Status icons (checkmarks/X symbols) now show immediately when opening DNS setup dialog
+  - Icons reflect current domain verification status (verified = green checkmarks, pending = no icons, failed = red X)
+  - Icons update in real-time during verification process (spinning loader while checking)
+  - Added scrollable area to DNS records list so Verify button remains visible
+  - Improved error messages with specific guidance for different DNS failure scenarios
+
 ### Bug Fixes & Security Improvements
 - Fixed critical email retrieval bug: Inbox now properly filters emails by recipient email address
 - Fixed security vulnerability: Email API now prevents unauthorized access to other users' emails with proper user ownership checks
 - Fixed sent folder: Now correctly filters emails by sender email address
 - Fixed read/unread status: Users can now mark inbox emails as read (previously restricted)
 - Added default query filter to prevent unauthorized email access via unknown folder parameters
+- **Fixed DNS verification false positives: Domains no longer verify without actual DNS records**
 
 ### Feature Enhancements
 - Implemented complete email composition with send functionality via Replit Mail service
@@ -73,7 +89,7 @@ Preferred communication style: Simple, everyday language.
 
 **Data Models**
 - User: id, email, fullName, emailVerified, isAdmin, verificationToken
-- Domain: id, domainName, verificationStatus (verified/pending/failed), userId, createdAt
+- Domain: id, domainName, verificationStatus (verified/pending/failed), verificationToken, userId, createdAt, verifiedAt
 - EmailAccount: id, emailAddress, storageQuota, domainId, userId
 - EmailMessage: id, sender, recipients, subject, body, sentAt, emailAccountId, userId, read
 
