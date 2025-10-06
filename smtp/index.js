@@ -1,23 +1,19 @@
-// Minimal SMTP receiver that parses inbound messages and stores them in MongoDB
+// Minimal SMTP receiver that parses inbound messages and stores them in PostgreSQL
 // Uses smtp-server and mailparser. Intended to run as a sidecar service.
 
 const { SMTPServer } = require('smtp-server');
 const { simpleParser } = require('mailparser');
-const { MongoClient } = require('mongodb');
+const { Pool } = require('pg');
 
 const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 25; // container port
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://nubmail:nubmail@mongodb:27017/nubmail?authSource=admin';
+const POSTGRES_URL = process.env.POSTGRES_URL || 'postgres://nubmail:nubmail@postgres:5432/nubmail';
 
-let mongoClient;
-
-async function getDb() {
-  if (!mongoClient) {
-    mongoClient = new MongoClient(MONGODB_URI, {
-      maxPoolSize: 10,
-    });
-    await mongoClient.connect();
+let pgPool;
+function getPgPool() {
+  if (!pgPool) {
+    pgPool = new Pool({ connectionString: POSTGRES_URL, max: 10 });
   }
-  return mongoClient.db();
+  return pgPool;
 }
 
 function extractAddresses(addressObject) {
@@ -52,18 +48,36 @@ const server = new SMTPServer({
         const body = html || text || '';
         const sentAt = parsed.date ? new Date(parsed.date) : new Date();
 
-        const db = await getDb();
-        const emailMessages = db.collection('emailMessages');
-
-        await emailMessages.insertOne({
-          sender,
-          recipients: recipients.length > 0 ? recipients : [],
-          subject,
-          body,
-          sentAt,
-          read: false,
-          inbound: true,
-        });
+        const pool = getPgPool();
+        // Find matching accounts for recipients
+        const recips = recipients.length > 0 ? recipients : [];
+        let inserted = 0;
+        if (recips.length > 0) {
+          const { rows } = await pool.query(
+            'SELECT email_address, user_id FROM email_accounts WHERE email_address = ANY($1::text[])',
+            [recips]
+          );
+          const addressToUser = new Map(rows.map(r => [String(r.email_address).toLowerCase(), r.user_id]));
+          for (const rcpt of recips) {
+            const uid = addressToUser.get(String(rcpt).toLowerCase()) || null;
+            if (uid) {
+              await pool.query(
+                `INSERT INTO email_messages (sender, recipients, subject, body, sent_at, user_id, read)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [sender, [rcpt], subject, body, sentAt, uid, false]
+              );
+              inserted++;
+            }
+          }
+        }
+        // If no specific user matched, store a single unassigned message
+        if (inserted === 0) {
+          await pool.query(
+            `INSERT INTO email_messages (sender, recipients, subject, body, sent_at, read)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [sender, recips, subject, body, sentAt, false]
+          );
+        }
 
         callback();
       } catch (err) {
@@ -87,7 +101,7 @@ process.on('SIGTERM', async () => {
     await server.close();
   } catch {}
   try {
-    if (mongoClient) await mongoClient.close();
+    if (pgPool) await pgPool.end();
   } catch {}
   process.exit(0);
 });

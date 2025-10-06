@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
+import { pgQuery } from '@/lib/postgres';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,23 +15,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const existing = await users.findOne({ email: email.toLowerCase() });
+    const existing = await pgQuery('SELECT 1 FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing) return NextResponse.json({ error: 'User already exists' }, { status: 409 });
 
     const hashed = await bcrypt.hash(password, 10);
-    const result = await users.insertOne({ email: email.toLowerCase(), password: hashed, fullName: fullName || null, emailVerified: false, createdAt: new Date() });
+    const inserted = await pgQuery<{ id: string }>(
+      'INSERT INTO users (email, password_hash, full_name) VALUES ($1, $2, $3) RETURNING id',
+      [email.toLowerCase(), hashed, fullName || null]
+    );
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
     
-    const payload = { sub: String(result.insertedId), email };
+    const payload = { sub: String(inserted.rows[0].id), email };
     const token = sign(payload, secret, { expiresIn: '7d' });
 
-    return NextResponse.json({ token, user: { id: String(result.insertedId), email, fullName } });
+    return NextResponse.json({ token, user: { id: String(inserted.rows[0].id), email, fullName } });
   } catch (err) {
     console.error('Register error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

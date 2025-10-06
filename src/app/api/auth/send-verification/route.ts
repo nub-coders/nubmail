@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { pgQuery } from '@/lib/postgres';
 import { verify } from 'jsonwebtoken';
-import { sendEmail } from '@/utils/replitmail';
+import { sendSmtpEmail, getEnvSmtpConfig } from '@/utils/smtp';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,23 +20,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const user = await users.findOne({ _id: new (await import('mongodb')).ObjectId(payload.sub) });
+    const { rows } = await pgQuery<{ id: string; email: string }>('SELECT id, email FROM users WHERE id = $1', [payload.sub]);
+    const user = rows[0];
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    await users.updateOne(
-      { _id: user._id },
-      { $set: { verificationCode: code, verificationCodeExpiry: expiresAt } }
-    );
+    await pgQuery('UPDATE users SET verification_code = $1, verification_code_expiry = $2 WHERE id = $3', [code, expiresAt, user.id]);
 
     try {
-      await sendEmail({
+      await sendSmtpEmail({
         to: user.email,
         subject: 'NubMail - Email Verification Code',
+        smtpConfig: getEnvSmtpConfig(),
         html: `
           <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #A0C4FF;">Email Verification</h2>

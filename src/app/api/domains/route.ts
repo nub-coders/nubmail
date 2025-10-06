@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
+import { pgQuery, usePostgres } from '@/lib/postgres';
 import { verify } from 'jsonwebtoken';
 import { promises as dns } from 'dns';
 
@@ -22,18 +23,31 @@ export async function GET(req: NextRequest) {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const db = await getDb();
-    const domains = db.collection('domains');
-    const docs = await domains.find({ userId: payload.sub }).sort({ createdAt: -1 }).toArray();
-    return NextResponse.json({ 
-      domains: docs.map(d => ({ 
-        id: String(d._id), 
-        domainName: d.domainName, 
-        verificationStatus: d.verificationStatus,
-        verificationToken: d.verificationToken,
-        createdAt: d.createdAt 
-      })) 
-    });
+    if (usePostgres()) {
+      const { rows } = await pgQuery(
+        `SELECT id, domain_name AS "domainName", verification_status AS "verificationStatus",
+                verification_token AS "verificationToken", created_at AS "createdAt"
+         FROM domains WHERE user_id = $1 ORDER BY created_at DESC`,
+        [payload.sub]
+      );
+      return NextResponse.json({ domains: rows });
+    } else {
+      const db = await getDb();
+      const domains = db.collection('domains');
+      const docs = await domains
+        .find({ userId: payload.sub }, { projection: { domainName: 1, verificationStatus: 1, verificationToken: 1, createdAt: 1 } })
+        .sort({ createdAt: -1 })
+        .toArray();
+      return NextResponse.json({ 
+        domains: docs.map(d => ({ 
+          id: String(d._id), 
+          domainName: d.domainName, 
+          verificationStatus: d.verificationStatus,
+          verificationToken: d.verificationToken,
+          createdAt: d.createdAt 
+        })) 
+      });
+    }
   } catch (err) {
     console.error('Domains GET error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -54,24 +68,34 @@ export async function POST(req: NextRequest) {
     const crypto = await import('crypto');
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    const db = await getDb();
-    const domains = db.collection('domains');
     const now = new Date();
-    const res = await domains.insertOne({ 
-      domainName: normalizedDomain, 
-      verificationStatus: 'pending', 
-      verificationToken,
-      userId: payload.sub, 
-      createdAt: now 
-    });
-
-    return NextResponse.json({ 
-      id: String(res.insertedId), 
-      domainName: normalizedDomain, 
-      verificationStatus: 'pending',
-      verificationToken,
-      createdAt: now 
-    });
+    if (usePostgres()) {
+      const { rows } = await pgQuery(
+        `INSERT INTO domains (domain_name, verification_status, verification_token, user_id, created_at)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, domain_name AS "domainName", verification_status AS "verificationStatus", verification_token AS "verificationToken", created_at AS "createdAt"`,
+        [normalizedDomain, 'pending', verificationToken, payload.sub, now]
+      );
+      return NextResponse.json(rows[0]);
+    } else {
+      const db = await getDb();
+      const domains = db.collection('domains');
+      const res = await domains.insertOne({ 
+        domainName: normalizedDomain, 
+        verificationStatus: 'pending', 
+        verificationToken,
+        userId: payload.sub, 
+        createdAt: now 
+      });
+  
+      return NextResponse.json({ 
+        id: String(res.insertedId), 
+        domainName: normalizedDomain, 
+        verificationStatus: 'pending',
+        verificationToken,
+        createdAt: now 
+      });
+    }
   } catch (err) {
     console.error('Domains POST error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -87,20 +111,28 @@ export async function DELETE(req: NextRequest) {
     const domainId = url.searchParams.get('id');
     if (!domainId) return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
 
-    const db = await getDb();
-    const domains = db.collection('domains');
-    const { ObjectId } = await import('mongodb');
-    
-    const result = await domains.deleteOne({ 
-      _id: new ObjectId(domainId), 
-      userId: payload.sub 
-    });
-
-    if (result.deletedCount === 0) {
-      return NextResponse.json({ error: 'Domain not found or unauthorized' }, { status: 404 });
+    if (usePostgres()) {
+      const { rowCount } = await pgQuery('DELETE FROM domains WHERE id = $1 AND user_id = $2', [domainId, payload.sub]);
+      if (rowCount === 0) {
+        return NextResponse.json({ error: 'Domain not found or unauthorized' }, { status: 404 });
+      }
+      return NextResponse.json({ message: 'Domain deleted successfully' });
+    } else {
+      const db = await getDb();
+      const domains = db.collection('domains');
+      const { ObjectId } = await import('mongodb');
+      
+      const result = await domains.deleteOne({ 
+        _id: new ObjectId(domainId), 
+        userId: payload.sub 
+      });
+  
+      if (result.deletedCount === 0) {
+        return NextResponse.json({ error: 'Domain not found or unauthorized' }, { status: 404 });
+      }
+  
+      return NextResponse.json({ message: 'Domain deleted successfully' });
     }
-
-    return NextResponse.json({ message: 'Domain deleted successfully' });
   } catch (err) {
     console.error('Domain DELETE error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

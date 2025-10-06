@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken } from '@/lib/admin';
-import { getDb } from '@/lib/mongodb';
 import dns from 'dns/promises';
+import { pgQuery } from '@/lib/postgres';
 
 interface RecordVerificationResult {
   key: string;
@@ -106,14 +106,12 @@ export async function POST(req: NextRequest) {
     
     if (!domainId) return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
 
-    const db = await getDb();
-    const domains = db.collection('domains');
-    const { ObjectId } = await import('mongodb');
-    
-    const domain = await domains.findOne({ 
-      _id: new ObjectId(domainId), 
-      userId: payload.sub 
-    });
+    const { rows } = await pgQuery<{ domainName: string; verificationToken: string | null }>(
+      `SELECT domain_name AS "domainName", verification_token AS "verificationToken"
+       FROM domains WHERE id = $1 AND user_id = $2`,
+      [domainId, payload.sub]
+    );
+    const domain = rows[0];
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
@@ -220,9 +218,9 @@ export async function POST(req: NextRequest) {
     const allVerified = results.every(r => r.status === 'verified');
     
     if (allVerified) {
-      await domains.updateOne(
-        { _id: new ObjectId(domainId) },
-        { $set: { verificationStatus: 'verified', verifiedAt: new Date() } }
+      await pgQuery(
+        `UPDATE domains SET verification_status = 'verified', verified_at = NOW() WHERE id = $1 AND user_id = $2`,
+        [domainId, payload.sub]
       );
     }
 
