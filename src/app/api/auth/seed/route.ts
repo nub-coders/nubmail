@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { pgQuery } from '@/lib/postgres';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: NextRequest) {
@@ -27,23 +27,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and password required for seeding' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const existing = await users.findOne({ email: email.toLowerCase() });
-    if (existing) {
+    const existing = await pgQuery('SELECT 1 FROM users WHERE email = $1', [email.toLowerCase()]);
+    if (existing.rows.length > 0) {
       return NextResponse.json({ message: 'User already exists', user: { email } });
     }
 
     const hashed = await bcrypt.hash(password, 10);
     const isAdmin = process.env.ADMIN_EMAIL && email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase();
-    await users.insertOne({ 
-      email: email.toLowerCase(), 
-      password: hashed, 
-      fullName, 
-      emailVerified: Boolean(isAdmin), 
-      isAdmin: Boolean(isAdmin),
-      createdAt: new Date() 
-    });
+    await pgQuery(
+      'INSERT INTO users (email, password_hash, full_name, email_verified, is_admin) VALUES ($1, $2, $3, $4, $5)',
+      [email.toLowerCase(), hashed, fullName, Boolean(isAdmin), Boolean(isAdmin)]
+    );
     return NextResponse.json({ message: 'Seeded user', user: { email } });
   } catch (err) {
     console.error('Seed error', err);

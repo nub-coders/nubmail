@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken } from '@/lib/admin';
-import { getDb } from '@/lib/mongodb';
+import { pgQuery } from '@/lib/postgres';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,41 +10,24 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const folder = url.searchParams.get('folder') || 'inbox';
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const { ObjectId } = await import('mongodb');
-    
-    const user = await users.findOne({ _id: new ObjectId(payload.sub) });
+    const { rows: users } = await pgQuery<{ email: string }>('SELECT email FROM users WHERE id = $1', [payload.sub]);
+    const user = users[0];
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const emailMessages = db.collection('emailMessages');
-    let query: any = {};
-    
-    if (folder === 'inbox') {
-      query.recipients = { $in: [user.email] };
-    } else if (folder === 'sent') {
-      query.sender = user.email;
+    let query: string;
+    let params: any[];
+
+    if (folder === 'sent') {
+      query = 'SELECT id, sender, recipients, subject, body, sent_at AS "sentAt", read FROM email_messages WHERE sender = $1 ORDER BY sent_at DESC LIMIT 100';
+      params = [user.email];
     } else {
-      query.recipients = { $in: [user.email] };
+      query = 'SELECT id, sender, recipients, subject, body, sent_at AS "sentAt", read FROM email_messages WHERE $1 = ANY(recipients) ORDER BY sent_at DESC LIMIT 100';
+      params = [user.email];
     }
 
-    const emails = await emailMessages
-      .find(query)
-      .sort({ sentAt: -1 })
-      .limit(100)
-      .toArray();
+    const { rows: emails } = await pgQuery(query, params);
 
-    return NextResponse.json({
-      emails: emails.map(e => ({
-        id: String(e._id),
-        sender: e.sender,
-        recipients: e.recipients,
-        subject: e.subject,
-        body: e.body,
-        sentAt: e.sentAt,
-        read: e.read || false
-      }))
-    });
+    return NextResponse.json({ emails });
   } catch (err) {
     console.error('Emails GET error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -63,16 +46,16 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const { ObjectId } = await import('mongodb');
-    
-    const user = await users.findOne({ _id: new ObjectId(payload.sub) });
+    const { rows: users } = await pgQuery<{ email: string }>('SELECT email FROM users WHERE id = $1', [payload.sub]);
+    const user = users[0];
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const emailMessages = db.collection('emailMessages');
-    
-    const email = await emailMessages.findOne({ _id: new ObjectId(emailId) });
+    const { rows: emails } = await pgQuery<{ sender: string; recipients: string[] }>(
+      'SELECT sender, recipients FROM email_messages WHERE id = $1',
+      [emailId]
+    );
+    const email = emails[0];
+
     if (!email) {
       return NextResponse.json({ error: 'Email not found' }, { status: 404 });
     }
@@ -84,10 +67,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const result = await emailMessages.updateOne(
-      { _id: new ObjectId(emailId) },
-      { $set: { read } }
-    );
+    await pgQuery('UPDATE email_messages SET read = $1 WHERE id = $2', [read, emailId]);
 
     return NextResponse.json({ message: 'Email updated successfully' });
   } catch (err) {

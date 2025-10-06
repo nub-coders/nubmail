@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { pgQuery } from '@/lib/postgres';
 import { getAdminFromToken } from '@/lib/admin';
-import { ObjectId } from 'mongodb';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,27 +9,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
     }
 
-    const db = await getDb();
-    const domains = db.collection('domains');
-    const users = db.collection('users');
-    
-    const allDomains = await domains.find({}).sort({ createdAt: -1 }).toArray();
-
-    const domainsWithUsers = await Promise.all(
-      allDomains.map(async (domain) => {
-        const user = await users.findOne({ _id: new ObjectId(domain.userId) });
-        return {
-          id: String(domain._id),
-          domainName: domain.domainName,
-          verificationStatus: domain.verificationStatus,
-          createdAt: domain.createdAt,
-          userId: domain.userId,
-          userEmail: user?.email || 'Unknown'
-        };
-      })
+    const { rows } = await pgQuery(
+      `SELECT d.id, d.domain_name AS "domainName", d.verification_status AS "verificationStatus", 
+              d.created_at AS "createdAt", d.user_id AS "userId", u.email AS "userEmail"
+       FROM domains d
+       LEFT JOIN users u ON d.user_id = u.id
+       ORDER BY d.created_at DESC`
     );
 
-    return NextResponse.json({ domains: domainsWithUsers });
+    return NextResponse.json({ domains: rows });
   } catch (err) {
     console.error('Admin domains GET error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -51,16 +38,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'domainId required' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const domains = db.collection('domains');
+    const { rowCount } = await pgQuery('DELETE FROM domains WHERE id = $1', [domainId]);
     
-    const result = await domains.deleteOne({ _id: new ObjectId(domainId) });
-    
-    if (result.deletedCount === 0) {
+    if (rowCount === 0) {
       return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
     }
-
-    await db.collection('emailAccounts').deleteMany({ domainId });
 
     return NextResponse.json({ message: 'Domain deleted successfully' });
   } catch (err) {
@@ -87,15 +69,12 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid verificationStatus' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const domains = db.collection('domains');
-
-    const result = await domains.updateOne(
-      { _id: new ObjectId(domainId) },
-      { $set: { verificationStatus } }
+    const { rowCount } = await pgQuery(
+      'UPDATE domains SET verification_status = $1 WHERE id = $2',
+      [verificationStatus, domainId]
     );
 
-    if (result.matchedCount === 0) {
+    if (rowCount === 0) {
       return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
     }
 
