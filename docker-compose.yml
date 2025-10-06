@@ -56,6 +56,20 @@ volumes:
 
   smtp-sender:
     image: boky/postfix
+    container_name: nubmail-smtp-sender
+    restart: unless-stopped
+    environment:
+      - POSTFIX_myhostname=mail.nub-coder.tech
+      - ALLOWED_SENDER_DOMAINS=*
+      - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+      - POSTFIX_smtpd_tls_security_level=may
+      - POSTFIX_smtp_tls_security_level=may
+    networks:
+      - nubmail-network
+      - web
+    ports:
+      - "587:587"
+
   smtp-receiver:
     image: node:20-alpine
     container_name: nubmail-smtp-receiver
@@ -74,19 +88,6 @@ volumes:
       - web
     ports:
       - "25:25"
-    container_name: nubmail-smtp-sender
-    restart: unless-stopped
-    environment:
-      - POSTFIX_myhostname=mail.nub-coder.tech
-      - ALLOWED_SENDER_DOMAINS=*
-      - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
-      - POSTFIX_smtpd_tls_security_level=may
-      - POSTFIX_smtp_tls_security_level=may
-    networks:
-      - nubmail-network
-      - web
-    ports:
-      - "587:587"
 
   app-dev:
     image: node:20-alpine
@@ -131,5 +132,4 @@ networks:
     external: true
 
 volumes:
-  mongodb_data:
-  mongodb_config:
+  
