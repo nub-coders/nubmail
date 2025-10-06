@@ -79,21 +79,21 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
     { 
       type: 'MX', 
       name: '@', 
-      value: 'mx1.nubmail-server.com', 
+      value: 'mails.nub-coder.tech', 
       priority: 10,
       key: 'mx1',
     },
     {
       type: 'MX',
       name: '@',
-      value: 'mx2.nubmail-server.com',
+      value: 'mails.nub-coder.tech',
       priority: 20,
       key: 'mx2',
     },
     {
       type: 'TXT',
       name: '@',
-      value: 'v=spf1 include:nubmail-server.com ~all',
+      value: 'v=spf1 include:mails.nub-coder.tech ~all',
       key: 'spf',
     },
     {
