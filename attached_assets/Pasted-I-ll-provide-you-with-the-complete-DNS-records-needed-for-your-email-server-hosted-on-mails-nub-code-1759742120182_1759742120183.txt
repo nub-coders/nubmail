@@ -1,0 +1,83 @@
+I'll provide you with the complete DNS records needed for your email server hosted on mails.nub-coder.tech.
+Required DNS Records for Email Server
+1. MX Record (Mail Exchange)
+Points your domain to the mail server.
+Type: MX
+Name: @  (or nub-coder.tech)
+Value: mails.nub-coder.tech
+Priority: 10
+TTL: 3600
+2. SPF Record (Sender Policy Framework)
+Prevents email spoofing by specifying authorized mail servers.
+Type: TXT
+Name: @  (or nub-coder.tech)
+Value: v=spf1 a:mails.nub-coder.tech ~all
+TTL: 3600
+3. DKIM Record (DomainKeys Identified Mail)
+Adds a digital signature to your emails. You'll need to generate this on your mail server first.
+Type: TXT
+Name: default._domainkey  (or your selector name)
+Value: v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY_HERE
+TTL: 3600
+Note: Generate DKIM keys on your server using tools like opendkim-genkey
+4. DMARC Record (Domain-based Message Authentication)
+Specifies how to handle emails that fail SPF/DKIM checks.
+Type: TXT
+Name: _dmarc
+Value: v=DMARC1; p=quarantine; rua=mailto:dmarc@nub-coder.tech; pct=100
+TTL: 3600
+5. Autodiscover Records (For Email Clients)
+Helps email clients automatically configure settings.
+Option A: Using SRV Records (Recommended)
+Type: SRV
+Name: _autodiscover._tcp
+Value: 0 0 443 mails.nub-coder.tech
+TTL: 3600
+Option B: Using CNAME (Alternative)
+Type: CNAME
+Name: autodiscover
+Value: mails.nub-coder.tech
+TTL: 3600
+6. Autoconfig Record (For Mozilla Thunderbird)
+Type: CNAME
+Name: autoconfig
+Value: mails.nub-coder.tech
+TTL: 3600
+7. Webmail Access (Optional but recommended)
+Type: CNAME
+Name: webmail
+Value: mails.nub-coder.tech
+TTL: 3600
+8. IMAP/SMTP Friendly Names (Optional)
+Makes it easier for users to remember server addresses.
+Type: CNAME
+Name: imap
+Value: mails.nub-coder.tech
+TTL: 3600
+
+Type: CNAME
+Name: smtp
+Value: mails.nub-coder.tech
+TTL: 3600
+
+Type: CNAME
+Name: pop3
+Value: mails.nub-coder.tech
+TTL: 3600
+Complete Summary Table
+TypeNameValuePriorityTTLMX@mails.nub-coder.tech103600TXT@v=spf1 a:mails.nub-coder.tech ~all-3600TXTdefault._domainkeyv=DKIM1; k=rsa; p=YOUR_KEY-3600TXT_dmarcv=DMARC1; p=quarantine; rua=mailto:dmarc@nub-coder.tech-3600CNAMEautodiscovermails.nub-coder.tech-3600CNAMEautoconfigmails.nub-coder.tech-3600CNAMEwebmailmails.nub-coder.tech-3600CNAMEimapmails.nub-coder.tech-3600CNAMEsmtpmails.nub-coder.tech-3600
+Client Configuration
+With these records, users can configure their email clients as:
+Incoming Mail (IMAP):
+
+Server: imap.nub-coder.tech or mails.nub-coder.tech
+Port: 993 (SSL/TLS) or 143 (STARTTLS)
+
+Outgoing Mail (SMTP):
+
+Server: smtp.nub-coder.tech or mails.nub-coder.tech
+Port: 465 (SSL/TLS) or 587 (STARTTLS)
+
+Webmail:
+
+URL: https://webmail.nub-coder.tech
