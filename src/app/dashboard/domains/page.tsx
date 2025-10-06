@@ -51,6 +51,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import type { Domain } from '@/lib/types';
@@ -155,36 +156,38 @@ function DnsVerificationDialog({ domainName, domainId, onVerify }: { domainName?
           To verify your domain, add the following DNS records to your domain's DNS settings.
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-4 py-4">
-        {dnsRecords.map((record, index) => (
-          <div key={index} className="space-y-2">
-            <Label className="font-semibold flex items-center gap-2">
-              <Dna className="h-4 w-4" /> {record.type} Record
-              <span className="ml-auto">{getStatusIcon(index)}</span>
-            </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Type:</span>
-              <span>{record.type}</span>
-              <span className="text-muted-foreground">Name:</span>
-              <code>{record.name}</code>
-              <span className="text-muted-foreground">Value:</span>
-              <div className="flex items-center gap-2">
-                <code className="truncate">{record.value}</code>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(record.value)}>
-                  <Copy className="h-4 w-4" />
-                </Button>
+      <ScrollArea className="max-h-[60vh] pr-4">
+        <div className="space-y-4 py-4">
+          {dnsRecords.map((record, index) => (
+            <div key={index} className="space-y-2">
+              <Label className="font-semibold flex items-center gap-2">
+                <Dna className="h-4 w-4" /> {record.type} Record
+                <span className="ml-auto">{getStatusIcon(index)}</span>
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Type:</span>
+                <span>{record.type}</span>
+                <span className="text-muted-foreground">Name:</span>
+                <code>{record.name}</code>
+                <span className="text-muted-foreground">Value:</span>
+                <div className="flex items-center gap-2">
+                  <code className="truncate">{record.value}</code>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(record.value)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                {record.priority && (
+                  <>
+                    <span className="text-muted-foreground">Priority:</span>
+                    <span>{record.priority}</span>
+                  </>
+                )}
               </div>
-              {record.priority && (
-                <>
-                  <span className="text-muted-foreground">Priority:</span>
-                  <span>{record.priority}</span>
-                </>
-              )}
+              {index < dnsRecords.length - 1 && <Separator className="mt-4" />}
             </div>
-            {index < dnsRecords.length - 1 && <Separator className="mt-4" />}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ScrollArea>
       <DialogFooter>
         <Button onClick={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} variant="outline">Close</Button>
         <Button onClick={handleVerify} disabled={verifying || !domainId}>
