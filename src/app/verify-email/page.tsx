@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthClient } from '@/lib/auth-provider';
 
 export default function VerifyEmailPage() {
   const [code, setCode] = useState('');
