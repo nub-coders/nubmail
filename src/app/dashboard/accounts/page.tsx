@@ -17,6 +17,9 @@ interface EmailAccount {
   emailAddress: string;
   storageQuota: number;
   domainId: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
   createdAt: string;
 }
 
@@ -29,6 +32,10 @@ export default function AccountsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [localPart, setLocalPart] = useState('');
   const [selectedDomainId, setSelectedDomainId] = useState('');
+  const [smtpHost, setSmtpHost] = useState('');
+  const [smtpPort, setSmtpPort] = useState('587');
+  const [smtpUser, setSmtpUser] = useState('');
+  const [smtpPass, setSmtpPass] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,8 +67,8 @@ export default function AccountsPage() {
   }, [user]);
 
   const handleCreateAccount = async () => {
-    if (!localPart || !selectedDomainId) {
-      toast({ title: 'Missing fields', description: 'Please fill in all fields', variant: 'destructive' });
+    if (!localPart || !selectedDomainId || !smtpHost || !smtpPort || !smtpUser || !smtpPass) {
+      toast({ title: 'Missing fields', description: 'Please fill in all fields including SMTP settings', variant: 'destructive' });
       return;
     }
 
@@ -77,7 +84,14 @@ export default function AccountsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ emailAddress, domainId: selectedDomainId })
+        body: JSON.stringify({ 
+          emailAddress, 
+          domainId: selectedDomainId,
+          smtpHost,
+          smtpPort,
+          smtpUser,
+          smtpPass
+        })
       });
 
       const data = await res.json();
@@ -88,6 +102,10 @@ export default function AccountsPage() {
       setIsDialogOpen(false);
       setLocalPart('');
       setSelectedDomainId('');
+      setSmtpHost('');
+      setSmtpPort('587');
+      setSmtpUser('');
+      setSmtpPass('');
     } catch (error: any) {
       console.error('Create account error:', error);
       toast({ title: 'Failed to create account', description: error.message, variant: 'destructive' });
@@ -136,10 +154,10 @@ export default function AccountsPage() {
             <DialogHeader>
               <DialogTitle>Create Email Account</DialogTitle>
               <DialogDescription>
-                Create a new email account on one of your verified domains.
+                Create a new email account with your own SMTP server settings.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
               <div className="grid gap-2">
                 <Label htmlFor="localpart">Username</Label>
                 <Input
@@ -169,6 +187,49 @@ export default function AccountsPage() {
                   Email address: <span className="font-medium">{localPart}@{domains.find(d => d.id === selectedDomainId)?.domainName}</span>
                 </div>
               )}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">SMTP Settings</h4>
+                <div className="grid gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="smtpHost">SMTP Host</Label>
+                    <Input
+                      id="smtpHost"
+                      placeholder="smtp.example.com"
+                      value={smtpHost}
+                      onChange={(e) => setSmtpHost(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="smtpPort">SMTP Port</Label>
+                    <Input
+                      id="smtpPort"
+                      type="number"
+                      placeholder="587"
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="smtpUser">SMTP Username</Label>
+                    <Input
+                      id="smtpUser"
+                      placeholder="username or email"
+                      value={smtpUser}
+                      onChange={(e) => setSmtpUser(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="smtpPass">SMTP Password</Label>
+                    <Input
+                      id="smtpPass"
+                      type="password"
+                      placeholder="••••••••"
+                      value={smtpPass}
+                      onChange={(e) => setSmtpPass(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
