@@ -194,7 +194,7 @@ function DnsVerificationDialog({ domainName, domainId, onVerify }: { domainName?
               Verifying...
             </>
           ) : (
-            'Check Verification'
+            'Verify'
           )}
         </Button>
       </DialogFooter>
