@@ -1,12 +1,24 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+function buildConnectionStringFromEnv(): string | null {
+  const user = process.env.PGUSER || process.env.PG_USER || null;
+  const password = process.env.PGPASSWORD || process.env.PG_PASSWORD || null;
+  const host = process.env.PGHOST || process.env.PG_HOST || null;
+  const port = process.env.PGPORT || process.env.PG_PORT || null;
+  const database = process.env.PGDATABASE || process.env.PG_DATABASE || process.env.PGDB || null;
+  if (user && password && host && port && database) {
+    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
+  }
+  return null;
+}
+
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || buildConnectionStringFromEnv();
 if (!connectionString) {
-  throw new Error('DATABASE_URL or POSTGRES_URL must be set');
+  throw new Error('DATABASE_URL, POSTGRES_URL, or PG* env vars must be set');
 }
 
 // Log which env variable is being used (do not log the connection string itself)
-const connectionSource = process.env.DATABASE_URL ? 'DATABASE_URL' : 'POSTGRES_URL';
+const connectionSource = process.env.DATABASE_URL ? 'DATABASE_URL' : process.env.POSTGRES_URL ? 'POSTGRES_URL' : 'PG env vars';
 console.log(`[startup] Postgres connection source: ${connectionSource}`);
 
 let pool: Pool | null = null;
