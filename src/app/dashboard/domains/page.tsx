@@ -183,10 +183,12 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
         <div className="space-y-4 py-4">
           {dnsRecords.map((record, index) => (
             <div key={index} className="space-y-2">
-              <Label className="font-semibold flex items-center gap-2">
-                <Dna className="h-4 w-4" /> {record.type} Record
-                <span className="ml-auto">{getStatusIcon(index)}</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold flex items-center gap-2">
+                  <Dna className="h-4 w-4" /> {record.type} Record
+                </Label>
+                {getStatusIcon(index)}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Type:</span>
                 <span>{record.type}</span>
