@@ -36,8 +36,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid sender account.' }, { status: 403 });
     }
 
-    if (!ownedFrom.smtpHost || !ownedFrom.smtpPort || !ownedFrom.smtpUser || !ownedFrom.smtpPass) {
-      return NextResponse.json({ error: 'SMTP credentials not configured for this account.' }, { status: 400 });
+    let smtpConfig;
+    
+    if (ownedFrom.useBuiltInSmtp) {
+      smtpConfig = {
+        host: process.env.INTERNAL_SMTP_HOST || 'smtp-sender',
+        port: Number(process.env.INTERNAL_SMTP_PORT || 587),
+        user: '',
+        pass: '',
+      };
+    } else {
+      if (!ownedFrom.smtpHost || !ownedFrom.smtpPort || !ownedFrom.smtpUser || !ownedFrom.smtpPass) {
+        return NextResponse.json({ error: 'SMTP credentials not configured for this account.' }, { status: 400 });
+      }
+      smtpConfig = {
+        host: ownedFrom.smtpHost,
+        port: ownedFrom.smtpPort,
+        user: ownedFrom.smtpUser,
+        pass: ownedFrom.smtpPass,
+      };
     }
 
     const result = await sendSmtpEmail({
@@ -46,12 +63,7 @@ export async function POST(req: NextRequest) {
       subject,
       text: text || html?.replace(/<[^>]*>/g, ''),
       html: html || text?.replace(/\n/g, '<br>'),
-      smtpConfig: {
-        host: ownedFrom.smtpHost,
-        port: ownedFrom.smtpPort,
-        user: ownedFrom.smtpUser,
-        pass: ownedFrom.smtpPass,
-      }
+      smtpConfig
     });
 
     const emailMessages = db.collection('emailMessages');

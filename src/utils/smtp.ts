@@ -22,16 +22,21 @@ function getTransport(config?: { host: string; port: number; user: string; pass:
   const pass = config?.pass || process.env.SMTP_PASS;
   const secure = port === 465;
 
-  if (!host || !port || !user || !pass) {
-    throw new Error('SMTP configuration missing. Provide smtpConfig or set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS');
+  if (!host || !port) {
+    throw new Error('SMTP configuration missing. Provide smtpConfig or set SMTP_HOST, SMTP_PORT');
   }
 
-  return nodemailer.createTransport({
+  const transportConfig: any = {
     host,
     port,
     secure,
-    auth: { user, pass },
-  });
+  };
+
+  if (user && pass) {
+    transportConfig.auth = { user, pass };
+  }
+
+  return nodemailer.createTransport(transportConfig);
 }
 
 export async function sendSmtpEmail({ from, to, subject, text, html, smtpConfig }: SendInput) {

@@ -67,8 +67,16 @@ export default function AccountsPage() {
   }, [user]);
 
   const handleCreateAccount = async () => {
-    if (!localPart || !selectedDomainId || !smtpHost || !smtpPort || !smtpUser || !smtpPass) {
-      toast({ title: 'Missing fields', description: 'Please fill in all fields including SMTP settings', variant: 'destructive' });
+    if (!localPart || !selectedDomainId) {
+      toast({ title: 'Missing fields', description: 'Please fill in username and domain', variant: 'destructive' });
+      return;
+    }
+
+    const hasPartialSmtp = !!(smtpHost || smtpPort || smtpUser || smtpPass);
+    const hasCompleteSmtp = !!(smtpHost && smtpPort && smtpUser && smtpPass);
+    
+    if (hasPartialSmtp && !hasCompleteSmtp) {
+      toast({ title: 'Incomplete SMTP settings', description: 'Either fill all SMTP fields or leave them all empty to use built-in SMTP', variant: 'destructive' });
       return;
     }
 
@@ -87,10 +95,12 @@ export default function AccountsPage() {
         body: JSON.stringify({ 
           emailAddress, 
           domainId: selectedDomainId,
-          smtpHost,
-          smtpPort,
-          smtpUser,
-          smtpPass
+          ...(smtpHost && smtpPort && smtpUser && smtpPass ? {
+            smtpHost,
+            smtpPort,
+            smtpUser,
+            smtpPass
+          } : {})
         })
       });
 
@@ -154,7 +164,7 @@ export default function AccountsPage() {
             <DialogHeader>
               <DialogTitle>Create Email Account</DialogTitle>
               <DialogDescription>
-                Create a new email account with your own SMTP server settings.
+                Create a new email account. SMTP settings are optional - leave them empty to use NubMail's built-in SMTP server.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
@@ -188,7 +198,8 @@ export default function AccountsPage() {
                 </div>
               )}
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">SMTP Settings</h4>
+                <h4 className="font-medium mb-3">SMTP Settings (Optional)</h4>
+                <p className="text-sm text-muted-foreground mb-3">Leave empty to use NubMail's built-in SMTP server</p>
                 <div className="grid gap-3">
                   <div className="grid gap-2">
                     <Label htmlFor="smtpHost">SMTP Host</Label>
