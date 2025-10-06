@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { pgQuery } from '@/lib/postgres';
 import { getAdminFromToken } from '@/lib/admin';
-import { ObjectId } from 'mongodb';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,20 +9,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const allUsers = await users.find({}).sort({ createdAt: -1 }).toArray();
+    const { rows } = await pgQuery(
+      `SELECT id, email, full_name AS "fullName", email_verified AS "emailVerified", 
+              is_admin AS "isAdmin", created_at AS "createdAt"
+       FROM users ORDER BY created_at DESC`
+    );
 
-    const usersList = allUsers.map(u => ({
-      id: String(u._id),
-      email: u.email,
-      fullName: u.fullName,
-      emailVerified: !!u.emailVerified,
-      isAdmin: !!u.isAdmin,
-      createdAt: u.createdAt
-    }));
-
-    return NextResponse.json({ users: usersList });
+    return NextResponse.json({ users: rows });
   } catch (err) {
     console.error('Admin users GET error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -48,18 +40,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Cannot delete your own admin account' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
+    const { rowCount } = await pgQuery('DELETE FROM users WHERE id = $1', [userId]);
     
-    const result = await users.deleteOne({ _id: new ObjectId(userId) });
-    
-    if (result.deletedCount === 0) {
+    if (rowCount === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
-    await db.collection('domains').deleteMany({ userId });
-    await db.collection('emailAccounts').deleteMany({ userId });
-    await db.collection('emailMessages').deleteMany({ userId });
 
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (err) {
@@ -86,19 +71,30 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Cannot remove admin status from your own account' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
 
-    const update: any = {};
-    if (typeof newIsAdmin === 'boolean') update.isAdmin = newIsAdmin;
-    if (typeof emailVerified === 'boolean') update.emailVerified = emailVerified;
+    if (typeof newIsAdmin === 'boolean') {
+      updates.push(`is_admin = $${paramIndex++}`);
+      values.push(newIsAdmin);
+    }
+    if (typeof emailVerified === 'boolean') {
+      updates.push(`email_verified = $${paramIndex++}`);
+      values.push(emailVerified);
+    }
 
-    const result = await users.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: update }
+    if (updates.length === 0) {
+      return NextResponse.json({ error: 'No updates provided' }, { status: 400 });
+    }
+
+    values.push(userId);
+    const { rowCount } = await pgQuery(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
+      values
     );
 
-    if (result.matchedCount === 0) {
+    if (rowCount === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 

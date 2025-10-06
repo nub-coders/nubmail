@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken } from '@/lib/admin';
-import { getDb } from '@/lib/mongodb';
 import { sendSmtpEmail } from '@/utils/smtp';
-import { pgQuery, usePostgres } from '@/lib/postgres';
+import { pgQuery } from '@/lib/postgres';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,47 +15,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields: to, subject, and message body' }, { status: 400 });
     }
 
-    if (usePostgres()) {
-      const u = await pgQuery('SELECT 1 FROM users WHERE id = $1', [payload.sub]);
-      if (u.rows.length === 0) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      }
-    } else {
-      const db = await getDb();
-      const users = db.collection('users');
-      const user = await users.findOne(
-        { _id: new (await import('mongodb')).ObjectId(payload.sub) },
-        { projection: { _id: 1 } }
-      );
-      if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      }
+    const u = await pgQuery('SELECT 1 FROM users WHERE id = $1', [payload.sub]);
+    if (u.rows.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     if (!from) {
       return NextResponse.json({ error: 'Please select a sender account (from).' }, { status: 400 });
     }
 
-    let ownedFrom: any = null;
-    if (usePostgres()) {
-      const { rows } = await pgQuery(
-        `SELECT email_address AS "emailAddress", smtp_host AS "smtpHost", smtp_port AS "smtpPort",
-                smtp_user AS "smtpUser", smtp_pass AS "smtpPass", use_built_in_smtp AS "useBuiltInSmtp"
-         FROM email_accounts WHERE email_address = $1 AND user_id = $2`,
-        [String(from).toLowerCase(), payload.sub]
-      );
-      ownedFrom = rows[0];
-    } else {
-      const db = await getDb();
-      const accounts = db.collection('emailAccounts');
-      ownedFrom = await accounts.findOne(
-        {
-          emailAddress: String(from).toLowerCase(),
-          userId: payload.sub,
-        },
-        { projection: { smtpHost: 1, smtpPort: 1, smtpUser: 1, smtpPass: 1, useBuiltInSmtp: 1 } }
-      );
-    }
+    const { rows } = await pgQuery(
+      `SELECT email_address AS "emailAddress", smtp_host AS "smtpHost", smtp_port AS "smtpPort",
+              smtp_user AS "smtpUser", smtp_pass AS "smtpPass", use_built_in_smtp AS "useBuiltInSmtp"
+       FROM email_accounts WHERE email_address = $1 AND user_id = $2`,
+      [String(from).toLowerCase(), payload.sub]
+    );
+    const ownedFrom = rows[0];
+
     if (!ownedFrom) {
       return NextResponse.json({ error: 'Invalid sender account.' }, { status: 403 });
     }
@@ -92,33 +67,19 @@ export async function POST(req: NextRequest) {
     });
 
     const now = new Date();
-    if (usePostgres()) {
-      await pgQuery(
-        `INSERT INTO email_messages (sender, recipients, subject, body, sent_at, user_id, read)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [
-          String(from).toLowerCase(),
-          Array.isArray(to) ? to : [to],
-          subject,
-          html || text,
-          now,
-          payload.sub,
-          false
-        ]
-      );
-    } else {
-      const db = await getDb();
-      const emailMessages = db.collection('emailMessages');
-      await emailMessages.insertOne({
-        sender: String(from).toLowerCase(),
-        recipients: Array.isArray(to) ? to : [to],
+    await pgQuery(
+      `INSERT INTO email_messages (sender, recipients, subject, body, sent_at, user_id, read)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        String(from).toLowerCase(),
+        Array.isArray(to) ? to : [to],
         subject,
-        body: html || text,
-        sentAt: now,
-        userId: payload.sub,
-        read: false
-      });
-    }
+        html || text,
+        now,
+        payload.sub,
+        false
+      ]
+    );
 
     return NextResponse.json({ 
       message: 'Email sent successfully',

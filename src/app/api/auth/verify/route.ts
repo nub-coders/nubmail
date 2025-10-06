@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { pgQuery } from '@/lib/postgres';
 import { verify } from 'jsonwebtoken';
 
 export async function GET(req: NextRequest) {
@@ -23,13 +23,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const userId = new (await import('mongodb')).ObjectId(payload.sub);
-    const user = await users.findOne({ _id: userId });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const { rows } = await pgQuery('SELECT 1 FROM users WHERE id = $1', [payload.sub]);
+    if (rows.length === 0) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    await users.updateOne({ _id: userId }, { $set: { emailVerified: true } });
+    await pgQuery('UPDATE users SET email_verified = true WHERE id = $1', [payload.sub]);
 
     // After verification redirect to login page with success message (client can show toast)
     const redirectUrl = '/?verified=true';
