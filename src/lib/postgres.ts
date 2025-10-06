@@ -1,8 +1,8 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-if (process.env.USE_POSTGRES === 'true' && !connectionString) {
-  throw new Error('POSTGRES_URL (or DATABASE_URL) must be set when USE_POSTGRES=true');
+if (!connectionString) {
+  throw new Error('POSTGRES_URL (or DATABASE_URL) must be set');
 }
 
 let pool: Pool | null = null;
