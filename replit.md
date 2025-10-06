@@ -128,16 +128,17 @@ Preferred communication style: Simple, everyday language.
 ### Data Storage
 
 **Database Solution**
-- MongoDB as the primary database
-- MongoDB native driver for Node.js
-- Connection pooling with cached client instance
-- Collections: users, domains, emailAccounts, emailMessages
+- PostgreSQL as the primary database (Replit's built-in PostgreSQL service)
+- PostgreSQL native driver (pg) for Node.js
+- Connection pooling with automatic reconnection
+- Tables: users, domains, email_accounts, email_messages
 
 **Database Design Patterns**
-- Document-based storage with ObjectId references
-- User-based data isolation (userId field on all collections)
-- Timestamp tracking (createdAt, sentAt fields)
-- Status flags (emailVerified, verificationStatus, read)
+- Relational database with foreign key references
+- User-based data isolation (user_id field on all tables)
+- Timestamp tracking (created_at, sent_at, verified_at fields)
+- Status flags (email_verified, verification_status, read)
+- Automatic schema initialization on startup
 
 ### External Dependencies
 
