@@ -14,6 +14,7 @@ services:
       - mongodb_config:/data/configdb
     networks:
       - nubmail-network
+      - web
 
   app:
     build:
@@ -45,6 +46,25 @@ services:
     networks:
       - nubmail-network
       - web
+
+  smtp:
+    image: node:20-alpine
+    container_name: nubmail-smtp
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      MONGODB_URI: ${MONGODB_URI}
+      SMTP_PORT: 25
+    volumes:
+      - .:/app
+    command: sh -c "npm install smtp-server mailparser mongodb && node smtp/index.js"
+    depends_on:
+      - mongodb
+    networks:
+      - nubmail-network
+      - web
+    ports:
+      - "25:25"
 
   app-dev:
     image: node:20-alpine
@@ -79,8 +99,7 @@ services:
     networks:
       - nubmail-network
       - web
-    profiles:
-      - dev
+    # Runable in all modes (no profiles restriction)
 
 networks:
   nubmail-network:
