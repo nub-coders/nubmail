@@ -8,18 +8,22 @@ NubMail is a comprehensive email server management platform built with Next.js 1
 
 ## Recent Changes (October 2025)
 
-### Per-Account SMTP Configuration (Latest - October 6, 2025)
-- **Implemented individual SMTP credentials for each email account**
-  - Each email account now stores its own SMTP server settings (host, port, username, password)
-  - Emails are sent using the account-specific SMTP configuration instead of a global Gmail account
-  - Users can now send emails from their actual email addresses (e.g., dev@nub-coder.tech) using their own SMTP servers
-  - Added SMTP configuration form fields when creating email accounts
-  - Backend validates SMTP credentials are present before allowing email sending
-  - Updated email sending logic to use account-specific credentials from the database
+### Built-in SMTP Server Integration (Latest - October 6, 2025)
+- **Implemented built-in SMTP server using Docker Postfix container**
+  - Added `smtp-sender` Docker container (boky/postfix) for sending outgoing emails
+  - Email accounts can now use NubMail's built-in SMTP server without requiring external credentials
+  - Existing `smtp-receiver` container handles incoming emails on port 25
+  - New `smtp-sender` container handles outgoing emails on port 587
+  - Automatic routing: accounts with `useBuiltInSmtp=true` use internal SMTP, others use their own credentials
+- **Flexible SMTP Configuration**
+  - SMTP settings are now optional when creating email accounts
+  - Users can choose: (1) Use built-in SMTP (no credentials needed) or (2) Provide custom SMTP server
+  - Backend validates complete SMTP credentials only when provided (not required)
+  - Email sending logic detects and routes through appropriate SMTP server (internal or external)
 - **Enhanced email account creation UI**
-  - Added SMTP settings section with host, port, username, and password fields
-  - Form validation ensures all SMTP fields are filled before account creation
-  - Password field uses secure input type
+  - SMTP settings section marked as optional with clear instructions
+  - Form validation allows creating accounts without SMTP credentials
+  - Built-in SMTP automatically configured for accounts created without credentials
   - Scrollable dialog for better UX with longer forms
 
 ### Individual DNS Record Verification System (October 6, 2025)
@@ -118,7 +122,7 @@ Preferred communication style: Simple, everyday language.
 **Data Models**
 - User: id, email, fullName, emailVerified, isAdmin, verificationToken
 - Domain: id, domainName, verificationStatus (verified/pending/failed), verificationToken, userId, createdAt, verifiedAt
-- EmailAccount: id, emailAddress, storageQuota, domainId, userId, smtpHost, smtpPort, smtpUser, smtpPass, createdAt
+- EmailAccount: id, emailAddress, storageQuota, domainId, userId, smtpHost (optional), smtpPort (optional), smtpUser (optional), smtpPass (optional), useBuiltInSmtp (boolean), createdAt
 - EmailMessage: id, sender, recipients, subject, body, sentAt, emailAccountId, userId, read
 
 ### Data Storage
@@ -139,8 +143,10 @@ Preferred communication style: Simple, everyday language.
 
 **AI & Email Services**
 - Genkit AI (Google Gemini 2.5 Flash) for AI-powered features
-- SMTP integration capability through Replit Mail service
+- Built-in SMTP server using Postfix (Docker container) for sending emails
+- SMTP receiver for incoming emails (Node.js container on port 25)
 - Email sending with support for attachments and HTML/text formats
+- Optional external SMTP integration for custom servers
 
 **Authentication & Security**
 - jsonwebtoken for JWT creation and verification
