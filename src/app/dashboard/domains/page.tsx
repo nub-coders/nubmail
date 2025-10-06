@@ -168,7 +168,7 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
   };
 
   const handleVerify = async () => {
-    if (!domainId || !domainName || !onVerify) return;
+    if (!domainId || !domainName) return;
     
     setVerifying(true);
     const checkingStatus: { [key: number]: 'checking' } = {};
@@ -178,13 +178,69 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
     setRecordStatus(checkingStatus);
     
     try {
-      await onVerify(domainId, domainName);
-      const verifiedStatus: { [key: number]: 'verified' } = {};
-      dnsRecords.forEach((_, index) => {
-        verifiedStatus[index] = 'verified';
+      const res = await fetch('/api/domains/verify-records', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ domainId })
       });
-      setRecordStatus(verifiedStatus);
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        toast({ 
+          title: 'Verification failed', 
+          description: data.message || data.error || 'Could not verify DNS records', 
+          variant: 'destructive' 
+        });
+        
+        const failedStatus: { [key: number]: 'failed' } = {};
+        dnsRecords.forEach((_, index) => {
+          failedStatus[index] = 'failed';
+        });
+        setRecordStatus(failedStatus);
+        return;
+      }
+
+      const newStatus: { [key: number]: 'verified' | 'failed' } = {};
+      data.records.forEach((record: any) => {
+        const index = dnsRecords.findIndex(r => r.key === record.key);
+        if (index !== -1) {
+          newStatus[index] = record.status;
+        }
+      });
+      setRecordStatus(newStatus);
+
+      if (data.overallStatus === 'verified') {
+        toast({ 
+          title: 'Domain verified!', 
+          description: `All DNS records for ${domainName} have been verified successfully.` 
+        });
+        if (onVerify) {
+          try {
+            await onVerify(domainId, domainName);
+          } catch (err) {
+            
+          }
+        }
+      } else {
+        const failedCount = data.records.filter((r: any) => r.status === 'failed').length;
+        const verifiedCount = data.records.filter((r: any) => r.status === 'verified').length;
+        toast({ 
+          title: 'Partial verification', 
+          description: `${verifiedCount} of ${data.records.length} DNS records verified. ${failedCount} records need attention.`,
+          variant: 'default'
+        });
+      }
     } catch (error) {
+      toast({ 
+        title: 'Verification error', 
+        description: 'Unable to connect to verification service', 
+        variant: 'destructive' 
+      });
+      
       const failedStatus: { [key: number]: 'failed' } = {};
       dnsRecords.forEach((_, index) => {
         failedStatus[index] = 'failed';
