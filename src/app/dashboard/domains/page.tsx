@@ -108,6 +108,42 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
       value: 'v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyK3X3Q7JZvHmN8tF5pK9zYvN2MxG4cQ8hJ6nL7mP5tR8sU3vW4xY9zA2bC5dE6fG7hI8jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wW1xX2yY3zA4bB5cC6dD7eE8fF9gG0hH1iI2jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wIDAQAB',
       key: 'dkim',
     },
+    {
+      type: 'CNAME',
+      name: 'autodiscover',
+      value: 'mails.nub-coder.tech',
+      key: 'autodiscover',
+    },
+    {
+      type: 'CNAME',
+      name: 'autoconfig',
+      value: 'mails.nub-coder.tech',
+      key: 'autoconfig',
+    },
+    {
+      type: 'CNAME',
+      name: 'webmail',
+      value: 'mails.nub-coder.tech',
+      key: 'webmail',
+    },
+    {
+      type: 'CNAME',
+      name: 'imap',
+      value: 'mails.nub-coder.tech',
+      key: 'imap',
+    },
+    {
+      type: 'CNAME',
+      name: 'smtp',
+      value: 'mails.nub-coder.tech',
+      key: 'smtp',
+    },
+    {
+      type: 'CNAME',
+      name: 'pop3',
+      value: 'mails.nub-coder.tech',
+      key: 'pop3',
+    },
   ];
 
   useEffect(() => {
