@@ -16,7 +16,9 @@ export async function POST(req: NextRequest) {
     }
 
     const existing = await pgQuery('SELECT 1 FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (existing) return NextResponse.json({ error: 'User already exists' }, { status: 409 });
+    if (existing && existing.rows && existing.rows.length > 0) {
+      return NextResponse.json({ error: 'User already exists' }, { status: 409 });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
     const inserted = await pgQuery<{ id: string }>(
