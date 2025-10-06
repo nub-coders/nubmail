@@ -64,17 +64,16 @@ const formSchema = z.object({
   }),
 });
 
-function DnsVerificationDialog({ domainName, domainId, onVerify }: { domainName?: string; domainId?: string; onVerify?: (id: string, name: string) => void }) {
+function DnsVerificationDialog({ domainName, domainId, verificationToken, onVerify }: { domainName?: string; domainId?: string; verificationToken?: string; onVerify?: (id: string, name: string) => void }) {
   const { toast } = useToast();
   const [verifying, setVerifying] = useState(false);
   const [recordStatus, setRecordStatus] = useState<{ [key: number]: 'verified' | 'failed' | 'checking' | null }>({});
   
-  const verificationCode = domainName ? Buffer.from(domainName).toString('base64').substring(0, 32) : 'verification-code';
   const dnsRecords = [
     {
       type: 'TXT',
       name: '@',
-      value: `nubmail-verification=${verificationCode}`,
+      value: verificationToken ? `nubmail-verification=${verificationToken}` : 'Please add the domain first to get verification token',
       key: 'verification',
     },
     { 
@@ -446,6 +445,7 @@ export default function DomainsPage() {
                           <DnsVerificationDialog 
                             domainName={item.domainName} 
                             domainId={item.id}
+                            verificationToken={item.verificationToken}
                             onVerify={handleVerifyDomain}
                           />
                         </Dialog>
