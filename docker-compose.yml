@@ -4,7 +4,7 @@ services:
   mongodb:
     image: mongo:7.0
     container_name: nubmail-mongodb
-    restart: unless-stopped
+    restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: nubmail
       MONGO_INITDB_ROOT_PASSWORD: nubmail
@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: nubmail-app
-    restart: unless-stopped
+    restart: always
     expose:
       - "5000"
     environment:
@@ -51,7 +51,7 @@ services:
     image: node:20-alpine
     container_name: nubmail-smtp-receiver
     working_dir: /app
-    restart: unless-stopped
+    restart: always
     environment:
       MONGODB_URI: ${MONGODB_URI}
       SMTP_PORT: 25
@@ -78,6 +78,7 @@ services:
       - POSTFIX_smtp_tls_security_level=may
     networks:
       - nubmail-network
+      - web
     ports:
       - "587:587"
 
