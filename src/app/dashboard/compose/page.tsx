@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Paperclip, Send, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
@@ -19,6 +20,23 @@ export default function ComposePage() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [from, setFrom] = useState('');
+  const [accounts, setAccounts] = useState<{ id: string; emailAddress: string }[]>([]);
+
+  useEffect(() => {
+    const loadAccounts = async () => {
+      if (!user) return;
+      try {
+        const res = await fetch('/api/accounts', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.accounts)) {
+          setAccounts(data.accounts.map((a: any) => ({ id: a.id, emailAddress: a.emailAddress })));
+          if (!from && data.accounts[0]?.emailAddress) setFrom(data.accounts[0].emailAddress);
+        }
+      } catch {}
+    };
+    loadAccounts();
+  }, [user]);
 
   const handleDiscard = () => {
     if (to || subject || body) {
@@ -31,10 +49,10 @@ export default function ComposePage() {
   };
 
   const handleSend = async () => {
-    if (!to || !subject || !body) {
+    if (!from || !to || !subject || !body) {
       toast({
         title: 'Missing fields',
-        description: 'Please fill in recipient, subject, and message',
+        description: 'Please select a sender and fill in recipient, subject, and message',
         variant: 'destructive'
       });
       return;
@@ -57,7 +75,7 @@ export default function ComposePage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ to, subject, text: body })
+        body: JSON.stringify({ from, to, subject, text: body })
       });
 
       const data = await res.json();
@@ -100,6 +118,19 @@ export default function ComposePage() {
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+            <div className="grid gap-2">
+              <Label htmlFor="from">From</Label>
+              <Select value={from} onValueChange={setFrom}>
+                <SelectTrigger id="from">
+                  <SelectValue placeholder="Choose a sender" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map(a => (
+                    <SelectItem key={a.id} value={a.emailAddress}>{a.emailAddress}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="to">To</Label>
               <Input 
