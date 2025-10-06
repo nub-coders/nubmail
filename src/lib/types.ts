@@ -3,6 +3,7 @@ export interface Domain {
     id: string;
     domainName: string;
     verificationStatus: 'verified' | 'pending' | 'failed';
+    verificationToken?: string;
     createdAt: string;
     userId: string;
 }
