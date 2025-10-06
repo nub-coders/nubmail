@@ -109,18 +109,29 @@ export async function PATCH(req: NextRequest) {
     const verificationCode = Buffer.from(domain.domainName).toString('base64').substring(0, 32);
     const expectedTxtRecord = `nubmail-verification=${verificationCode}`;
     
+    console.log('=== DNS Verification Debug ===');
+    console.log('Domain:', domain.domainName);
+    console.log('Expected TXT record:', expectedTxtRecord);
+    
     let verificationStatus = 'pending';
     let txtRecordFound = false;
     
     try {
       const txtRecords = await dns.resolveTxt(domain.domainName);
+      console.log('DNS lookup succeeded. Found TXT records:', txtRecords);
       
       for (const record of txtRecords) {
         const recordValue = Array.isArray(record) ? record.join('') : record;
+        console.log('Checking record:', recordValue);
         if (recordValue === expectedTxtRecord) {
           txtRecordFound = true;
+          console.log('✓ Verification record found!');
           break;
         }
+      }
+      
+      if (!txtRecordFound) {
+        console.log('✗ Verification record NOT found in DNS');
       }
       
       if (txtRecordFound) {
