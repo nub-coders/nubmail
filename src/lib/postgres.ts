@@ -42,8 +42,4 @@ export async function pgQuery<T extends QueryResultRow = any>(text: string, para
   return client.query<T>(text, params);
 }
 
-export function usePostgres(): boolean {
-  return process.env.USE_POSTGRES === 'true';
-}
-
 
