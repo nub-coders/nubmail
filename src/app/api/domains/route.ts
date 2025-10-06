@@ -25,7 +25,15 @@ export async function GET(req: NextRequest) {
     const db = await getDb();
     const domains = db.collection('domains');
     const docs = await domains.find({ userId: payload.sub }).sort({ createdAt: -1 }).toArray();
-    return NextResponse.json({ domains: docs.map(d => ({ id: String(d._id), domainName: d.domainName, verificationStatus: d.verificationStatus, createdAt: d.createdAt })) });
+    return NextResponse.json({ 
+      domains: docs.map(d => ({ 
+        id: String(d._id), 
+        domainName: d.domainName, 
+        verificationStatus: d.verificationStatus,
+        verificationToken: d.verificationToken,
+        createdAt: d.createdAt 
+      })) 
+    });
   } catch (err) {
     console.error('Domains GET error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -41,12 +49,29 @@ export async function POST(req: NextRequest) {
     const { domainName } = body;
     if (!domainName) return NextResponse.json({ error: 'domainName required' }, { status: 400 });
 
+    const normalizedDomain = domainName.toLowerCase().trim().replace(/\.$/, '');
+    
+    const crypto = await import('crypto');
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
     const db = await getDb();
     const domains = db.collection('domains');
     const now = new Date();
-    const res = await domains.insertOne({ domainName, verificationStatus: 'pending', userId: payload.sub, createdAt: now });
+    const res = await domains.insertOne({ 
+      domainName: normalizedDomain, 
+      verificationStatus: 'pending', 
+      verificationToken,
+      userId: payload.sub, 
+      createdAt: now 
+    });
 
-    return NextResponse.json({ id: String(res.insertedId), domainName, verificationStatus: 'pending', createdAt: now });
+    return NextResponse.json({ 
+      id: String(res.insertedId), 
+      domainName: normalizedDomain, 
+      verificationStatus: 'pending',
+      verificationToken,
+      createdAt: now 
+    });
   } catch (err) {
     console.error('Domains POST error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -106,20 +131,50 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
     }
 
-    const verificationCode = Buffer.from(domain.domainName).toString('base64').substring(0, 32);
-    const expectedTxtRecord = `nubmail-verification=${verificationCode}`;
+    if (domain.verificationStatus === 'verified') {
+      return NextResponse.json({ 
+        id: domainId,
+        domainName: domain.domainName,
+        verificationStatus: 'verified',
+        message: 'Domain is already verified'
+      });
+    }
+
+    if (!domain.verificationToken) {
+      return NextResponse.json({ 
+        error: 'Verification token not found',
+        message: 'This domain was created before verification tokens were implemented. Please delete and re-add the domain.',
+        verificationStatus: 'pending'
+      }, { status: 400 });
+    }
+
+    const normalizedDomain = domain.domainName.toLowerCase().trim().replace(/\.$/, '');
+    const expectedTxtRecord = `nubmail-verification=${domain.verificationToken}`;
     
     console.log('=== DNS Verification Debug ===');
-    console.log('Domain:', domain.domainName);
+    console.log('Domain:', normalizedDomain);
     console.log('Expected TXT record:', expectedTxtRecord);
     
-    let verificationStatus = 'pending';
-    let txtRecordFound = false;
-    
     try {
-      const txtRecords = await dns.resolveTxt(domain.domainName);
+      const txtRecords = await Promise.race([
+        dns.resolveTxt(normalizedDomain),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)
+        )
+      ]);
+      
       console.log('DNS lookup succeeded. Found TXT records:', txtRecords);
       
+      if (!txtRecords || txtRecords.length === 0) {
+        console.log('✗ No TXT records found for domain');
+        return NextResponse.json({ 
+          error: 'DNS verification failed',
+          message: `No TXT records found. Please add this TXT record to your DNS:\n\nType: TXT\nName: @\nValue: ${expectedTxtRecord}`,
+          verificationStatus: 'pending'
+        }, { status: 400 });
+      }
+      
+      let txtRecordFound = false;
       for (const record of txtRecords) {
         const recordValue = Array.isArray(record) ? record.join('') : record;
         console.log('Checking record:', recordValue);
@@ -132,33 +187,43 @@ export async function PATCH(req: NextRequest) {
       
       if (!txtRecordFound) {
         console.log('✗ Verification record NOT found in DNS');
-      }
-      
-      if (txtRecordFound) {
-        verificationStatus = 'verified';
-        await domains.updateOne(
-          { _id: new ObjectId(domainId) },
-          { $set: { verificationStatus, verifiedAt: new Date() } }
-        );
-        
-        return NextResponse.json({ 
-          id: domainId, 
-          domainName: domain.domainName,
-          verificationStatus,
-          message: 'Domain verified successfully' 
-        });
-      } else {
         return NextResponse.json({ 
           error: 'DNS verification failed',
-          message: `TXT record not found. Please add the following TXT record to your DNS: ${expectedTxtRecord}`,
+          message: `TXT records found, but none match the verification token. Please add this TXT record to your DNS:\n\nType: TXT\nName: @\nValue: ${expectedTxtRecord}`,
           verificationStatus: 'pending'
         }, { status: 400 });
       }
+      
+      await domains.updateOne(
+        { _id: new ObjectId(domainId) },
+        { $set: { verificationStatus: 'verified', verifiedAt: new Date() } }
+      );
+      
+      console.log('✓ Domain verified successfully');
+      return NextResponse.json({ 
+        id: domainId, 
+        domainName: domain.domainName,
+        verificationStatus: 'verified',
+        message: 'Domain verified successfully' 
+      });
+      
     } catch (dnsError: any) {
       console.error('DNS verification error:', dnsError);
+      
+      let errorMessage = 'Could not verify DNS records';
+      if (dnsError.code === 'ENOTFOUND' || dnsError.code === 'ENODATA') {
+        errorMessage = `Domain "${normalizedDomain}" has no DNS records or does not exist. Please ensure the domain is properly configured with your DNS provider.`;
+      } else if (dnsError.message === 'DNS lookup timeout') {
+        errorMessage = `DNS lookup timed out for "${normalizedDomain}". Please try again later.`;
+      } else if (dnsError.code === 'ETIMEOUT' || dnsError.code === 'ECONNREFUSED') {
+        errorMessage = `Could not reach DNS servers for "${normalizedDomain}". Please try again later.`;
+      } else {
+        errorMessage = `DNS lookup failed: ${dnsError.message || dnsError.code || 'Unknown error'}`;
+      }
+      
       return NextResponse.json({ 
         error: 'DNS lookup failed',
-        message: `Could not resolve DNS records for ${domain.domainName}. Error: ${dnsError.code || dnsError.message}`,
+        message: errorMessage,
         verificationStatus: 'pending'
       }, { status: 400 });
     }
