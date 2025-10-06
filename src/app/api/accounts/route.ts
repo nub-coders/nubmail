@@ -41,10 +41,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'emailAddress and domainId required' }, { status: 400 });
     }
 
-    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
-      return NextResponse.json({ error: 'SMTP credentials required (host, port, user, pass)' }, { status: 400 });
-    }
-
     const db = await getDb();
     const domains = db.collection('domains');
     const { ObjectId } = await import('mongodb');
@@ -66,26 +62,35 @@ export async function POST(req: NextRequest) {
     }
 
     const now = new Date();
-    const result = await accounts.insertOne({
+    const accountData: any = {
       emailAddress: emailAddress.toLowerCase(),
       storageQuota: 1024,
       domainId,
       userId: payload.sub,
-      smtpHost,
-      smtpPort: Number(smtpPort),
-      smtpUser,
-      smtpPass,
       createdAt: now
-    });
+    };
+
+    if (smtpHost && smtpPort && smtpUser && smtpPass) {
+      accountData.smtpHost = smtpHost;
+      accountData.smtpPort = Number(smtpPort);
+      accountData.smtpUser = smtpUser;
+      accountData.smtpPass = smtpPass;
+      accountData.useBuiltInSmtp = false;
+    } else {
+      accountData.useBuiltInSmtp = true;
+    }
+
+    const result = await accounts.insertOne(accountData);
 
     return NextResponse.json({
       id: String(result.insertedId),
       emailAddress: emailAddress.toLowerCase(),
       storageQuota: 1024,
       domainId,
-      smtpHost,
-      smtpPort: Number(smtpPort),
-      smtpUser,
+      smtpHost: accountData.smtpHost,
+      smtpPort: accountData.smtpPort,
+      smtpUser: accountData.smtpUser,
+      useBuiltInSmtp: accountData.useBuiltInSmtp,
       createdAt: now
     });
   } catch (err) {
