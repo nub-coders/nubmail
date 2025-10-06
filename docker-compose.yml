@@ -116,13 +116,17 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
-    command: sh -c "npm install && npm run dev -- -p 5000"
+    command: >
+      sh -c "npm install &&
+             npm install pg bcryptjs &&
+             node scripts/init-admin.js &&
+             npm run dev -- -p 5000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - nubmail-network
       - web
-    # Runable in all modes (no profiles restriction)
 
 networks:
   nubmail-network:

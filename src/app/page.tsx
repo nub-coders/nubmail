@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user, setToken } = useAuthClient();
+  const { user, setToken, isLoading: authLoading } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -45,7 +45,9 @@ export default function LoginPage() {
         toast({ title: 'Sign in failed', description: message, variant: 'destructive' });
         return;
       }
-      setToken(data?.token ?? null);
+      
+      toast({ title: 'Signing in...', description: 'Please wait...' });
+      await setToken(data?.token ?? null);
       toast({ title: 'Signed in', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {

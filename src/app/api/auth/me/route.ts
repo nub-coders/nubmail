@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
 import { verify } from 'jsonwebtoken';
+import { pgQuery } from '@/lib/postgres';
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,12 +19,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
-    const user = await users.findOne({ _id: new (await import('mongodb')).ObjectId(payload.sub) });
+    // Get user from PostgreSQL
+    const { rows } = await pgQuery<{ id: string; email: string; full_name: string | null; is_admin: boolean }>(
+      'SELECT id, email, full_name, is_admin FROM users WHERE id = $1',
+      [payload.sub]
+    );
+    
+    const user = rows[0];
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    return NextResponse.json({ user: { id: String(user._id), email: user.email, fullName: user.fullName, emailVerified: !!user.emailVerified } });
+    return NextResponse.json({ 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        fullName: user.full_name,
+        isAdmin: user.is_admin
+      } 
+    });
   } catch (err) {
     console.error('Me error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
