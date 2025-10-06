@@ -218,9 +218,8 @@ export async function POST(req: NextRequest) {
     }
 
     const allVerified = results.every(r => r.status === 'verified');
-    const verificationRecord = results.find(r => r.key === 'verification');
     
-    if (allVerified || (verificationRecord && verificationRecord.status === 'verified')) {
+    if (allVerified) {
       await domains.updateOne(
         { _id: new ObjectId(domainId) },
         { $set: { verificationStatus: 'verified', verifiedAt: new Date() } }
