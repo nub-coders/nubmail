@@ -8,7 +8,18 @@ NubMail is a comprehensive email server management platform built with Next.js 1
 
 ## Recent Changes (October 2025)
 
-### Built-in SMTP Server Integration (Latest - October 6, 2025)
+### Complete MongoDB to PostgreSQL Migration (Latest - October 6, 2025)
+- **Successfully migrated from MongoDB to PostgreSQL**
+  - Removed all MongoDB dependencies (mongodb package)
+  - Deleted MongoDB connection files (src/lib/mongodb.ts)
+  - Updated all API routes to use only PostgreSQL with pgQuery
+  - Removed usePostgres() conditional logic throughout the codebase
+  - Simplified database configuration to use Replit's built-in PostgreSQL
+  - All 15 API routes converted to PostgreSQL-only implementation
+  - Database tables verified: users, domains, email_accounts, email_messages
+  - Application tested and running successfully with PostgreSQL
+
+### Built-in SMTP Server Integration (October 6, 2025)
 - **Implemented built-in SMTP server using Docker Postfix container**
   - Added `smtp-sender` Docker container (boky/postfix) for sending outgoing emails
   - Email accounts can now use NubMail's built-in SMTP server without requiring external credentials
