@@ -23,6 +23,7 @@ export default function VerifyEmailPage() {
   const [verified, setVerified] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { setToken } = useAuthClient();
 
   useEffect(() => {
     if (verified) {
@@ -33,12 +34,12 @@ export default function VerifyEmailPage() {
   const handleSendCode = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/send-verification', { 
-        method: 'POST', 
-        headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } 
+      const res = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
       });
       const data = await res.json();
-      
+
       if (!res.ok) {
         toast({
           title: 'Error',
@@ -47,7 +48,7 @@ export default function VerifyEmailPage() {
         });
         return;
       }
-      
+
       setCodeSent(true);
       toast({
         title: 'Code sent',
@@ -80,9 +81,9 @@ export default function VerifyEmailPage() {
     try {
       const res = await fetch('/api/auth/verify-code', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}` 
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`
         },
         body: JSON.stringify({ code })
       });
@@ -114,6 +115,16 @@ export default function VerifyEmailPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await setToken(null);
+      router.push('/');
+    } catch (err) {
+      console.error('Logout failed', err);
+      toast({ title: 'Error', description: 'Could not log out', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-md">
@@ -124,8 +135,8 @@ export default function VerifyEmailPage() {
           </div>
           <CardTitle className="text-lg">Email verification required</CardTitle>
           <CardDescription>
-            {codeSent 
-              ? 'Enter the 6-digit code sent to your email' 
+            {codeSent
+              ? 'Enter the 6-digit code sent to your email'
               : 'We\'ll send a verification code to your email'}
           </CardDescription>
         </CardHeader>
@@ -150,14 +161,17 @@ export default function VerifyEmailPage() {
               <Button type="submit" disabled={verifying || code.length !== 6} className="w-full">
                 {verifying ? 'Verifying...' : 'Verify Code'}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleSendCode} 
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSendCode}
                 disabled={loading}
                 className="w-full"
               >
                 {loading ? 'Sending...' : 'Resend Code'}
+              </Button>
+              <Button type="button" variant="ghost" onClick={handleLogout} className="w-full mt-2">
+                Log out
               </Button>
             </form>
           ) : (
@@ -167,6 +181,9 @@ export default function VerifyEmailPage() {
               </p>
               <Button onClick={handleSendCode} disabled={loading} className="w-full">
                 {loading ? 'Sending...' : 'Send Verification Code'}
+              </Button>
+              <Button type="button" variant="ghost" onClick={handleLogout} className="w-full mt-2">
+                Log out
               </Button>
             </div>
           )}
