@@ -124,13 +124,25 @@ function DnsVerificationDialog({ domainName, domainId, onVerify }: { domainName?
     if (!domainId || !domainName || !onVerify) return;
     
     setVerifying(true);
-    setRecordStatus({ 0: 'checking' });
+    const checkingStatus: { [key: number]: 'checking' } = {};
+    dnsRecords.forEach((_, index) => {
+      checkingStatus[index] = 'checking';
+    });
+    setRecordStatus(checkingStatus);
     
     try {
       await onVerify(domainId, domainName);
-      setRecordStatus({ 0: 'verified' });
+      const verifiedStatus: { [key: number]: 'verified' } = {};
+      dnsRecords.forEach((_, index) => {
+        verifiedStatus[index] = 'verified';
+      });
+      setRecordStatus(verifiedStatus);
     } catch (error) {
-      setRecordStatus({ 0: 'failed' });
+      const failedStatus: { [key: number]: 'failed' } = {};
+      dnsRecords.forEach((_, index) => {
+        failedStatus[index] = 'failed';
+      });
+      setRecordStatus(failedStatus);
     } finally {
       setVerifying(false);
     }
