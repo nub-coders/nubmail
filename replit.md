@@ -8,7 +8,21 @@ NubMail is a comprehensive email server management platform built with Next.js 1
 
 ## Recent Changes (October 2025)
 
-### Individual DNS Record Verification System (Latest - October 6, 2025)
+### Per-Account SMTP Configuration (Latest - October 6, 2025)
+- **Implemented individual SMTP credentials for each email account**
+  - Each email account now stores its own SMTP server settings (host, port, username, password)
+  - Emails are sent using the account-specific SMTP configuration instead of a global Gmail account
+  - Users can now send emails from their actual email addresses (e.g., dev@nub-coder.tech) using their own SMTP servers
+  - Added SMTP configuration form fields when creating email accounts
+  - Backend validates SMTP credentials are present before allowing email sending
+  - Updated email sending logic to use account-specific credentials from the database
+- **Enhanced email account creation UI**
+  - Added SMTP settings section with host, port, username, and password fields
+  - Form validation ensures all SMTP fields are filled before account creation
+  - Password field uses secure input type
+  - Scrollable dialog for better UX with longer forms
+
+### Individual DNS Record Verification System (October 6, 2025)
 - **Implemented comprehensive DNS record verification for email server configuration**
   - Added support for verifying individual DNS record types: TXT, MX, and CNAME
   - New API endpoint `/api/domains/verify-records` checks each record independently
@@ -104,7 +118,7 @@ Preferred communication style: Simple, everyday language.
 **Data Models**
 - User: id, email, fullName, emailVerified, isAdmin, verificationToken
 - Domain: id, domainName, verificationStatus (verified/pending/failed), verificationToken, userId, createdAt, verifiedAt
-- EmailAccount: id, emailAddress, storageQuota, domainId, userId
+- EmailAccount: id, emailAddress, storageQuota, domainId, userId, smtpHost, smtpPort, smtpUser, smtpPass, createdAt
 - EmailMessage: id, sender, recipients, subject, body, sentAt, emailAccountId, userId, read
 
 ### Data Storage
