@@ -29,6 +29,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy SMTP receiver source into image (runs in separate service/container)
+COPY --chown=nextjs:nodejs smtp ./smtp
+
 USER nextjs
 
 EXPOSE 5000
