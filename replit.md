@@ -8,7 +8,21 @@ NubMail is a comprehensive email server management platform built with Next.js 1
 
 ## Recent Changes (October 2025)
 
-### DNS Verification System Rebuild (Latest)
+### Individual DNS Record Verification System (Latest - October 6, 2025)
+- **Implemented comprehensive DNS record verification for email server configuration**
+  - Added support for verifying individual DNS record types: TXT, MX, and CNAME
+  - New API endpoint `/api/domains/verify-records` checks each record independently
+  - Domains are marked as verified only when ALL required records pass verification
+  - Added email-related CNAME records: autodiscover, autoconfig, webmail, imap, smtp, pop3
+  - Each record shows individual verification status (checkmark for verified, X for failed)
+- **Enhanced DNS verification display**
+  - DNS record values now wrap with line breaks instead of being truncated
+  - Status icons properly positioned and visible for each DNS record type
+  - Real-time status updates during verification with loading indicators
+  - Partial verification support: shows which records passed and which failed
+  - User-friendly toast notifications for verification results
+
+### DNS Verification System Rebuild
 - **Rebuilt DNS verification logic with secure token-based verification**
   - Each domain now gets a unique, cryptographically random 64-character verification token
   - Verification only succeeds if the exact TXT record with the token is found in DNS
@@ -17,7 +31,7 @@ NubMail is a comprehensive email server management platform built with Next.js 1
   - Added status gating to prevent re-verification of already verified domains
   - Domain names are now normalized (lowercase, trimmed, trailing dot removed)
 - **Enhanced DNS verification UX**
-  - Status icons (checkmarks/X symbols) now show immediately when opening DNS setup dialog
+  - Status icons (checkmarks/X symbols) show immediately when opening DNS setup dialog
   - Icons reflect current domain verification status (verified = green checkmarks, pending = no icons, failed = red X)
   - Icons update in real-time during verification process (spinning loader while checking)
   - Added scrollable area to DNS records list so Verify button remains visible
