@@ -19,23 +19,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Get user from PostgreSQL
-    const { rows } = await pgQuery<{ id: string; email: string; full_name: string | null; is_admin: boolean }>(
-      'SELECT id, email, full_name, is_admin FROM users WHERE id = $1',
+    const { rows: [user] } = await pgQuery(
+      'SELECT id, email, full_name as "fullName", email_verified as "emailVerified" FROM users WHERE id = $1',
       [payload.sub]
     );
-    
-    const user = rows[0];
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    return NextResponse.json({ 
-      user: { 
-        id: user.id, 
-        email: user.email, 
-        fullName: user.full_name,
-        isAdmin: user.is_admin
-      } 
-    });
+    return NextResponse.json({ user: { id: String(user.id), email: user.email, fullName: user.fullName, emailVerified: !!user.emailVerified } });
   } catch (err) {
     console.error('Me error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
