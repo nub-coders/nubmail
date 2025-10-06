@@ -194,7 +194,7 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
                 <code>{record.name}</code>
                 <span className="text-muted-foreground">Value:</span>
                 <div className="flex items-center gap-2">
-                  <code className="truncate">{record.value}</code>
+                  <code className="break-all">{record.value}</code>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(record.value)}>
                     <Copy className="h-4 w-4" />
                   </Button>
