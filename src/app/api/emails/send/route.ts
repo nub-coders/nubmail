@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken } from '@/lib/admin';
 import { getDb } from '@/lib/mongodb';
-import { sendEmail } from '@/utils/replitmail';
+import { sendSmtpEmail } from '@/utils/smtp';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const result = await sendEmail({
+    const result = await sendSmtpEmail({
+      from: user.email,
       to,
       subject,
       text: text || html?.replace(/<[^>]*>/g, ''),
