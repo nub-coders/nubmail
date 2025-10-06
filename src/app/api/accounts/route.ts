@@ -17,6 +17,9 @@ export async function GET(req: NextRequest) {
         emailAddress: a.emailAddress,
         storageQuota: a.storageQuota || 0,
         domainId: a.domainId,
+        smtpHost: a.smtpHost,
+        smtpPort: a.smtpPort,
+        smtpUser: a.smtpUser,
         createdAt: a.createdAt
       }))
     });
@@ -32,10 +35,14 @@ export async function POST(req: NextRequest) {
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { emailAddress, domainId } = body;
+    const { emailAddress, domainId, smtpHost, smtpPort, smtpUser, smtpPass } = body;
     
     if (!emailAddress || !domainId) {
       return NextResponse.json({ error: 'emailAddress and domainId required' }, { status: 400 });
+    }
+
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
+      return NextResponse.json({ error: 'SMTP credentials required (host, port, user, pass)' }, { status: 400 });
     }
 
     const db = await getDb();
@@ -64,6 +71,10 @@ export async function POST(req: NextRequest) {
       storageQuota: 1024,
       domainId,
       userId: payload.sub,
+      smtpHost,
+      smtpPort: Number(smtpPort),
+      smtpUser,
+      smtpPass,
       createdAt: now
     });
 
@@ -72,6 +83,9 @@ export async function POST(req: NextRequest) {
       emailAddress: emailAddress.toLowerCase(),
       storageQuota: 1024,
       domainId,
+      smtpHost,
+      smtpPort: Number(smtpPort),
+      smtpUser,
       createdAt: now
     });
   } catch (err) {
