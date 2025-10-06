@@ -47,7 +47,6 @@
     "jsonwebtoken": "^9.0.0",
     "lucide-react": "^0.475.0",
     "mailparser": "^3.7.4",
-    "mongodb": "^5.9.2",
     "next": "15.3.3",
     "nodemailer": "^6.9.14",
     "patch-package": "^8.0.0",
