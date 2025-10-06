@@ -305,6 +305,10 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
           ))}
         </div>
       </ScrollArea>
+      <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-4 text-sm text-amber-800 dark:text-amber-200">
+        <p className="font-semibold mb-1">⏱️ DNS Propagation Notice</p>
+        <p>DNS changes can take anywhere from a few minutes to 48 hours to propagate globally. If verification fails, please wait and try again later.</p>
+      </div>
       <DialogFooter>
         <Button onClick={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} variant="outline">Close</Button>
         <Button onClick={handleVerify} disabled={verifying || !domainId}>
