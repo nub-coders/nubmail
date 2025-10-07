@@ -14,6 +14,14 @@ function getMailHost(): string {
   return (process.env.DOMAIN || process.env.VIRTUAL_HOST || '').trim() || 'mails.nub-coder.tech';
 }
 
+function normalizeTxtMatch(value: string): string {
+  return value.replace(/\s+/g, '').toLowerCase();
+}
+
+function normalizeDomain(input: string): string {
+  return input.toLowerCase().trim().replace(/\.$/, '');
+}
+
 function exportPublicKeyPemToDns(pubKeyPem: string): string {
   return pubKeyPem
     .replace(/-----BEGIN PUBLIC KEY-----/g, '')
@@ -37,10 +45,37 @@ async function verifyDnsRecord(
           dns.resolveTxt(fullDomain),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)),
         ]);
+        
+        // Check if this is an SPF record (needs special normalized matching)
+        const isSPFRecord = expectedValue.toLowerCase().startsWith('v=spf1');
+        
         for (const record of txtRecords) {
           const recordValue = Array.isArray(record) ? record.join('') : record;
-          if (recordValue.includes(expectedValue) || expectedValue.includes(recordValue)) {
-            return { verified: true, message: 'TXT record found and verified' };
+          
+          if (isSPFRecord) {
+            // For SPF records, use normalized matching (remove whitespace, case-insensitive)
+            const normalizedRecord = normalizeTxtMatch(recordValue);
+            const normalizedExpected = normalizeTxtMatch(expectedValue);
+            
+            // Extract the mail host from the expected value (e.g., "v=spf1 include:mails.nub-coder.tech ~all")
+            const includeMatch = normalizedExpected.match(/include:([^\s~]+)/);
+            if (includeMatch) {
+              const expectedHost = includeMatch[1];
+              // Check if the record is SPF and includes the expected mail host
+              if (normalizedRecord.startsWith('v=spf1') && normalizedRecord.includes(`include:${expectedHost}`)) {
+                return { verified: true, message: 'SPF record found and verified' };
+              }
+            } else {
+              // Fallback: check if normalized values match
+              if (normalizedRecord === normalizedExpected || normalizedRecord.includes(normalizedExpected)) {
+                return { verified: true, message: 'SPF record found and verified' };
+              }
+            }
+          } else {
+            // For other TXT records (verification, DMARC, DKIM), use standard matching
+            if (recordValue.includes(expectedValue) || expectedValue.includes(recordValue)) {
+              return { verified: true, message: 'TXT record found and verified' };
+            }
           }
         }
         return { verified: false, message: 'TXT record not found or does not match' };
