@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { rows: [user] } = await pgQuery(
-      'SELECT id, email, full_name as "fullName", email_verified as "emailVerified" FROM users WHERE id = $1',
+      'SELECT id, email, full_name as "fullName", email_verified as "emailVerified", is_admin as "isAdmin" FROM users WHERE id = $1',
       [payload.sub]
     );
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
