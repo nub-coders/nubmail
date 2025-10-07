@@ -105,9 +105,9 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
       key: 'dmarc',
     },
     // DKIM (generated per domain)
-    ...(dkim?.exists && dkim.recordName && dkim.recordValue
+    ...((dkim?.exists && dkim.recordName && dkim.recordValue)
       ? [{ type: 'TXT', name: dkim.recordName, value: dkim.recordValue, key: 'dkim' } as const]
-      : []),
+      : [{ type: 'TXT', name: 'mail._domainkey', value: 'Generate DKIM to get value', key: 'dkim' }] as any),
     {
       type: 'CNAME',
       name: 'autodiscover',
