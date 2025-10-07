@@ -13,6 +13,7 @@ import {
   Users,
   ShieldCheck,
   UserCog,
+  Server,
 } from 'lucide-react';
 
 import {
