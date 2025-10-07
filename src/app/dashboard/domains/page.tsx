@@ -68,7 +68,9 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
   const { toast } = useToast();
   const [verifying, setVerifying] = useState(false);
   const [recordStatus, setRecordStatus] = useState<{ [key: number]: 'verified' | 'failed' | 'checking' | null }>({});
-  
+  const mailHost = 'mails.nub-coder.tech';
+  const [dkim, setDkim] = useState<{ exists: boolean; recordName?: string; recordValue?: string } | null>(null);
+
   const dnsRecords = [
     {
       type: 'TXT',
@@ -79,21 +81,21 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
     { 
       type: 'MX', 
       name: '@', 
-      value: 'mails.nub-coder.tech', 
+      value: mailHost, 
       priority: 10,
       key: 'mx1',
     },
     {
       type: 'MX',
       name: '@',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       priority: 20,
       key: 'mx2',
     },
     {
       type: 'TXT',
       name: '@',
-      value: 'v=spf1 include:mails.nub-coder.tech ~all',
+      value: `v=spf1 include:${mailHost} ~all`,
       key: 'spf',
     },
     {
@@ -102,51 +104,67 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
       value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@' + (domainName || 'yourdomain.com'),
       key: 'dmarc',
     },
-    {
-      type: 'TXT',
-      name: 'nubmail._domainkey',
-      value: 'v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyK3X3Q7JZvHmN8tF5pK9zYvN2MxG4cQ8hJ6nL7mP5tR8sU3vW4xY9zA2bC5dE6fG7hI8jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wW1xX2yY3zA4bB5cC6dD7eE8fF9gG0hH1iI2jJ3kK4lL5mM6nN7oO8pP9qQ0rR1sS2tT3uU4vV5wW6xX7yY8zA9bB0cC1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM1nN2oO3pP4qQ5rR6sS7tT8uU9vV0wIDAQAB',
-      key: 'dkim',
-    },
+    // DKIM (generated per domain)
+    ...(dkim?.exists && dkim.recordName && dkim.recordValue
+      ? [{ type: 'TXT', name: dkim.recordName, value: dkim.recordValue, key: 'dkim' } as const]
+      : []),
     {
       type: 'CNAME',
       name: 'autodiscover',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       key: 'autodiscover',
     },
     {
       type: 'CNAME',
       name: 'autoconfig',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       key: 'autoconfig',
     },
     {
       type: 'CNAME',
       name: 'webmail',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       key: 'webmail',
     },
     {
       type: 'CNAME',
       name: 'imap',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       key: 'imap',
     },
     {
       type: 'CNAME',
       name: 'smtp',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       key: 'smtp',
     },
     {
       type: 'CNAME',
       name: 'pop3',
-      value: 'mails.nub-coder.tech',
+      value: mailHost,
       key: 'pop3',
     },
   ];
 
   useEffect(() => {
+    // Fetch DKIM details on open
+    (async () => {
+      if (!domainId) return;
+      try {
+        const res = await fetch(`/api/domains/dkim?domainId=${domainId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const data = await res.json();
+        if (res.ok && data.exists) {
+          setDkim({ exists: true, recordName: data.recordName, recordValue: data.recordValue });
+        } else {
+          setDkim({ exists: false });
+        }
+      } catch {
+        setDkim({ exists: false });
+      }
+    })();
+
     if (verificationStatus === 'verified') {
       const verifiedStatus: { [key: number]: 'verified' } = {};
       dnsRecords.forEach((_, index) => {
@@ -292,6 +310,32 @@ function DnsVerificationDialog({ domainName, domainId, verificationToken, verifi
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(record.value)}>
                     <Copy className="h-4 w-4" />
                   </Button>
+                  {record.key === 'dkim' && (!dkim?.exists) && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={async () => {
+                        if (!domainId) return;
+                        const res = await fetch('/api/domains/dkim', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                          },
+                          body: JSON.stringify({ domainId }),
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          setDkim({ exists: true, recordName: data.recordName, recordValue: data.recordValue });
+                          toast({ title: 'DKIM key generated', description: 'Add the DKIM TXT record to your DNS.' });
+                        } else {
+                          toast({ title: 'DKIM generation failed', description: data.error || 'Try again later', variant: 'destructive' });
+                        }
+                      }}
+                    >
+                      Generate DKIM
+                    </Button>
+                  )}
                 </div>
                 {record.priority && (
                   <>
