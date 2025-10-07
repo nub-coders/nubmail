@@ -20,7 +20,7 @@ type SendInput = {
   };
 };
 
-function getTransport(config?: { host: string; port: number; user: string; pass: string }) {
+function getTransport(config?: { host: string; port: number; user: string; pass: string }, dkim?: { domainName: string; keySelector: string; privateKey: string }) {
   if (!config?.host || !config?.port) {
     throw new Error('SMTP configuration missing. Provide smtpConfig with host and port');
   }
@@ -33,11 +33,18 @@ function getTransport(config?: { host: string; port: number; user: string; pass:
   if (config.user && config.pass) {
     transportConfig.auth = { user: config.user, pass: config.pass };
   }
+  if (dkim?.domainName && dkim?.keySelector && dkim?.privateKey) {
+    transportConfig.dkim = {
+      domainName: dkim.domainName,
+      keySelector: dkim.keySelector,
+      privateKey: dkim.privateKey,
+    };
+  }
   return nodemailer.createTransport(transportConfig);
 }
 
-export async function sendSmtpEmail({ from, to, subject, text, html, smtpConfig }: SendInput) {
-  const transporter = getTransport(smtpConfig);
+export async function sendSmtpEmail({ from, to, subject, text, html, smtpConfig, dkim }: SendInput) {
+  const transporter = getTransport(smtpConfig, dkim);
   const envelopeFrom = from || smtpConfig?.user || process.env.SMTP_FROM || process.env.ADMIN_EMAIL || '';
 
   const info = await transporter.sendMail({
