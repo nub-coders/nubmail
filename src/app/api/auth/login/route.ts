@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
     const { email, password } = body;
     if (!email || !password) return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
 
-    const { rows } = await pgQuery<{ id: string; email: string; password_hash: string; full_name: string | null }>(
-      'SELECT id, email, password_hash, full_name FROM users WHERE email = $1',
+    const { rows } = await pgQuery<{ id: string; email: string; password_hash: string; full_name: string | null; email_verified: boolean | null; is_admin: boolean | null }>(
+      'SELECT id, email, password_hash, full_name, email_verified, is_admin FROM users WHERE LOWER(email) = $1',
       [email.toLowerCase()]
     );
     const user = rows[0];
@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
     
-    const payload = { sub: String(user.id), email: user.email };
+    const payload = { sub: String(user.id), email: user.email, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin };
     const token = sign(payload, secret, { expiresIn: '7d' });
 
-    return NextResponse.json({ token, user: { id: String(user.id), email: user.email, fullName: user.full_name } });
+    return NextResponse.json({ token, user: { id: String(user.id), email: user.email, fullName: user.full_name, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin } });
   } catch (err) {
     console.error('Login error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
