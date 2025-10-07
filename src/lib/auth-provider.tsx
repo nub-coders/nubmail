@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
 import { parseJwt, isTokenExpired, getTokenExpiryMs } from '@/lib/jwt';
 
-interface User { id: string; email: string; fullName?: string | null; emailVerified?: boolean }
+interface User { id: string; email: string; fullName?: string | null; emailVerified?: boolean; isAdmin?: boolean }
 
 const AuthContext = createContext<{
   user: User | null;
@@ -62,6 +62,18 @@ export default function AuthClientProvider({ children }: { children: React.React
     // Persist and set state
     setTokenState(t);
     localStorage.setItem('token', t);
+
+    // Optimistically set user from JWT payload (reduces perceived login delay)
+    const payload = parseJwt(t);
+    if (payload && payload.sub && payload.email) {
+      setUser({
+        id: String(payload.sub),
+        email: String(payload.email),
+        fullName: payload.fullName ?? null,
+        emailVerified: typeof payload.emailVerified === 'boolean' ? payload.emailVerified : undefined,
+        isAdmin: typeof payload.isAdmin === 'boolean' ? payload.isAdmin : undefined,
+      });
+    }
 
     // Schedule automatic logout when token expires
     const msUntilExpiry = getTokenExpiryMs(t);
