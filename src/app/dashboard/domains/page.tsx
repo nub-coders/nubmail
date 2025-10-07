@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, PlusCircle, Globe, Dna, Copy, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Globe } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,9 +49,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import type { Domain } from '@/lib/types';
@@ -63,312 +60,6 @@ const formSchema = z.object({
     message: 'Please enter a valid domain name.',
   }),
 });
-
-function DnsVerificationDialog({ domainName, domainId, verificationToken, verificationStatus, onVerify }: { domainName?: string; domainId?: string; verificationToken?: string; verificationStatus?: string; onVerify?: (id: string, name: string) => void }) {
-  const { toast } = useToast();
-  const [verifying, setVerifying] = useState(false);
-  const [recordStatus, setRecordStatus] = useState<{ [key: number]: 'verified' | 'failed' | 'checking' | null }>({});
-  const mailHost = 'mails.nub-coder.tech';
-  const [dkim, setDkim] = useState<{ exists: boolean; recordName?: string; recordValue?: string } | null>(null);
-
-  const dnsRecords = [
-    {
-      type: 'TXT',
-      name: '@',
-      value: verificationToken ? `nubmail-verification=${verificationToken}` : 'Please add the domain first to get verification token',
-      key: 'verification',
-    },
-    { 
-      type: 'MX', 
-      name: '@', 
-      value: mailHost, 
-      priority: 10,
-      key: 'mx1',
-    },
-    {
-      type: 'MX',
-      name: '@',
-      value: mailHost,
-      priority: 20,
-      key: 'mx2',
-    },
-    {
-      type: 'TXT',
-      name: '@',
-      value: `v=spf1 include:${mailHost} ~all`,
-      key: 'spf',
-    },
-    {
-      type: 'TXT',
-      name: '_dmarc',
-      value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@' + (domainName || 'yourdomain.com'),
-      key: 'dmarc',
-    },
-    // DKIM (generated per domain)
-    ...((dkim?.exists && dkim.recordName && dkim.recordValue)
-      ? [{ type: 'TXT', name: dkim.recordName, value: dkim.recordValue, key: 'dkim' } as const]
-      : [{ type: 'TXT', name: 'mail._domainkey', value: 'Generate DKIM to get value', key: 'dkim' }] as any),
-    {
-      type: 'CNAME',
-      name: 'autodiscover',
-      value: mailHost,
-      key: 'autodiscover',
-    },
-    {
-      type: 'CNAME',
-      name: 'autoconfig',
-      value: mailHost,
-      key: 'autoconfig',
-    },
-    {
-      type: 'CNAME',
-      name: 'webmail',
-      value: mailHost,
-      key: 'webmail',
-    },
-    {
-      type: 'CNAME',
-      name: 'imap',
-      value: mailHost,
-      key: 'imap',
-    },
-    {
-      type: 'CNAME',
-      name: 'smtp',
-      value: mailHost,
-      key: 'smtp',
-    },
-    {
-      type: 'CNAME',
-      name: 'pop3',
-      value: mailHost,
-      key: 'pop3',
-    },
-  ];
-
-  useEffect(() => {
-    // Fetch DKIM details on open
-    (async () => {
-      if (!domainId) return;
-      try {
-        const res = await fetch(`/api/domains/dkim?domainId=${domainId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        const data = await res.json();
-        if (res.ok && data.exists) {
-          setDkim({ exists: true, recordName: data.recordName, recordValue: data.recordValue });
-        } else {
-          setDkim({ exists: false });
-        }
-      } catch {
-        setDkim({ exists: false });
-      }
-    })();
-
-    if (verificationStatus === 'verified') {
-      const verifiedStatus: { [key: number]: 'verified' } = {};
-      dnsRecords.forEach((_, index) => {
-        verifiedStatus[index] = 'verified';
-      });
-      setRecordStatus(verifiedStatus);
-    } else if (verificationStatus === 'pending') {
-      setRecordStatus({});
-    }
-  }, [verificationStatus]);
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast({ title: 'Copied to clipboard!' });
-    } catch (err) {
-      toast({ title: 'Unable to copy', description: 'Clipboard access failed.', variant: 'destructive' });
-    }
-  };
-
-  const handleVerify = async () => {
-    if (!domainId || !domainName) return;
-    
-    setVerifying(true);
-    const checkingStatus: { [key: number]: 'checking' } = {};
-    dnsRecords.forEach((_, index) => {
-      checkingStatus[index] = 'checking';
-    });
-    setRecordStatus(checkingStatus);
-    
-    try {
-      const res = await fetch('/api/domains/verify-records', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ domainId })
-      });
-
-      const data = await res.json();
-      
-      if (!res.ok) {
-        toast({ 
-          title: 'Verification failed', 
-          description: data.message || data.error || 'Could not verify DNS records', 
-          variant: 'destructive' 
-        });
-        
-        const failedStatus: { [key: number]: 'failed' } = {};
-        dnsRecords.forEach((_, index) => {
-          failedStatus[index] = 'failed';
-        });
-        setRecordStatus(failedStatus);
-        return;
-      }
-
-      const newStatus: { [key: number]: 'verified' | 'failed' } = {};
-      data.records.forEach((record: any) => {
-        const index = dnsRecords.findIndex(r => r.key === record.key);
-        if (index !== -1) {
-          newStatus[index] = record.status;
-        }
-      });
-      setRecordStatus(newStatus);
-
-      if (data.overallStatus === 'verified') {
-        toast({ 
-          title: 'Domain verified!', 
-          description: `All DNS records for ${domainName} have been verified successfully.` 
-        });
-        if (onVerify) {
-          try {
-            await onVerify(domainId, domainName);
-          } catch (err) {
-            
-          }
-        }
-      } else {
-        const failedCount = data.records.filter((r: any) => r.status === 'failed').length;
-        const verifiedCount = data.records.filter((r: any) => r.status === 'verified').length;
-        toast({ 
-          title: 'Partial verification', 
-          description: `${verifiedCount} of ${data.records.length} DNS records verified. ${failedCount} records need attention.`,
-          variant: 'default'
-        });
-      }
-    } catch (error) {
-      toast({ 
-        title: 'Verification error', 
-        description: 'Unable to connect to verification service', 
-        variant: 'destructive' 
-      });
-      
-      const failedStatus: { [key: number]: 'failed' } = {};
-      dnsRecords.forEach((_, index) => {
-        failedStatus[index] = 'failed';
-      });
-      setRecordStatus(failedStatus);
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const getStatusIcon = (index: number) => {
-    const status = recordStatus[index];
-    if (status === 'verified') {
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
-    } else if (status === 'failed') {
-      return <XCircle className="h-4 w-4 text-red-500" />;
-    } else if (status === 'checking') {
-      return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
-    }
-    return null;
-  };
-
-  return (
-    <DialogContent className="sm:max-w-2xl">
-      <DialogHeader>
-        <DialogTitle>Domain Verification Setup</DialogTitle>
-        <DialogDescription>
-          To verify your domain, add the following DNS records to your domain's DNS settings.
-        </DialogDescription>
-      </DialogHeader>
-      <ScrollArea className="max-h-[60vh] pr-4">
-        <div className="space-y-4 py-4">
-          {dnsRecords.map((record, index) => (
-            <div key={index} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="font-semibold flex items-center gap-2">
-                  <Dna className="h-4 w-4" /> {record.type} Record
-                </Label>
-                {getStatusIcon(index)}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Type:</span>
-                <span>{record.type}</span>
-                <span className="text-muted-foreground">Name:</span>
-                <code>{record.name}</code>
-                <span className="text-muted-foreground">Value:</span>
-                <div className="flex items-center gap-2">
-                  <code className="break-all">{record.value}</code>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(record.value)}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  {record.key === 'dkim' && (!dkim?.exists) && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={async () => {
-                        if (!domainId) return;
-                        const res = await fetch('/api/domains/dkim', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                          },
-                          body: JSON.stringify({ domainId }),
-                        });
-                        const data = await res.json();
-                        if (res.ok) {
-                          setDkim({ exists: true, recordName: data.recordName, recordValue: data.recordValue });
-                          toast({ title: 'DKIM key generated', description: 'Add the DKIM TXT record to your DNS.' });
-                        } else {
-                          toast({ title: 'DKIM generation failed', description: data.error || 'Try again later', variant: 'destructive' });
-                        }
-                      }}
-                    >
-                      Generate DKIM
-                    </Button>
-                  )}
-                </div>
-                {record.priority && (
-                  <>
-                    <span className="text-muted-foreground">Priority:</span>
-                    <span>{record.priority}</span>
-                  </>
-                )}
-              </div>
-              {index < dnsRecords.length - 1 && <Separator className="mt-4" />}
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-      <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-4 text-sm text-amber-800 dark:text-amber-200">
-        <p className="font-semibold mb-1">⏱️ DNS Propagation Notice</p>
-        <p>DNS changes can take anywhere from a few minutes to 48 hours to propagate globally. If verification fails, please wait and try again later.</p>
-      </div>
-      <DialogFooter>
-        <Button onClick={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} variant="outline">Close</Button>
-        <Button onClick={handleVerify} disabled={verifying || !domainId}>
-          {verifying ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Verifying...
-            </>
-          ) : (
-            'Verify'
-          )}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  );
-}
 
 export default function DomainsPage() {
   const { user } = useAuthClient();
@@ -420,29 +111,6 @@ export default function DomainsPage() {
       console.error('Error adding domain: ', error);
       toast({ title: 'Error adding domain', description: error?.message ?? 'An unexpected error occurred.', variant: 'destructive' });
     }
-  };
-
-  const handleVerifyDomain = async (domainId: string, domainName: string) => {
-    const res = await fetch('/api/domains', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ domainId, action: 'verify' })
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      toast({ title: 'Verification failed', description: data.message || data.error || 'Could not verify domain', variant: 'destructive' });
-      throw new Error(data.message || data.error || 'Verification failed');
-    }
-
-    setDomains(prev => prev?.map(d => 
-      d.id === domainId ? { ...d, verificationStatus: 'verified' } : d
-    ) || null);
-
-    toast({ title: 'Domain verified!', description: `${domainName} has been verified successfully.` });
   };
 
   const handleDeleteDomain = async (domainId: string, domainName: string) => {
@@ -575,35 +243,26 @@ export default function DomainsPage() {
                       </TableCell>
                       <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <Dialog>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DialogTrigger asChild>
-                                <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
-                              </DialogTrigger>
-                              <DropdownMenuItem 
-                                className="text-destructive" 
-                                onClick={() => handleDeleteDomain(item.id, item.domainName)}
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <DnsVerificationDialog 
-                            domainName={item.domainName} 
-                            domainId={item.id}
-                            verificationToken={item.verificationToken}
-                            verificationStatus={item.verificationStatus}
-                            onVerify={handleVerifyDomain}
-                          />
-                        </Dialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <Link href={`/dashboard/domains/${item.id}`}>
+                              <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
+                            </Link>
+                            <DropdownMenuItem 
+                              className="text-destructive" 
+                              onClick={() => handleDeleteDomain(item.id, item.domainName)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
