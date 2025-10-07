@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
     }
 
     let smtpConfig;
-    
+    let dkimConfig: { domainName: string; keySelector: string; privateKey: string } | undefined;
+
     if (ownedFrom.useBuiltInSmtp) {
       smtpConfig = {
         host: process.env.INTERNAL_SMTP_HOST || 'smtp-sender',
@@ -45,6 +46,17 @@ export async function POST(req: NextRequest) {
         user: '',
         pass: '',
       };
+      // Try DKIM for sender domain
+      const senderDomain = String(from).split('@')[1]?.toLowerCase();
+      if (senderDomain) {
+        const { rows: dkim } = await pgQuery<{ selector: string; private_key: string }>(
+          `SELECT selector, private_key FROM domain_dkim WHERE domain_name = $1`,
+          [senderDomain]
+        );
+        if (dkim[0]) {
+          dkimConfig = { domainName: senderDomain, keySelector: dkim[0].selector, privateKey: dkim[0].private_key };
+        }
+      }
     } else {
       if (!ownedFrom.smtpHost || !ownedFrom.smtpPort || !ownedFrom.smtpUser || !ownedFrom.smtpPass) {
         return NextResponse.json({ error: 'SMTP credentials not configured for this account.' }, { status: 400 });
@@ -63,7 +75,8 @@ export async function POST(req: NextRequest) {
       subject,
       text: text || html?.replace(/<[^>]*>/g, ''),
       html: html || text?.replace(/\n/g, '<br>'),
-      smtpConfig
+      smtpConfig,
+      dkim: dkimConfig
     });
 
     const now = new Date();
