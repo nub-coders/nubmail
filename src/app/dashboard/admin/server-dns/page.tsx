@@ -179,12 +179,6 @@ export default function AdminServerDnsPage() {
     }
   }, [user]);
 
-  const dkimRecord = useMemo(() => data?.records.find((record) => record.key === "dkim"), [data]);
-  const hasBlockingIssues = useMemo(
-    () => data?.records.some((record) => !record.optional && record.status !== "configured") ?? false,
-    [data]
-  );
-
   if (!user) {
     return (
       <Card>
