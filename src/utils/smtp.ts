@@ -13,6 +13,11 @@ type SendInput = {
     user: string;
     pass: string;
   };
+  dkim?: {
+    domainName: string;
+    keySelector: string;
+    privateKey: string;
+  };
 };
 
 function getTransport(config?: { host: string; port: number; user: string; pass: string }) {
@@ -61,5 +66,3 @@ export function getEnvSmtpConfig() {
   }
   return { host, port, user, pass };
 }
-
-
