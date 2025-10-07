@@ -176,6 +176,18 @@ export function MainNav({ className }: { className?: string }) {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/admin/server-dns')}
+              tooltip="Server DNS"
+            >
+              <Link href="/dashboard/admin/server-dns">
+                <Server />
+                <span>Server DNS</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       )}
     </nav>
