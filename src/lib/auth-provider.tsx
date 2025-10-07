@@ -107,6 +107,13 @@ export default function AuthClientProvider({ children }: { children: React.React
       if (!tokenState) {
         setUser(null);
         setLoading(false);
+        
+        // If trying to access protected route without token, redirect to login
+        const protectedPrefix = '/dashboard';
+        const publicPaths = ['/', '/register', '/verify-email'];
+        if (pathname && pathname.startsWith(protectedPrefix) && !publicPaths.includes(pathname)) {
+          router.push('/');
+        }
         return;
       }
 
@@ -121,6 +128,13 @@ export default function AuthClientProvider({ children }: { children: React.React
           await setTokenInternal(null);
           setUser(null);
           setLoading(false);
+          
+          // Redirect to login if trying to access protected route
+          const protectedPrefix = '/dashboard';
+          const publicPaths = ['/', '/register', '/verify-email'];
+          if (pathname && pathname.startsWith(protectedPrefix) && !publicPaths.includes(pathname)) {
+            router.push('/');
+          }
           return;
         }
 
