@@ -311,8 +311,8 @@ export default function AdminServerDnsPage() {
                     <TableCell>
                       {record.observedValues.length > 0 ? (
                         <div className="flex flex-col gap-1">
-                          {record.observedValues.map((value) => (
-                            <code key={value} className="break-all text-xs">
+                          {record.observedValues.map((value, index) => (
+                            <code key={`${record.key}-${index}`} className="break-all text-xs">
                               {value}
                             </code>
                           ))}
