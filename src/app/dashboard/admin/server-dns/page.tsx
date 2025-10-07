@@ -87,6 +87,16 @@ export default function AdminServerDnsPage() {
   const [loading, setLoading] = useState(false);
   const [dkimLoading, setDkimLoading] = useState(false);
 
+  const dkimRecord = useMemo(
+    () => data?.records.find((record) => record.key === "dkim"),
+    [data]
+  );
+
+  const hasBlockingIssues = useMemo(
+    () => data?.records.some((record) => !record.optional && record.status !== "configured") ?? false,
+    [data]
+  );
+
   const fetchStatus = async () => {
     if (!user?.isAdmin) return;
     setLoading(true);
