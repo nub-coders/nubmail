@@ -25,32 +25,11 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { useAuthClient } from '@/lib/auth-provider';
-import { useEffect, useState } from 'react';
 
 export function MainNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const { user } = useAuthClient();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
-      
-      try {
-        const res = await fetch('/api/admin/users', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setIsAdmin(res.status !== 403);
-      } catch {
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdmin();
-  }, [user]);
+  const isAdmin = !!user?.isAdmin;
 
   const isActive = (path: string) => pathname === path;
 
