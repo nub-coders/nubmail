@@ -10,6 +10,18 @@ interface RecordVerificationResult {
   message?: string;
 }
 
+function getMailHost(): string {
+  return (process.env.DOMAIN || process.env.VIRTUAL_HOST || '').trim() || 'mails.nub-coder.tech';
+}
+
+function exportPublicKeyPemToDns(pubKeyPem: string): string {
+  return pubKeyPem
+    .replace(/-----BEGIN PUBLIC KEY-----/g, '')
+    .replace(/-----END PUBLIC KEY-----/g, '')
+    .replace(/\r?\n/g, '')
+    .trim();
+}
+
 async function verifyDnsRecord(
   domain: string,
   recordType: string,
@@ -18,17 +30,13 @@ async function verifyDnsRecord(
   priority?: number
 ): Promise<{ verified: boolean; message: string }> {
   const fullDomain = recordName === '@' ? domain : `${recordName}.${domain}`;
-  
   try {
     switch (recordType) {
       case 'TXT': {
         const txtRecords = await Promise.race([
           dns.resolveTxt(fullDomain),
-          new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)
-          )
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)),
         ]);
-        
         for (const record of txtRecords) {
           const recordValue = Array.isArray(record) ? record.join('') : record;
           if (recordValue.includes(expectedValue) || expectedValue.includes(recordValue)) {
@@ -37,18 +45,16 @@ async function verifyDnsRecord(
         }
         return { verified: false, message: 'TXT record not found or does not match' };
       }
-      
       case 'MX': {
         const mxRecords = await Promise.race([
           dns.resolveMx(domain),
-          new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)
-          )
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)),
         ]);
-        
         for (const record of mxRecords) {
-          if (record.exchange.toLowerCase().includes(expectedValue.toLowerCase()) ||
-              expectedValue.toLowerCase().includes(record.exchange.toLowerCase())) {
+          if (
+            record.exchange.toLowerCase().includes(expectedValue.toLowerCase()) ||
+            expectedValue.toLowerCase().includes(record.exchange.toLowerCase())
+          ) {
             if (priority !== undefined && record.priority === priority) {
               return { verified: true, message: `MX record found with correct priority (${priority})` };
             } else if (priority === undefined) {
@@ -58,19 +64,17 @@ async function verifyDnsRecord(
         }
         return { verified: false, message: 'MX record not found or priority does not match' };
       }
-      
       case 'CNAME': {
         try {
           const cnameRecords = await Promise.race([
             dns.resolveCname(fullDomain),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)
-            )
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DNS lookup timeout')), 10000)),
           ]);
-          
           for (const record of cnameRecords) {
-            if (record.toLowerCase().includes(expectedValue.toLowerCase()) ||
-                expectedValue.toLowerCase().includes(record.toLowerCase())) {
+            if (
+              record.toLowerCase().includes(expectedValue.toLowerCase()) ||
+              expectedValue.toLowerCase().includes(record.toLowerCase())
+            ) {
               return { verified: true, message: 'CNAME record found and verified' };
             }
           }
@@ -82,7 +86,6 @@ async function verifyDnsRecord(
           throw err;
         }
       }
-      
       default:
         return { verified: false, message: 'Unsupported record type' };
     }
@@ -103,7 +106,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { domainId } = body;
-    
     if (!domainId) return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
 
     const { rows } = await pgQuery<{ domainName: string; verificationToken: string | null }>(
@@ -112,92 +114,53 @@ export async function POST(req: NextRequest) {
       [domainId, payload.sub]
     );
     const domain = rows[0];
-
-    if (!domain) {
-      return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
-    }
+    if (!domain) return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
 
     const normalizedDomain = domain.domainName.toLowerCase().trim().replace(/\.$/, '');
-    
-    const recordsToVerify = [
+    const mailHost = getMailHost();
+
+    // Try to fetch DKIM info for this domain
+    const { rows: dkimRows } = await pgQuery<{ selector: string; public_key: string }>(
+      `SELECT selector, public_key FROM domain_dkim WHERE domain_name = $1`,
+      [normalizedDomain]
+    );
+
+    const recordsToVerify: Array<{
+      key: string;
+      type: 'TXT' | 'MX' | 'CNAME';
+      name: string;
+      value: string;
+      priority?: number;
+    }> = [
       {
         key: 'verification',
         type: 'TXT',
         name: '@',
         value: `nubmail-verification=${domain.verificationToken}`,
       },
-      { 
-        key: 'mx1',
-        type: 'MX', 
-        name: '@', 
-        value: 'mails.nub-coder.tech', 
-        priority: 10,
-      },
-      {
-        key: 'mx2',
-        type: 'MX',
-        name: '@',
-        value: 'mails.nub-coder.tech',
-        priority: 20,
-      },
-      {
-        key: 'spf',
-        type: 'TXT',
-        name: '@',
-        value: 'v=spf1 include:mails.nub-coder.tech ~all',
-      },
-      {
-        key: 'dmarc',
-        type: 'TXT',
-        name: '_dmarc',
-        value: 'v=DMARC1',
-      },
-      {
-        key: 'dkim',
-        type: 'TXT',
-        name: 'nubmail._domainkey',
-        value: 'v=DKIM1',
-      },
-      {
-        key: 'autodiscover',
-        type: 'CNAME',
-        name: 'autodiscover',
-        value: 'mails.nub-coder.tech',
-      },
-      {
-        key: 'autoconfig',
-        type: 'CNAME',
-        name: 'autoconfig',
-        value: 'mails.nub-coder.tech',
-      },
-      {
-        key: 'webmail',
-        type: 'CNAME',
-        name: 'webmail',
-        value: 'mails.nub-coder.tech',
-      },
-      {
-        key: 'imap',
-        type: 'CNAME',
-        name: 'imap',
-        value: 'mails.nub-coder.tech',
-      },
-      {
-        key: 'smtp',
-        type: 'CNAME',
-        name: 'smtp',
-        value: 'mails.nub-coder.tech',
-      },
-      {
-        key: 'pop3',
-        type: 'CNAME',
-        name: 'pop3',
-        value: 'mails.nub-coder.tech',
-      },
+      { key: 'mx1', type: 'MX', name: '@', value: mailHost, priority: 10 },
+      { key: 'spf', type: 'TXT', name: '@', value: `v=spf1 include:${mailHost} ~all` },
+      { key: 'dmarc', type: 'TXT', name: '_dmarc', value: 'v=DMARC1' },
+      { key: 'autodiscover', type: 'CNAME', name: 'autodiscover', value: mailHost },
+      { key: 'autoconfig', type: 'CNAME', name: 'autoconfig', value: mailHost },
+      { key: 'webmail', type: 'CNAME', name: 'webmail', value: mailHost },
+      { key: 'imap', type: 'CNAME', name: 'imap', value: mailHost },
+      { key: 'smtp', type: 'CNAME', name: 'smtp', value: mailHost },
+      { key: 'pop3', type: 'CNAME', name: 'pop3', value: mailHost },
     ];
 
+    if (dkimRows.length > 0) {
+      const selector = dkimRows[0].selector;
+      const p = exportPublicKeyPemToDns(dkimRows[0].public_key);
+      recordsToVerify.push({
+        key: 'dkim',
+        type: 'TXT',
+        name: `${selector}._domainkey`,
+        value: `p=${p}`,
+      });
+    }
+
     const results: RecordVerificationResult[] = [];
-    
     for (const record of recordsToVerify) {
       const result = await verifyDnsRecord(
         normalizedDomain,
@@ -206,17 +169,10 @@ export async function POST(req: NextRequest) {
         record.value,
         record.priority
       );
-      
-      results.push({
-        key: record.key,
-        type: record.type,
-        status: result.verified ? 'verified' : 'failed',
-        message: result.message,
-      });
+      results.push({ key: record.key, type: record.type, status: result.verified ? 'verified' : 'failed', message: result.message });
     }
 
-    const allVerified = results.every(r => r.status === 'verified');
-    
+    const allVerified = results.every((r) => r.status === 'verified');
     if (allVerified) {
       await pgQuery(
         `UPDATE domains SET verification_status = 'verified', verified_at = NOW() WHERE id = $1 AND user_id = $2`,
@@ -224,13 +180,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ 
-      domainId,
-      domainName: normalizedDomain,
-      records: results,
-      overallStatus: allVerified ? 'verified' : 'partial'
-    });
-
+    return NextResponse.json({ domainId, domainName: normalizedDomain, records: results, overallStatus: allVerified ? 'verified' : 'partial' });
   } catch (err) {
     console.error('Domain record verification error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
