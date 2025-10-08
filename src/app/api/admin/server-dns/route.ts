@@ -41,11 +41,31 @@ function getPrimaryDomain(): string | null {
 }
 
 function getMailHost(primaryDomain: string): string {
-  const hostEnv = process.env.HOST?.trim() || process.env.DOMAIN?.trim() || process.env.VIRTUAL_HOST?.trim();
-  if (hostEnv) {
-    return normalizeDomain(hostEnv);
+  const hostCandidate = process.env.HOST?.trim();
+  if (hostCandidate) {
+    return normalizeDomain(hostCandidate);
   }
-  return normalizeDomain(`mail.${primaryDomain}`);
+
+  const virtualHost = process.env.VIRTUAL_HOST?.trim();
+  if (virtualHost) {
+    return normalizeDomain(virtualHost);
+  }
+
+  const baseDomain = process.env.DOMAIN?.trim() || primaryDomain;
+  if (baseDomain) {
+    const normalizedBase = normalizeDomain(baseDomain);
+    if (!normalizedBase) {
+      return 'mails.nub-coder.tech';
+    }
+
+    if (normalizedBase.startsWith('mail.') || normalizedBase.startsWith('mails.')) {
+      return normalizedBase;
+    }
+
+    return normalizeDomain(`mails.${normalizedBase}`);
+  }
+
+  return 'mails.nub-coder.tech';
 }
 
 async function safeResolveTxt(host: string): Promise<{ values: string[]; error?: string }> {
