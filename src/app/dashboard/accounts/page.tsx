@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import type { Domain } from '@/lib/types';
@@ -32,6 +33,7 @@ export default function AccountsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [localPart, setLocalPart] = useState('');
   const [selectedDomainId, setSelectedDomainId] = useState('');
+  const [useCustomSmtp, setUseCustomSmtp] = useState(false);
   const [smtpHost, setSmtpHost] = useState('');
   const [smtpPort, setSmtpPort] = useState('587');
   const [smtpUser, setSmtpUser] = useState('');
@@ -85,11 +87,16 @@ export default function AccountsPage() {
       return;
     }
 
-    const hasPartialSmtp = !!(smtpHost || smtpPort || smtpUser || smtpPass);
+    const hasPartialSmtp = useCustomSmtp && !!(smtpHost || smtpPort || smtpUser || smtpPass);
     const hasCompleteSmtp = !!(smtpHost && smtpPort && smtpUser && smtpPass);
-    
-    if (hasPartialSmtp && !hasCompleteSmtp) {
-      toast({ title: 'Incomplete SMTP settings', description: 'Either fill all SMTP fields or leave them all empty to use built-in SMTP', variant: 'destructive' });
+
+    if (useCustomSmtp) {
+      if (!hasCompleteSmtp) {
+        toast({ title: 'Incomplete SMTP settings', description: 'Either fill all SMTP fields or disable custom SMTP to use NubMail defaults.', variant: 'destructive' });
+        return;
+      }
+    } else if (hasPartialSmtp) {
+      toast({ title: 'Incomplete SMTP settings', description: 'Either fill all SMTP fields or disable custom SMTP to use NubMail defaults.', variant: 'destructive' });
       return;
     }
 
@@ -105,10 +112,10 @@ export default function AccountsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ 
-          emailAddress, 
+        body: JSON.stringify({
+          emailAddress,
           domainId: selectedDomainId,
-          ...(smtpHost && smtpPort && smtpUser && smtpPass ? {
+          ...(useCustomSmtp && smtpHost && smtpPort && smtpUser && smtpPass ? {
             smtpHost,
             smtpPort,
             smtpUser,
@@ -125,6 +132,7 @@ export default function AccountsPage() {
       setIsDialogOpen(false);
       setLocalPart('');
       setSelectedDomainId('');
+      setUseCustomSmtp(false);
       setSmtpHost('');
       setSmtpPort('587');
       setSmtpUser('');
@@ -222,49 +230,74 @@ export default function AccountsPage() {
                   Email address: <span className="font-medium">{localPart}@{domains.find(d => d.id === selectedDomainId)?.domainName}</span>
                 </div>
               )}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">SMTP Settings (Optional)</h4>
-                <p className="text-sm text-muted-foreground mb-3">Leave empty to use NubMail's built-in SMTP server</p>
-                <div className="grid gap-3">
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtpHost">SMTP Host</Label>
-                    <Input
-                      id="smtpHost"
-                      placeholder="smtp.example.com"
-                      value={smtpHost}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpHost(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtpPort">SMTP Port</Label>
-                    <Input
-                      id="smtpPort"
-                      type="number"
-                      placeholder="587"
-                      value={smtpPort}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPort(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtpUser">SMTP Username</Label>
-                    <Input
-                      id="smtpUser"
-                      placeholder="username or email"
-                      value={smtpUser}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpUser(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtpPass">SMTP Password</Label>
-                    <Input
-                      id="smtpPass"
-                      type="password"
-                      placeholder="••••••••"
-                      value={smtpPass}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPass(e.target.value)}
-                    />
+              <div className="border-t pt-4 space-y-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="useCustomSmtp"
+                    checked={useCustomSmtp}
+                    onCheckedChange={(checked) => {
+                      const enabled = Boolean(checked);
+                      setUseCustomSmtp(enabled);
+                      if (!enabled) {
+                        setSmtpHost('');
+                        setSmtpPort('587');
+                        setSmtpUser('');
+                        setSmtpPass('');
+                      }
+                    }}
+                  />
+                  <div>
+                    <Label htmlFor="useCustomSmtp" className="font-medium">
+                      Use custom SMTP settings
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Leave disabled to use NubMail's built-in SMTP server. Enable to provide your own SMTP credentials.
+                    </p>
                   </div>
                 </div>
+
+                {useCustomSmtp && (
+                  <div className="grid gap-3">
+                    <div className="grid gap-2">
+                      <Label htmlFor="smtpHost">SMTP Host</Label>
+                      <Input
+                        id="smtpHost"
+                        placeholder="smtp.example.com"
+                        value={smtpHost}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpHost(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="smtpPort">SMTP Port</Label>
+                      <Input
+                        id="smtpPort"
+                        type="number"
+                        placeholder="587"
+                        value={smtpPort}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPort(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="smtpUser">SMTP Username</Label>
+                      <Input
+                        id="smtpUser"
+                        placeholder="username or email"
+                        value={smtpUser}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpUser(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="smtpPass">SMTP Password</Label>
+                      <Input
+                        id="smtpPass"
+                        type="password"
+                        placeholder="••••••••"
+                        value={smtpPass}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPass(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>
