@@ -17,12 +17,36 @@ interface DomainDnsRecord {
   canAutoGenerate?: boolean;
 }
 
-function getMailHost(): string {
-  return (process.env.DOMAIN || process.env.VIRTUAL_HOST || '').trim() || 'mails.nub-coder.tech';
-}
-
 function normalizeDomain(input: string): string {
   return input.toLowerCase().trim().replace(/\.$/, '');
+}
+
+function getMailHost(domain?: string): string {
+  const hostCandidate = process.env.HOST?.trim();
+  if (hostCandidate) {
+    return normalizeDomain(hostCandidate);
+  }
+
+  const virtualHost = process.env.VIRTUAL_HOST?.trim();
+  if (virtualHost) {
+    return normalizeDomain(virtualHost);
+  }
+
+  const baseDomain = process.env.DOMAIN?.trim() || domain;
+  if (baseDomain) {
+    const normalizedBase = normalizeDomain(baseDomain);
+    if (!normalizedBase) {
+      return 'mails.nub-coder.tech';
+    }
+
+    if (normalizedBase.startsWith('mail.') || normalizedBase.startsWith('mails.')) {
+      return normalizedBase;
+    }
+
+    return `mails.${normalizedBase}`;
+  }
+
+  return 'mails.nub-coder.tech';
 }
 
 function exportPublicKeyPemToDns(pubKeyPem: string): string {
@@ -109,7 +133,7 @@ export async function GET(req: NextRequest) {
     if (!domain) return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
 
     const normalizedDomain = normalizeDomain(domain.domainName);
-    const mailHost = getMailHost();
+    const mailHost = getMailHost(normalizedDomain);
 
     // Fetch DKIM info for this domain
     const { rows: dkimRows } = await pgQuery<{ selector: string; public_key: string }>(
