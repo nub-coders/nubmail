@@ -8,7 +8,16 @@ NubMail is a comprehensive email server management platform built with Next.js 1
 
 ## Recent Changes (October 2025)
 
-### Complete MongoDB to PostgreSQL Migration (Latest - October 6, 2025)
+### Email View Converted to Page (October 10, 2025)
+- **Converted email viewer from dialog to dedicated page**
+  - Created new dynamic route `/dashboard/inbox/[id]` for email viewing
+  - Updated inbox page to navigate to email view page instead of opening dialog
+  - Removed dialog-related code and components from inbox page
+  - Email view now displays in full-page layout with better readability
+  - Maintains all functionality: mark as read, reply, forward, archive, delete
+  - Improved navigation with back button to return to inbox
+
+### Complete MongoDB to PostgreSQL Migration (October 6, 2025)
 - **Successfully migrated from MongoDB to PostgreSQL**
   - Removed all MongoDB dependencies (mongodb package)
   - Deleted MongoDB connection files (src/lib/mongodb.ts)
