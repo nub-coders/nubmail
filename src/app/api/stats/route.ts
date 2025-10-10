@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
     ]);
     return NextResponse.json({ domains: Number(domains.rows[0].count), accounts: Number(accounts.rows[0].count), emailsSent: Number(emails.rows[0].count) });
   } catch (err) {
-    console.error('Stats error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

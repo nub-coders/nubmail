@@ -14,19 +14,58 @@ export async function GET(req: NextRequest) {
     const user = users[0];
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+    // Get all email accounts owned by this user
+    const { rows: userEmailAccounts } = await pgQuery<{ email_address: string }>(
+      'SELECT email_address FROM email_accounts WHERE user_id = $1',
+      [payload.sub]
+    );
+    const ownedEmails = userEmailAccounts.map(account => account.email_address);
+    ownedEmails.push(user.email); // Include user's main email
+
     let query: string;
     let params: any[];
 
     if (folder === 'sent') {
-      query = 'SELECT id, sender, recipients, subject, body, sent_at AS "sentAt", read FROM email_messages WHERE sender = $1 ORDER BY sent_at DESC LIMIT 100';
-      params = [user.email];
+      if (ownedEmails.length === 0) {
+        query = `SELECT m.id, m.sender, m.recipients, m.subject, m.body, m.sent_at AS "sentAt",
+                  COALESCE(r.read, false) AS read
+                  FROM email_messages m
+                  LEFT JOIN email_reads r ON m.id = r.email_id AND r.user_id = $2
+                  WHERE m.sender = $1
+                  ORDER BY m.sent_at DESC LIMIT 100`;
+        params = [user.email, payload.sub];
+      } else {
+        query = `SELECT m.id, m.sender, m.recipients, m.subject, m.body, m.sent_at AS "sentAt",
+                  COALESCE(r.read, false) AS read
+                  FROM email_messages m
+                  LEFT JOIN email_reads r ON m.id = r.email_id AND r.user_id = $2
+                  WHERE m.sender = ANY($1)
+                  AND NOT (m.recipients && $1)
+                  ORDER BY m.sent_at DESC LIMIT 100`;
+        params = [ownedEmails, payload.sub];
+      }
     } else {
-      query = 'SELECT id, sender, recipients, subject, body, sent_at AS "sentAt", read FROM email_messages WHERE $1 = ANY(recipients) ORDER BY sent_at DESC LIMIT 100';
-      params = [user.email];
+      if (ownedEmails.length === 0) {
+        query = `SELECT m.id, m.sender, m.recipients, m.subject, m.body, m.sent_at AS "sentAt",
+                  COALESCE(r.read, false) AS read
+                  FROM email_messages m
+                  LEFT JOIN email_reads r ON m.id = r.email_id AND r.user_id = $2
+                  WHERE $1 = ANY(m.recipients)
+                  ORDER BY m.sent_at DESC LIMIT 100`;
+        params = [user.email, payload.sub];
+      } else {
+        query = `SELECT m.id, m.sender, m.recipients, m.subject, m.body, m.sent_at AS "sentAt",
+                  COALESCE(r.read, false) AS read
+                  FROM email_messages m
+                  LEFT JOIN email_reads r ON m.id = r.email_id AND r.user_id = $2
+                  WHERE m.recipients && $1
+                  AND NOT (m.sender = ANY($1))
+                  ORDER BY m.sent_at DESC LIMIT 100`;
+        params = [ownedEmails, payload.sub];
+      }
     }
 
     const { rows: emails } = await pgQuery(query, params);
-
     return NextResponse.json({ emails });
   } catch (err) {
     console.error('Emails GET error', err);
@@ -67,7 +106,12 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    await pgQuery('UPDATE email_messages SET read = $1 WHERE id = $2', [read, emailId]);
+    // Upsert per-user read state
+    await pgQuery(`INSERT INTO email_reads (email_id, user_id, read, read_at)
+      VALUES ($1, $2, $3, CASE WHEN $3 THEN NOW() ELSE NULL END)
+      ON CONFLICT (email_id, user_id)
+      DO UPDATE SET read = $3, read_at = CASE WHEN $3 THEN NOW() ELSE NULL END`,
+      [emailId, payload.sub, read]);
 
     return NextResponse.json({ message: 'Email updated successfully' });
   } catch (err) {

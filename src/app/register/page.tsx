@@ -54,7 +54,7 @@ export default function RegisterPage() {
       try {
         data = await res.json();
       } catch (e) {
-        console.warn('Failed to parse JSON response', e);
+        // console.warn('Failed to parse JSON response', e);
       }
       if (!res.ok) {
         const message = (res.status === 409) ? 'An account with this email already exists.' : (data && data.error) ? data.error : 'Unable to register';
@@ -66,7 +66,7 @@ export default function RegisterPage() {
       toast({ title: 'Account created', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
-      console.error('Registration error', err);
+      // console.error('Registration error', err);
       const message = err?.message ?? 'Network error';
       setErrorMessage(message);
       toast({ title: 'Registration failed', description: message, variant: 'destructive' });

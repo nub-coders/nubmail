@@ -95,7 +95,6 @@ export default function ComposePage() {
 
       setTimeout(() => router.push('/dashboard/sent'), 1500);
     } catch (error: any) {
-      console.error('Send email error:', error);
       toast({
         title: 'Failed to send',
         description: error.message || 'An error occurred while sending your email',
