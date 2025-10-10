@@ -35,67 +35,87 @@ export function MainNav({ className }: { className?: string }) {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <nav className={cn('flex flex-col', className)}>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive('/dashboard')}
-            tooltip="Dashboard"
-          >
-            <Link href="/dashboard">
-              <LayoutDashboard />
-              <span>Dashboard</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive('/dashboard/domains')}
-            tooltip="Domains"
-          >
-            <Link href="/dashboard/domains">
-              <Globe />
-              <span>Domains</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive('/dashboard/accounts')}
-            tooltip="Accounts"
-          >
-            <Link href="/dashboard/accounts">
-              <Users />
-              <span>Accounts</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+    <nav className={cn('flex flex-col space-y-6', className)}>
+      {/* Management Section */}
+      <div>
+        <div className="px-3 mb-3">
+          <h4 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+            Management
+          </h4>
+        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard')}
+              tooltip="Dashboard"
+              className="group hover:bg-sidebar-accent/80 transition-colors"
+            >
+              <Link href="/dashboard">
+                <LayoutDashboard className="group-hover:scale-110 transition-transform" />
+                <span>Dashboard</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/domains')}
+              tooltip="Domains"
+              className="group hover:bg-sidebar-accent/80 transition-colors"
+            >
+              <Link href="/dashboard/domains">
+                <Globe className="group-hover:scale-110 transition-transform" />
+                <span>Domains</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/accounts')}
+              tooltip="Accounts"
+              className="group hover:bg-sidebar-accent/80 transition-colors"
+            >
+              <Link href="/dashboard/accounts">
+                <Users className="group-hover:scale-110 transition-transform" />
+                <span>Accounts</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </div>
       
-      <SidebarMenu className="mt-4">
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive('/dashboard/inbox')}
-            tooltip="Inbox"
-          >
-            <Link href="/dashboard/inbox">
-              <Inbox />
-              <span>Inbox</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive('/dashboard/sent')}
-            tooltip="Sent"
-          >
-            <Link href="/dashboard/sent">
-              <Send />
+      {/* Mail Section */}
+      <div>
+        <div className="px-3 mb-3">
+          <h4 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+            Mail
+          </h4>
+        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/inbox')}
+              tooltip="Inbox"
+              className="group hover:bg-sidebar-accent/80 transition-colors"
+            >
+              <Link href="/dashboard/inbox">
+                <Inbox className="group-hover:scale-110 transition-transform" />
+                <span>Inbox</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/sent')}
+              tooltip="Sent"
+              className="group hover:bg-sidebar-accent/80 transition-colors"
+            >
+              <Link href="/dashboard/sent">
+                <Send className="group-hover:scale-110 transition-transform" />
               <span>Sent</span>
             </Link>
           </SidebarMenuButton>
@@ -105,9 +125,10 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/drafts')}
             tooltip="Drafts"
+            className="group hover:bg-sidebar-accent/80 transition-colors"
           >
             <Link href="/dashboard/drafts">
-              <FileText />
+              <FileText className="group-hover:scale-110 transition-transform" />
               <span>Drafts</span>
             </Link>
           </SidebarMenuButton>
@@ -117,9 +138,10 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/spam')}
             tooltip="Spam"
+            className="group hover:bg-sidebar-accent/80 transition-colors"
           >
             <Link href="/dashboard/spam">
-              <Shield />
+              <Shield className="group-hover:scale-110 transition-transform" />
               <span>Spam</span>
             </Link>
           </SidebarMenuButton>
@@ -129,66 +151,80 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/trash')}
             tooltip="Trash"
+            className="group hover:bg-sidebar-accent/80 transition-colors"
           >
             <Link href="/dashboard/trash">
-              <Trash2 />
+              <Trash2 className="group-hover:scale-110 transition-transform" />
               <span>Trash</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-      </SidebarMenu>
-      
-      {isAdmin && (
-        <SidebarMenu className="mt-4">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={isActive('/dashboard/admin')}
-              tooltip="Admin Dashboard"
-            >
-              <Link href="/dashboard/admin">
-                <ShieldCheck />
-                <span>Admin</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={isActive('/dashboard/admin/users')}
-              tooltip="Manage Users"
-            >
-              <Link href="/dashboard/admin/users">
-                <UserCog />
-                <span>Manage Users</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={isActive('/dashboard/admin/domains')}
-              tooltip="Manage Domains"
-            >
-              <Link href="/dashboard/admin/domains">
-                <Globe />
-                <span>Manage Domains</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={isActive('/dashboard/admin/server-dns')}
-              tooltip="Server DNS"
-            >
-              <Link href="/dashboard/admin/server-dns">
-                <Server />
-                <span>Server DNS</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
+      </div>
+      
+      {/* Admin Section */}
+      {isAdmin && (
+        <div>
+          <div className="px-3 mb-3">
+            <h4 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+              Administration
+            </h4>
+          </div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/dashboard/admin')}
+                tooltip="Admin Dashboard"
+                className="group hover:bg-sidebar-accent/80 transition-colors"
+              >
+                <Link href="/dashboard/admin">
+                  <ShieldCheck className="group-hover:scale-110 transition-transform" />
+                  <span>Admin</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/dashboard/admin/users')}
+                tooltip="Manage Users"
+                className="group hover:bg-sidebar-accent/80 transition-colors"
+              >
+                <Link href="/dashboard/admin/users">
+                  <UserCog className="group-hover:scale-110 transition-transform" />
+                  <span>Manage Users</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/dashboard/admin/domains')}
+                tooltip="Manage Domains"
+                className="group hover:bg-sidebar-accent/80 transition-colors"
+              >
+                <Link href="/dashboard/admin/domains">
+                  <Globe className="group-hover:scale-110 transition-transform" />
+                  <span>Manage Domains</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/dashboard/admin/server-dns')}
+                tooltip="Server DNS"
+                className="group hover:bg-sidebar-accent/80 transition-colors"
+              >
+                <Link href="/dashboard/admin/server-dns">
+                  <Server className="group-hover:scale-110 transition-transform" />
+                  <span>Server DNS</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </div>
       )}
     </nav>
   );

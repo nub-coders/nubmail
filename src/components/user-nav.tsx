@@ -38,8 +38,8 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-9 w-9">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-muted/50 transition-colors">
+          <Avatar className="h-9 w-9 ring-2 ring-border/20 hover:ring-primary/30 transition-all">
             {userAvatar && (
                <Image
                   src={userAvatar.imageUrl}
@@ -49,17 +49,35 @@ export function UserNav() {
                   data-ai-hint={userAvatar.imageHint}
                 />
             )}
-            <AvatarFallback>{user?.email ? user.email.slice(0,2).toUpperCase() : 'NU'}</AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {user?.email ? user.email.slice(0,2).toUpperCase() : 'NU'}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.fullName ?? 'User'}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user?.email ?? 'Not signed in'}
-            </p>
+      <DropdownMenuContent className="w-64 animate-scale-in" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal p-4 bg-muted/30">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-12 w-12">
+              {userAvatar && (
+                <Image
+                  src={userAvatar.imageUrl}
+                  alt={userAvatar.description}
+                  width={48}
+                  height={48}
+                  data-ai-hint={userAvatar.imageHint}
+                />
+              )}
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
+                {user?.email ? user.email.slice(0,2).toUpperCase() : 'NU'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-semibold leading-none">{user?.fullName ?? 'User'}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user?.email ?? 'Not signed in'}
+              </p>
+            </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

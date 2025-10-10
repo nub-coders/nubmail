@@ -106,77 +106,125 @@ export default function ComposePage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-3xl font-bold">Compose Email</h1>
-        <p className="text-muted-foreground">Draft and send your new message.</p>
+    <div className="flex flex-col gap-6 h-full max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <Send className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Compose Email</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">Draft and send your new message</p>
+        </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>New Message</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
-            <div className="grid gap-2">
-              <Label htmlFor="from">From</Label>
-              <Select value={from} onValueChange={setFrom}>
-                <SelectTrigger id="from">
-                  <SelectValue placeholder="Choose a sender" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map(a => (
-                    <SelectItem key={a.id} value={a.emailAddress}>{a.emailAddress}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+      {/* Compose Form */}
+      <Card className="flex-1 border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+        <CardContent className="p-0">
+          <form className="flex flex-col h-full" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+            {/* Email Header Fields */}
+            <div className="space-y-1 p-6 border-b bg-muted/20">
+              {/* From Field */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="from" className="text-sm font-medium text-muted-foreground w-16 flex-shrink-0">
+                  From
+                </Label>
+                <Select value={from} onValueChange={setFrom}>
+                  <SelectTrigger id="from" className="border-0 bg-transparent hover:bg-muted/50 focus:bg-background">
+                    <SelectValue placeholder="Choose sender..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map(a => (
+                      <SelectItem key={a.id} value={a.emailAddress}>
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-xs font-medium text-primary">
+                              {a.emailAddress.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          {a.emailAddress}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* To Field */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="to" className="text-sm font-medium text-muted-foreground w-16 flex-shrink-0">
+                  To
+                </Label>
+                <Input 
+                  id="to" 
+                  type="email" 
+                  placeholder="recipient@example.com" 
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  className="border-0 bg-transparent hover:bg-muted/50 focus:bg-background"
+                  required
+                />
+              </div>
+
+              {/* Subject Field */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="subject" className="text-sm font-medium text-muted-foreground w-16 flex-shrink-0">
+                  Subject
+                </Label>
+                <Input 
+                  id="subject" 
+                  placeholder="Enter subject..." 
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="border-0 bg-transparent hover:bg-muted/50 focus:bg-background"
+                  required
+                />
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="to">To</Label>
-              <Input 
-                id="to" 
-                type="email" 
-                placeholder="recipient@example.com" 
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input 
-                id="subject" 
-                placeholder="Your subject line" 
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="body">Message</Label>
+
+            {/* Message Body */}
+            <div className="flex-1 flex flex-col">
               <Textarea 
                 id="body" 
                 placeholder="Write your message here..." 
-                className="min-h-[300px]" 
+                className="flex-1 border-0 bg-transparent resize-none focus:ring-0 text-base leading-relaxed p-6 min-h-[400px]" 
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 required
               />
             </div>
-            <div className="flex items-center justify-between gap-2">
+
+            {/* Action Bar */}
+            <div className="flex items-center justify-between gap-4 p-6 border-t bg-muted/10">
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" type="button" disabled>
-                  <Paperclip className="h-4 w-4" />
-                  <span className="sr-only">Attach file</span>
+                <Button variant="outline" size="sm" type="button" disabled className="opacity-50">
+                  <Paperclip className="h-4 w-4 mr-2" />
+                  Attach
+                  <span className="ml-1 text-xs text-muted-foreground">(Soon)</span>
                 </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" type="button" onClick={handleDiscard}>
+              
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" type="button" onClick={handleDiscard} className="hover:bg-destructive/10 hover:text-destructive">
                   <Trash className="mr-2 h-4 w-4" />
                   Discard
                 </Button>
-                <Button type="submit" disabled={sending}>
-                  <Send className="mr-2 h-4 w-4" />
-                  {sending ? 'Sending...' : 'Send'}
+                <Button 
+                  type="submit" 
+                  disabled={sending || !from || !to || !subject || !body}
+                  className="min-w-[100px]"
+                >
+                  {sending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
