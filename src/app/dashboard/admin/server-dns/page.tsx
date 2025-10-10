@@ -86,6 +86,7 @@ export default function AdminServerDnsPage() {
   const [data, setData] = useState<ServerDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [dkimLoading, setDkimLoading] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
 
   const dkimRecord = useMemo(
     () => data?.records.find((record) => record.key === "dkim"),
@@ -173,6 +174,65 @@ export default function AdminServerDnsPage() {
     }
   };
 
+  const handleTestEmail = async () => {
+    setTestLoading(true);
+    try {
+      // Send test email
+      const res = await fetch("/api/admin/server-dns/test-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({
+          title: "Test email failed",
+          description: data.error || "Could not send test email.",
+          variant: "destructive",
+        });
+        setTestLoading(false);
+        return;
+      }
+      // Poll for email delivery
+      let attempts = 0;
+      let delivered = false;
+      while (attempts < 10 && !delivered) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const pollRes = await fetch("/api/admin/server-dns/test-email-status", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const pollData = await pollRes.json();
+        if (pollRes.ok && pollData.delivered) {
+          delivered = true;
+          toast({
+            title: "Test email delivered!",
+            description: `Email received by test@${data.domain}`,
+            variant: "success",
+          });
+        }
+        attempts++;
+      }
+      if (!delivered) {
+        toast({
+          title: "Test email not received",
+          description: "The test email was sent but not detected in the inbox after 20 seconds.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Test email error",
+        description: err?.message || String(err),
+        variant: "destructive",
+      });
+    }
+    setTestLoading(false);
+  };
+
   useEffect(() => {
     if (user?.isAdmin) {
       fetchStatus();
@@ -207,7 +267,13 @@ export default function AdminServerDnsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="space-y-6">
+      <div className="flex items-center gap-4 mb-4">
+        <Button onClick={handleTestEmail} disabled={testLoading} variant="default">
+          {testLoading ? "Testing..." : "Send Test Email"}
+        </Button>
+        <span className="text-xs text-muted-foreground">Sends a test email to <b>test@your-domain</b> and waits for delivery.</span>
+      </div>
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Server DNS Setup</h1>

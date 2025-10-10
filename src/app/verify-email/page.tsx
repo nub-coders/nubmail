@@ -56,7 +56,6 @@ export default function VerifyEmailPage() {
         description: 'Check your email for the verification code',
       });
     } catch (err) {
-      console.error('Send verification failed', err);
       toast({
         title: 'Error',
         description: 'Failed to send verification code',
@@ -105,7 +104,6 @@ export default function VerifyEmailPage() {
         description: 'Email verified! Redirecting to dashboard...',
       });
     } catch (err) {
-      console.error('Verify code failed', err);
       toast({
         title: 'Error',
         description: 'Failed to verify code',
@@ -121,7 +119,6 @@ export default function VerifyEmailPage() {
       await setToken(null);
       router.push('/');
     } catch (err) {
-      console.error('Logout failed', err);
       toast({ title: 'Error', description: 'Could not log out', variant: 'destructive' });
     }
   };

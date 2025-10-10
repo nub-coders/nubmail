@@ -29,6 +29,10 @@ function getTransport(config?: { host: string; port: number; user: string; pass:
     host: config.host,
     port: Number(config.port),
     secure,
+    // Allow self-signed certificates in development
+    tls: {
+      rejectUnauthorized: process.env.NODE_ENV === 'production'
+    }
   };
   if (config.user && config.pass) {
     transportConfig.auth = { user: config.user, pass: config.pass };

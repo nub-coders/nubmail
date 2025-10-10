@@ -19,20 +19,18 @@ if (!connectionString) {
 
 // Log which env variable is being used (do not log the connection string itself)
 const connectionSource = process.env.DATABASE_URL ? 'DATABASE_URL' : process.env.POSTGRES_URL ? 'POSTGRES_URL' : 'PG env vars';
-console.log(`[startup] Postgres connection source: ${connectionSource}`);
 
 let pool: Pool | null = null;
 
 export function getPgPool(): Pool {
   if (!pool) {
-    pool = new Pool({ connectionString, max: 10 });
+  pool = new Pool({ connectionString: connectionString || undefined, max: 10 });
     // Startup diagnostics
     (async () => {
       try {
         const start = Date.now();
         const { rows } = await pool!.query('SELECT 1 as ok');
         const ms = Date.now() - start;
-        console.log(`[startup] Postgres connected: ok=${rows?.[0]?.ok === 1} in ${ms}ms`);
         // Verify essential tables exist
         const requiredTables = ['users', 'domains', 'email_accounts', 'email_messages'];
         const { rows: tables } = await pool!.query(
@@ -41,12 +39,9 @@ export function getPgPool(): Pool {
         const existing = new Set(tables.map((t: any) => t.table_name));
         const missing = requiredTables.filter((t) => !existing.has(t));
         if (missing.length > 0) {
-          console.warn(`[startup] Missing tables: ${missing.join(', ')}. Run docs/postgres-schema.sql`);
         } else {
-          console.log('[startup] All required tables present');
         }
       } catch (err: any) {
-        console.error('[startup] Postgres connection failed:', err?.message || err);
       }
     })();
   }

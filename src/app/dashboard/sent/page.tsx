@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Send, Search } from "lucide-react";
+import { Send, Search, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useAuthClient } from '@/lib/auth-provider';
 
@@ -22,6 +24,8 @@ export default function SentPage() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -37,7 +41,6 @@ export default function SentPage() {
           setEmails(data.emails || []);
         }
       } catch (error) {
-        console.error('Failed to fetch emails:', error);
       } finally {
         setIsLoading(false);
       }
@@ -45,6 +48,11 @@ export default function SentPage() {
 
     fetchEmails();
   }, [user]);
+
+  const handleEmailClick = (email: Email) => {
+    setSelectedEmail(email);
+    setIsEmailOpen(true);
+  };
 
   if (!user) {
     return (
@@ -99,9 +107,10 @@ export default function SentPage() {
           ) : (
             <div className="flex flex-col">
               {filteredEmails.map((email) => (
-                <div
+                <button
                   key={email.id}
-                  className="flex flex-col items-start gap-2 border-b p-4 text-sm"
+                  onClick={() => handleEmailClick(email)}
+                  className="flex flex-col items-start gap-2 border-b p-4 text-sm transition-all hover:bg-secondary w-full text-left cursor-pointer"
                 >
                   <div className="flex w-full items-center">
                     <div className="flex items-center gap-2">
@@ -114,17 +123,59 @@ export default function SentPage() {
                     </div>
                   </div>
                   <div className="text-xs font-medium">
-                    {email.subject}
+                    {email.subject || '(No Subject)'}
                   </div>
                   <div className="line-clamp-2 text-xs text-muted-foreground">
                     {email.body.replace(/<[^>]*>?/gm, '')}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Email Viewer Dialog */}
+      <Dialog open={isEmailOpen} onOpenChange={setIsEmailOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Button
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsEmailOpen(false)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Sent
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedEmail && (
+            <div className="flex flex-col gap-4 overflow-hidden">
+              <div className="space-y-2 border-b pb-4">
+                <h2 className="text-xl font-semibold">
+                  {selectedEmail.subject || '(No Subject)'}
+                </h2>
+                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                  <div><strong>From:</strong> {selectedEmail.sender}</div>
+                  <div><strong>To:</strong> {selectedEmail.recipients.join(', ')}</div>
+                  <div><strong>Date:</strong> {new Date(selectedEmail.sentAt).toLocaleString()}</div>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-auto">
+                <div 
+                  className="prose max-w-none dark:prose-invert"
+                  dangerouslySetInnerHTML={{ 
+                    __html: selectedEmail.body || selectedEmail.body?.replace(/\n/g, '<br>') || 'No content'
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

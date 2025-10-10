@@ -69,6 +69,16 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    // Log SMTP config (without sensitive data) for debugging
+    console.log('SMTP Config:', {
+      host: smtpConfig.host,
+      port: smtpConfig.port,
+      hasAuth: !!(smtpConfig.user && smtpConfig.pass),
+      useBuiltIn: ownedFrom.useBuiltInSmtp,
+      from,
+      to
+    });
+
     const result = await sendSmtpEmail({
       from,
       to,
@@ -102,6 +112,33 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('Send email error', err);
-    return NextResponse.json({ error: err.message || 'Failed to send email' }, { status: 500 });
+    
+    // Handle specific SMTP errors
+    if (err.code === 'EENVELOPE' && err.response?.includes('554 5.7.1')) {
+      return NextResponse.json({ 
+        error: 'Email delivery rejected by server. This may be due to SMTP relay restrictions or authentication issues. Please check your SMTP server configuration or try a different email provider.',
+        details: err.response 
+      }, { status: 500 });
+    }
+    
+    if (err.code === 'EAUTH') {
+      return NextResponse.json({ 
+        error: 'SMTP authentication failed. Please check your email account credentials.',
+        details: err.response 
+      }, { status: 500 });
+    }
+    
+    if (err.code === 'ECONNECTION') {
+      return NextResponse.json({ 
+        error: 'Failed to connect to SMTP server. Please check your server configuration.',
+        details: err.response 
+      }, { status: 500 });
+    }
+    
+    return NextResponse.json({ 
+      error: err.message || 'Failed to send email',
+      code: err.code,
+      details: err.response 
+    }, { status: 500 });
   }
 }

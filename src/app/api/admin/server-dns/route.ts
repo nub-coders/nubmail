@@ -268,10 +268,28 @@ export async function GET(req: NextRequest) {
       message: mxMessage,
     });
 
-    const spfExpected = `v=spf1 include:${mailHost} ~all`;
+    const domain = process.env.DOMAIN;
+    const baseDomain = domain ? domain.split(':')[0] : primaryDomain;
+    
+    // Use the main domain for SPF, not the mail subdomain
+    const spfExpected = `v=spf1 a mx ~all`;
     const spfStatus = spfLookup.values.some((txt) => {
-      const normalized = normalizeTxtMatch(txt);
-      return normalized.startsWith('v=spf1') && normalized.includes(`include:${normalizeDomain(mailHost)}`);
+      const normalized = normalizeTxtMatch(txt); // This removes spaces: "v=spf1amx~all"
+      if (normalized.startsWith('v=spf1')) {
+        // Check for 'a' and 'mx' mechanisms (without spaces since normalized removes them)
+        if (normalized.includes('a') && normalized.includes('mx')) {
+          return true;
+        }
+        // Also check if it contains 'a' mechanism alone
+        if (normalized.match(/v=spf1.*a.*~all/)) {
+          return true;
+        }
+        // Also check if it contains 'mx' mechanism alone  
+        if (normalized.match(/v=spf1.*mx.*~all/)) {
+          return true;
+        }
+      }
+      return false;
     })
       ? 'configured'
       : spfLookup.values.length === 0
@@ -287,10 +305,10 @@ export async function GET(req: NextRequest) {
       observedValues: spfLookup.values,
       message:
         spfStatus === 'configured'
-          ? 'SPF record references the NubMail server'
+          ? 'SPF record authorizes email sending from this domain'
           : spfStatus === 'missing'
-            ? 'Add SPF TXT record including the NubMail server host'
-            : 'Update SPF record to include the NubMail server host',
+            ? `Add SPF TXT record to authorize ${baseDomain} for email sending`
+            : `Update SPF record to authorize ${baseDomain} for email sending`,
     });
 
     const dmarcExpected = `v=DMARC1; p=quarantine; rua=mailto:dmarc@${primaryDomain}`;
