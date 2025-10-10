@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Search, X, ArrowLeft, Mail, MailOpen, Clock, Paperclip, Star, Archive, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Mail, MailOpen, Clock, Archive, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthClient } from '@/lib/auth-provider';
@@ -24,12 +23,11 @@ interface Email {
 }
 
 export default function InboxPage() {
+  const router = useRouter();
   const { user } = useAuthClient();
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [isEmailOpen, setIsEmailOpen] = useState(false);
 
 
   const fetchEmails = async () => {
@@ -53,42 +51,8 @@ export default function InboxPage() {
     fetchEmails();
   }, [user]);
 
-  const handleMarkAsRead = async (emailId: string) => {
-    try {
-      // Optimistically update the UI immediately
-      setEmails(prevEmails => 
-        prevEmails.map(e => 
-          e.id === emailId ? { ...e, read: true } : e
-        )
-      );
-      
-      // Update selectedEmail if it's the one being marked as read
-      setSelectedEmail(prev => 
-        prev?.id === emailId ? { ...prev, read: true } : prev
-      );
-
-      await fetch('/api/emails', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ emailId, read: true })
-      });
-      // Refetch emails from backend to ensure UI matches DB
-      await fetchEmails();
-    } catch (error) {
-      // On error, refetch to get the correct state
-      await fetchEmails();
-    }
-  };
-
   const handleEmailClick = (email: Email) => {
-    setSelectedEmail(email);
-    setIsEmailOpen(true);
-    if (!email.read) {
-      handleMarkAsRead(email.id);
-    }
+    router.push(`/dashboard/inbox/${email.id}`);
   };
 
   if (!user) {
