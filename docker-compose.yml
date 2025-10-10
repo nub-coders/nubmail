@@ -50,7 +50,7 @@ services:
     networks:
       - nubmail-network
       - web
-
+  
   smtp-sender:
     image: boky/postfix
     container_name: nubmail-smtp-sender

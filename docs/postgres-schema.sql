@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   full_name TEXT,
   is_admin BOOLEAN DEFAULT FALSE,
+  email_verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

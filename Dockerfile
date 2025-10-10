@@ -9,7 +9,6 @@ RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -28,9 +27,14 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/scripts ./scripts
 
 # Copy SMTP receiver source into image (runs in separate service/container)
 COPY --chown=nextjs:nodejs smtp ./smtp
+
+# Install dependencies in runner stage
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev
 
 USER nextjs
 
