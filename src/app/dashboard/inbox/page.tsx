@@ -52,6 +52,18 @@ export default function InboxPage() {
 
   const handleMarkAsRead = async (emailId: string) => {
     try {
+      // Optimistically update the UI immediately
+      setEmails(prevEmails => 
+        prevEmails.map(e => 
+          e.id === emailId ? { ...e, read: true } : e
+        )
+      );
+      
+      // Update selectedEmail if it's the one being marked as read
+      setSelectedEmail(prev => 
+        prev?.id === emailId ? { ...prev, read: true } : prev
+      );
+
       await fetch('/api/emails', {
         method: 'PATCH',
         headers: {
@@ -63,6 +75,8 @@ export default function InboxPage() {
       // Refetch emails from backend to ensure UI matches DB
       await fetchEmails();
     } catch (error) {
+      // On error, refetch to get the correct state
+      await fetchEmails();
     }
   };
 
