@@ -215,7 +215,7 @@ export async function GET(req: NextRequest) {
       ? mailHost.slice(0, mailHost.length - primaryDomain.length - 1)
       : mailHost;
 
-    const [aLookup, mxLookup, spfLookup, dmarcLookup, autodiscoverLookup, autoconfigLookup, webmailLookup, imapLookup, smtpLookup, pop3Lookup, dkimEntry] = await Promise.all([
+  const [aLookup, mxLookup, spfLookup, dmarcLookup, autodiscoverLookup, autoconfigLookup, webmailLookup, imapLookup, smtpLookup, pop3Lookup, dkimEntry] = await Promise.all([
       safeResolveA(mailHost),
       safeResolveMx(primaryDomain),
       safeResolveTxt(primaryDomain),
@@ -369,9 +369,26 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    if (dkimEntry) {
-      const selector = sanitizeSelector(dkimEntry.selector);
-      const expectedDkimValue = `v=DKIM1; k=rsa; p=${exportPublicKeyPemToDns(dkimEntry.publicKey)}`;
+    // If no DKIM entry exists, generate one automatically with default selector 'mail'
+    let ensuredDkim = dkimEntry;
+    if (!ensuredDkim) {
+      const selector = 'mail';
+      await ensureDkimTable();
+      const { publicKeyPem, privateKeyPem } = await generateKeyPair();
+      const normalizedDomain = normalizeDomain(primaryDomain);
+      await pgQuery(
+        `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (domain_name)
+         DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
+        [normalizedDomain, selector, publicKeyPem, privateKeyPem]
+      );
+      ensuredDkim = { selector, publicKey: publicKeyPem };
+    }
+
+    if (ensuredDkim) {
+      const selector = sanitizeSelector(ensuredDkim.selector);
+      const expectedDkimValue = `v=DKIM1; k=rsa; p=${exportPublicKeyPemToDns(ensuredDkim.publicKey)}`;
       const dkimHost = `${selector}._domainkey.${primaryDomain}`;
       const dkimLookup = await safeResolveTxt(dkimHost);
       const dkimConfigured = dkimLookup.values.some((txt) => normalizeTxtMatch(txt).includes(normalizeTxtMatch(expectedDkimValue)));
@@ -386,21 +403,8 @@ export async function GET(req: NextRequest) {
         message: dkimConfigured
           ? 'DKIM record published'
           : 'Publish DKIM TXT record for outbound signing',
-        canAutoGenerate: true,
+        canAutoGenerate: false,
         selector,
-      });
-    } else {
-      records.push({
-        key: 'dkim',
-        type: 'TXT',
-        name: 'mail._domainkey',
-        host: `mail._domainkey.${primaryDomain}`,
-        expectedValue: 'Generate DKIM key to populate record value',
-        status: 'action_required',
-        observedValues: [],
-        message: 'Generate a DKIM key pair and publish the TXT record before sending email',
-        canAutoGenerate: true,
-        selector: 'mail',
       });
     }
 
@@ -417,51 +421,4 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const admin = await getAdminFromToken(req);
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
-    }
-
-    const primaryDomain = getPrimaryDomain();
-    if (!primaryDomain) {
-      return NextResponse.json({ error: 'Primary domain is not configured in environment variables' }, { status: 500 });
-    }
-
-    let payload: any = {};
-    try {
-      payload = await req.json();
-    } catch {
-      payload = {};
-    }
-
-    const action = String(payload?.action || 'generateDkim');
-    if (action !== 'generateDkim') {
-      return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
-    }
-
-    const selector = sanitizeSelector(String(payload?.selector || 'mail'));
-    await ensureDkimTable();
-    const { publicKeyPem, privateKeyPem } = await generateKeyPair();
-    const normalizedDomain = normalizeDomain(primaryDomain);
-    await pgQuery(
-      `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (domain_name)
-       DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
-      [normalizedDomain, selector, publicKeyPem, privateKeyPem]
-    );
-
-    const recordValue = `v=DKIM1; k=rsa; p=${exportPublicKeyPemToDns(publicKeyPem)}`;
-
-    return NextResponse.json({
-      selector,
-      recordName: `${selector}._domainkey.${normalizedDomain}`,
-      recordValue,
-    });
-  } catch (err: any) {
-    console.error('Admin server DNS POST error', err);
-    return NextResponse.json({ error: err?.message || 'Internal error' }, { status: 500 });
-  }
-}
+// DKIM generation is automatic in GET handler; POST route removed.

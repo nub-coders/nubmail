@@ -20,19 +20,29 @@ type SendInput = {
   };
 };
 
-function getTransport(config?: { host: string; port: number; user: string; pass: string }, dkim?: { domainName: string; keySelector: string; privateKey: string }) {
+function getTransport(
+  config?: { host: string; port: number; user: string; pass: string },
+  dkim?: { domainName: string; keySelector: string; privateKey: string }
+) {
   if (!config?.host || !config?.port) {
     throw new Error('SMTP configuration missing. Provide smtpConfig with host and port');
   }
   const secure = Number(config.port) === 465;
+  const internalHost = process.env.INTERNAL_SMTP_HOST || 'smtp-sender';
+  const isInternal = config.host === internalHost;
+  const allowSelfSigned = String(process.env.SMTP_ALLOW_SELF_SIGNED || '').toLowerCase() === 'true' || isInternal;
   const transportConfig: any = {
     host: config.host,
     port: Number(config.port),
     secure,
     // Allow self-signed certificates in development
     tls: {
-      rejectUnauthorized: process.env.NODE_ENV === 'production'
-    }
+      // For internal SMTP or when explicitly allowed, do not reject self-signed certs
+      rejectUnauthorized: allowSelfSigned ? false : process.env.NODE_ENV === 'production'
+    },
+    // Never require TLS upgrade for internal route; STARTTLS will be attempted opportunistically
+    requireTLS: isInternal ? false : undefined,
+    ignoreTLS: undefined,
   };
   if (config.user && config.pass) {
     transportConfig.auth = { user: config.user, pass: config.pass };

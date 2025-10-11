@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { domainId, selector: customSelector } = body || {};
+    const { domainId, selector: customSelector, privateKeyPem } = body || {};
     if (!domainId) return NextResponse.json({ error: 'domainId required' }, { status: 400 });
 
     const dom = await getDomainByIdForUser(domainId, payload.sub);
@@ -107,20 +107,70 @@ export async function POST(req: NextRequest) {
     await ensureTable();
 
     const selector = String(customSelector || 'mail').toLowerCase().replace(/[^a-z0-9-]/g, '') || 'mail';
-    const { publicKeyPem, privateKeyPem } = await generateKeyPair();
+    const normalizedDomain = normalizeDomain(dom.domainName);
+
+    // If a private key is provided, import-existing flow: verify DNS matches and save it
+    if (privateKeyPem) {
+      try {
+        const crypto = await import('node:crypto');
+        // Build public key from provided private key
+        const priv = crypto.createPrivateKey({ key: privateKeyPem });
+        const pub = crypto.createPublicKey(priv);
+        const publicKeyPem = pub.export({ type: 'spki', format: 'pem' }) as unknown as string;
+
+        // Verify that DNS TXT for selector matches the derived public key
+        const { promises: dns } = await import('node:dns');
+        const host = `${selector}._domainkey.${normalizedDomain}`;
+        let txtValues: string[] = [];
+        try {
+          const records = await dns.resolveTxt(host);
+          txtValues = records.map(parts => parts.join(''));
+        } catch (e: any) {
+          return NextResponse.json({ error: `DKIM TXT not found at ${host}. Please publish it first.` }, { status: 400 });
+        }
+        const expectedP = exportPublicKeyPemToDns(publicKeyPem);
+        const found = txtValues.some(v => v.replace(/\s+/g, '').includes(`p=${expectedP}`));
+        if (!found) {
+          return NextResponse.json({ error: 'Provided private key does not match the DKIM TXT record in DNS for this selector.' }, { status: 400 });
+        }
+
+        // Store in DB
+        await pgQuery(
+          `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (domain_name)
+           DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
+          [normalizedDomain, selector, publicKeyPem, privateKeyPem]
+        );
+
+        return NextResponse.json({
+          selector,
+          recordName: `${selector}._domainkey`,
+          recordValue: `v=DKIM1; k=rsa; p=${exportPublicKeyPemToDns(publicKeyPem)}`,
+          imported: true
+        });
+      } catch (e: any) {
+        console.error('DKIM import error', e);
+        return NextResponse.json({ error: e?.message || 'Invalid private key' }, { status: 400 });
+      }
+    }
+
+    // Default flow: generate a new keypair
+    const { publicKeyPem, privateKeyPem: newPrivateKeyPem } = await generateKeyPair();
 
     await pgQuery(
       `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (domain_name)
        DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
-      [normalizeDomain(dom.domainName), selector, publicKeyPem, privateKeyPem]
+      [normalizedDomain, selector, publicKeyPem, newPrivateKeyPem]
     );
 
     return NextResponse.json({
       selector,
       recordName: `${selector}._domainkey`,
       recordValue: `v=DKIM1; k=rsa; p=${exportPublicKeyPemToDns(publicKeyPem)}`,
+      imported: false
     });
   } catch (err: any) {
     console.error('DKIM POST error', err);

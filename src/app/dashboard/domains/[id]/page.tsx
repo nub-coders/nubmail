@@ -85,7 +85,7 @@ export default function DomainDnsPage() {
   const [data, setData] = useState<DomainDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [dkimLoading, setDkimLoading] = useState(false);
+  // DKIM generation is automatic; no UI button
 
   const dkimRecord = useMemo(
     () => data?.records.find((record) => record.key === "dkim"),
@@ -183,44 +183,7 @@ export default function DomainDnsPage() {
     }
   };
 
-  const generateDkim = async () => {
-    if (!user || !domainId) return;
-    setDkimLoading(true);
-    try {
-      const res = await fetch('/api/domains/dkim', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ domainId }),
-      });
-      
-      const result = await res.json();
-      if (res.ok) {
-        toast({ 
-          title: 'DKIM key generated', 
-          description: 'Add the DKIM TXT record to your DNS settings.' 
-        });
-        await fetchDomainDns();
-      } else {
-        toast({ 
-          title: 'DKIM generation failed', 
-          description: result.error || 'Try again later', 
-          variant: 'destructive' 
-        });
-      }
-    } catch (error: any) {
-      console.error("Failed to generate DKIM", error);
-      toast({
-        title: "DKIM generation failed",
-        description: error?.message || "Unable to generate DKIM key",
-        variant: "destructive",
-      });
-    } finally {
-      setDkimLoading(false);
-    }
-  };
+  // DKIM generation is automatic
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -275,12 +238,7 @@ export default function DomainDnsPage() {
             <CheckCircle2 className={cn("mr-2 h-4 w-4", verifying && "animate-spin")} />
             {verifying ? "Verifying..." : "Verify Records"}
           </Button>
-          {dkimRecord?.canAutoGenerate && (
-            <Button onClick={generateDkim} disabled={dkimLoading}>
-              <Sparkles className={cn("mr-2 h-4 w-4", dkimLoading && "animate-spin")} />
-              {dkimLoading ? "Generating..." : "Generate DKIM"}
-            </Button>
-          )}
+          {/* DKIM generation button removed */}
         </div>
       </div>
 
