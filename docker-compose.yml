@@ -50,7 +50,8 @@ services:
     networks:
       - nubmail-network
       - web
-  
+    command: sh -c "psql $POSTGRES_URL -f scripts/20251007_add_email_verified_to_users.sql || true && node scripts/init-admin.js && node server.js"
+
   smtp-sender:
     image: boky/postfix
     container_name: nubmail-smtp-sender
