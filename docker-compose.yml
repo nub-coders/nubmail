@@ -62,14 +62,17 @@ services:
       - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
       - POSTFIX_smtpd_tls_security_level=may
       - POSTFIX_smtp_tls_security_level=may
+      - POSTFIX_inet_protocols=ipv4
       # Allow relay for authenticated users and local networks
       - POSTFIX_smtpd_relay_restrictions=permit_mynetworks
       - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,reject_unauth_destination
-      # DKIM Configuration  
-      - DKIM_AUTOGENERATE=1
-      - DKIM_SELECTOR=default
-      - DKIM_DOMAINS=nub-coder.tech
-      # Additional headers for better reputation
+      # DKIM disabled here; app signs per user domain using Nodemailer
+  # - DKIM_AUTOGENERATE=0
+  # - DKIM_SELECTOR=default
+  # - DKIM_DOMAINS=nub-coder.tech
+      # Ensure OpenDKIM does not sign (verify-only)
+      - OPENDKIM_Mode=v
+  # Additional headers for better reputation
       - POSTFIX_smtpd_helo_required=yes
       - POSTFIX_disable_vrfy_command=yes
     networks:
