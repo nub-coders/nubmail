@@ -221,8 +221,8 @@ export async function GET(req: NextRequest) {
       message: hasDMARC ? 'DMARC policy is published' : 'Add DMARC TXT record for email authentication',
     });
 
-    // DKIM record
-    if (dkimRows.length > 0) {
+  // DKIM record (auto-generate if missing)
+  if (dkimRows.length > 0) {
       const selector = dkimRows[0].selector;
       const p = exportPublicKeyPemToDns(dkimRows[0].public_key);
       const dkimHost = `${selector}._domainkey.${normalizedDomain}`;
@@ -241,16 +241,46 @@ export async function GET(req: NextRequest) {
         message: hasDKIM ? 'DKIM signature is configured' : 'Add DKIM TXT record for email signing',
       });
     } else {
+      // Auto-generate DKIM for this domain
+      await pgQuery(`
+        CREATE TABLE IF NOT EXISTS domain_dkim (
+          id SERIAL PRIMARY KEY,
+          domain_name TEXT UNIQUE NOT NULL,
+          selector TEXT NOT NULL,
+          public_key TEXT NOT NULL,
+          private_key TEXT NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `);
+      const { generateKeyPair } = await import('crypto');
+      const keyPair = await new Promise<{ publicKeyPem: string; privateKeyPem: string }>((resolve, reject) => {
+        generateKeyPair('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } }, (err, pub, priv) => {
+          if (err) return reject(err);
+          resolve({ publicKeyPem: pub, privateKeyPem: priv });
+        });
+      });
+      const selector = 'mail';
+      await pgQuery(
+        `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (domain_name)
+         DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
+        [normalizedDomain, selector, keyPair.publicKeyPem, keyPair.privateKeyPem]
+      );
+      const p = exportPublicKeyPemToDns(keyPair.publicKeyPem);
+      const dkimHost = `${selector}._domainkey.${normalizedDomain}`;
+      const dkimLookup = await safeResolveTxt(dkimHost);
+      const dkimExpected = `v=DKIM1; k=rsa; p=${p}`;
+      const hasDKIM = dkimLookup.values.some((txt) => txt.includes(`p=${p}`));
       records.push({
         key: 'dkim',
         type: 'TXT',
-        name: 'mail._domainkey',
-        host: `mail._domainkey.${normalizedDomain}`,
-        expectedValue: 'Generate DKIM to get value',
-        status: 'not_checked',
-        observedValues: [],
-        message: 'Generate DKIM key pair first',
-        canAutoGenerate: true,
+        name: `${selector}._domainkey`,
+        host: dkimHost,
+        expectedValue: dkimExpected,
+        status: hasDKIM ? 'verified' : 'not_checked',
+        observedValues: dkimLookup.values,
+        message: hasDKIM ? 'DKIM signature is configured' : 'Add DKIM TXT record for email signing',
       });
     }
 

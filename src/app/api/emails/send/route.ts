@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid sender account.' }, { status: 403 });
     }
 
-    let smtpConfig;
-    let dkimConfig: { domainName: string; keySelector: string; privateKey: string } | undefined;
+  let smtpConfig;
+  let dkimConfig: { domainName: string; keySelector: string; privateKey: string } | undefined;
 
     if (ownedFrom.useBuiltInSmtp) {
       smtpConfig = {
@@ -46,17 +46,6 @@ export async function POST(req: NextRequest) {
         user: '',
         pass: '',
       };
-      // Try DKIM for sender domain
-      const senderDomain = String(from).split('@')[1]?.toLowerCase();
-      if (senderDomain) {
-        const { rows: dkim } = await pgQuery<{ selector: string; private_key: string }>(
-          `SELECT selector, private_key FROM domain_dkim WHERE domain_name = $1`,
-          [senderDomain]
-        );
-        if (dkim[0]) {
-          dkimConfig = { domainName: senderDomain, keySelector: dkim[0].selector, privateKey: dkim[0].private_key };
-        }
-      }
     } else {
       if (!ownedFrom.smtpHost || !ownedFrom.smtpPort || !ownedFrom.smtpUser || !ownedFrom.smtpPass) {
         return NextResponse.json({ error: 'SMTP credentials not configured for this account.' }, { status: 400 });
@@ -67,6 +56,72 @@ export async function POST(req: NextRequest) {
         user: ownedFrom.smtpUser,
         pass: ownedFrom.smtpPass,
       };
+    }
+
+    // Per-domain DKIM: attempt to sign with the sender's domain for BOTH built-in and custom SMTP
+    try {
+      const senderDomain = String(from).split('@')[1]?.toLowerCase();
+      if (senderDomain) {
+        // Ensure table exists in case migrations haven't created it yet
+        await pgQuery(`
+          CREATE TABLE IF NOT EXISTS domain_dkim (
+            id SERIAL PRIMARY KEY,
+            domain_name TEXT UNIQUE NOT NULL,
+            selector TEXT NOT NULL,
+            public_key TEXT NOT NULL,
+            private_key TEXT NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+          );
+        `);
+        let { rows: dkim } = await pgQuery<{ selector: string; private_key: string }>(
+          `SELECT selector, private_key FROM domain_dkim WHERE domain_name = $1`,
+          [senderDomain]
+        );
+        if (!dkim[0]) {
+          // If the domain belongs to this user, auto-generate a DKIM key on first send
+          const domRes = await pgQuery<{ exists: boolean }>(
+            `SELECT EXISTS(SELECT 1 FROM domains WHERE domain_name = $1 AND user_id = $2) AS exists`,
+            [senderDomain, payload.sub]
+          );
+          if (domRes.rows[0]?.exists) {
+            const { generateKeyPair } = await import('crypto');
+            const pair = await new Promise<{ publicKeyPem: string; privateKeyPem: string }>((resolve, reject) => {
+              generateKeyPair(
+                'rsa',
+                { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } },
+                (err, pub, priv) => {
+                  if (err) return reject(err);
+                  resolve({ publicKeyPem: pub, privateKeyPem: priv });
+                }
+              );
+            });
+            const selector = 'mail';
+            await pgQuery(
+              `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (domain_name)
+               DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
+              [senderDomain, selector, pair.publicKeyPem, pair.privateKeyPem]
+            );
+            // Re-read
+            dkim = (
+              await pgQuery<{ selector: string; private_key: string }>(
+                `SELECT selector, private_key FROM domain_dkim WHERE domain_name = $1`,
+                [senderDomain]
+              )
+            ).rows;
+          }
+        }
+        if (dkim[0]) {
+          dkimConfig = {
+            domainName: senderDomain,
+            keySelector: dkim[0].selector,
+            privateKey: dkim[0].private_key,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('DKIM lookup failed, sending without DKIM for this message:', (e as any)?.message || e);
     }
 
     // Log SMTP config (without sensitive data) for debugging

@@ -85,7 +85,7 @@ export default function AdminServerDnsPage() {
   const { toast } = useToast();
   const [data, setData] = useState<ServerDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [dkimLoading, setDkimLoading] = useState(false);
+  // DKIM generation is automatic; no UI button needed
   // Test email feature removed
 
   const dkimRecord = useMemo(
@@ -137,42 +137,7 @@ export default function AdminServerDnsPage() {
     }
   };
 
-  const generateDkim = async () => {
-    if (!user?.isAdmin) return;
-    const selector = dkimRecord?.selector || "mail";
-    setDkimLoading(true);
-    try {
-      const res = await fetch("/api/admin/server-dns", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ action: "generateDkim", selector }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: "Failed to generate DKIM" }));
-        throw new Error(body.error || "Failed to generate DKIM");
-      }
-
-      const body = await res.json();
-      toast({
-        title: "DKIM key generated",
-        description: `Publish TXT record ${body.recordName} with the new value.`,
-      });
-      await fetchStatus();
-    } catch (error: any) {
-      console.error("Failed to generate DKIM", error);
-      toast({
-        title: "DKIM generation failed",
-        description: error?.message || "Unable to generate DKIM key",
-        variant: "destructive",
-      });
-    } finally {
-      setDkimLoading(false);
-    }
-  };
+  // DKIM generation is automatic; record value will be displayed when available
 
   // Test email feature removed
 
@@ -223,12 +188,7 @@ export default function AdminServerDnsPage() {
             <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
             Refresh status
           </Button>
-          {dkimRecord?.canAutoGenerate && (
-            <Button onClick={generateDkim} disabled={dkimLoading}>
-              <Sparkles className={cn("mr-2 h-4 w-4", dkimLoading && "animate-spin")} />
-              {dkimLoading ? "Generating..." : "Generate DKIM"}
-            </Button>
-          )}
+          {/* DKIM generation button removed; handled automatically on the server */}
         </div>
       </div>
 

@@ -237,6 +237,62 @@ export async function POST(req: NextRequest) {
         `UPDATE domains SET verification_status = 'verified', verified_at = NOW() WHERE id = $1 AND user_id = $2`,
         [domainId, payload.sub]
       );
+
+      // If DKIM TXT is present but our DB has no entry, import the public key so UI shows correct selector/value.
+      // Note: we cannot derive the private key from DNS; user can POST it later to /api/domains/dkim with privateKeyPem.
+      const hasDkimInResults = results.some(r => r.key === 'dkim' && r.status === 'verified');
+      if (hasDkimInResults && dkimRows.length === 0) {
+        try {
+          const selectorItem = results.find(r => r.key === 'dkim');
+          // Reconstruct selector from recordsToVerify entry if present; else default 'mail'
+          const selector = recordsToVerify.find(r => r.key === 'dkim')?.name?.split('._domainkey')[0] || 'mail';
+          // Read TXT to capture the public key material
+          const txts = await dns.resolveTxt(`${selector}._domainkey.${normalizedDomain}`);
+          const flat = txts.map(parts => parts.join(''));
+          const pMatch = flat.join('').match(/p=([A-Za-z0-9+/=]+)/);
+          if (pMatch) {
+            const p = pMatch[1];
+            // Wrap p in PEM public key format is non-trivial; store raw pubkey in PEM-like wrapper as best effort
+            const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${p.replace(/(.{64})/g, '$1\n')}\n-----END PUBLIC KEY-----\n`;
+            await pgQuery(
+              `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (domain_name)
+               DO NOTHING`,
+              [normalizedDomain, selector, publicKeyPem, '']
+            );
+          }
+        } catch (e) {
+          console.warn('Unable to import DKIM public key after verification:', (e as any)?.message || e);
+        }
+      }
+
+      // If no DKIM TXT found and DB has no DKIM entry, auto-generate NubMail DKIM for zero-touch
+      if (!hasDkimInResults && dkimRows.length === 0) {
+        try {
+          const { generateKeyPair } = await import('node:crypto');
+          const pair = await new Promise<{ publicKeyPem: string; privateKeyPem: string }>((resolve, reject) => {
+            generateKeyPair(
+              'rsa',
+              { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } },
+              (err, pub, priv) => {
+                if (err) return reject(err);
+                resolve({ publicKeyPem: pub as unknown as string, privateKeyPem: priv as unknown as string });
+              }
+            );
+          });
+          const selector = 'mail';
+          await pgQuery(
+            `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (domain_name)
+             DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
+            [normalizedDomain, selector, pair.publicKeyPem, pair.privateKeyPem]
+          );
+        } catch (e) {
+          console.warn('Unable to auto-generate DKIM after verification:', (e as any)?.message || e);
+        }
+      }
     }
 
     return NextResponse.json({ domainId, domainName: normalizedDomain, records: results, overallStatus: allVerified ? 'verified' : 'partial' });
