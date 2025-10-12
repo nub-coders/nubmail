@@ -270,25 +270,23 @@ export async function GET(req: NextRequest) {
 
     const domain = process.env.DOMAIN;
     const baseDomain = domain ? domain.split(':')[0] : primaryDomain;
-    
-    // Use the main domain for SPF, not the mail subdomain
-    const spfExpected = `v=spf1 a mx ~all`;
+
+    // Prefer explicit IP authorization to reduce SPF DNS lookups
+    const mailIps = aLookup.values; // IPv4 addresses for mail host
+    const primaryIp = mailIps[0];
+    const spfExpected = primaryIp
+      ? `v=spf1 ip4:${primaryIp} ~all`
+      : `v=spf1 a:${mailHost} ~all`;
+
     const spfStatus = spfLookup.values.some((txt) => {
-      const normalized = normalizeTxtMatch(txt); // This removes spaces: "v=spf1amx~all"
-      if (normalized.startsWith('v=spf1')) {
-        // Check for 'a' and 'mx' mechanisms (without spaces since normalized removes them)
-        if (normalized.includes('a') && normalized.includes('mx')) {
-          return true;
-        }
-        // Also check if it contains 'a' mechanism alone
-        if (normalized.match(/v=spf1.*a.*~all/)) {
-          return true;
-        }
-        // Also check if it contains 'mx' mechanism alone  
-        if (normalized.match(/v=spf1.*mx.*~all/)) {
-          return true;
-        }
-      }
+      const n = normalizeTxtMatch(txt);
+      if (!n.startsWith('v=spf1')) return false;
+      // Match any of the resolved IPs if present
+      const ipMatch = mailIps.some((ip) => n.includes(`ip4:${ip}`));
+      if (ipMatch) return true;
+      // Fallback accept a:mailHost if we couldn't determine IP at runtime
+      const aHost = `a:${normalizeDomain(mailHost)}`;
+      if (!primaryIp && n.includes(aHost)) return true;
       return false;
     })
       ? 'configured'
