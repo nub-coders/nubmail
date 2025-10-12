@@ -41,9 +41,9 @@ services:
       PROTOCOL: ${PROTOCOL:-http}
       ADMIN_PASS: ${ADMIN_PASS}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
-      VIRTUAL_HOST: mails.nub-coder.tech
+      VIRTUAL_HOST: ${HOST:-mails.localhost}
       VIRTUAL_PORT: 5000
-      LETSENCRYPT_HOST: mails.nub-coder.tech
+      LETSENCRYPT_HOST: ${HOST:-mails.localhost}
       LETSENCRYPT_EMAIL: dev@nub-coder.tech
     depends_on:
       - postgres
@@ -57,7 +57,7 @@ services:
     container_name: nubmail-smtp-sender
     restart: unless-stopped
     environment:
-      - POSTFIX_myhostname=mail.nub-coder.tech
+      - POSTFIX_myhostname=${HOST:-mail.localhost}
       - ALLOWED_SENDER_DOMAINS=*
       - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
       - POSTFIX_smtpd_tls_security_level=may

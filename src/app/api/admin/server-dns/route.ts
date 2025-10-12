@@ -55,7 +55,7 @@ function getMailHost(primaryDomain: string): string {
   if (baseDomain) {
     const normalizedBase = normalizeDomain(baseDomain);
     if (!normalizedBase) {
-      return 'mails.nub-coder.tech';
+      throw new Error('Invalid domain configuration');
     }
 
     if (normalizedBase.startsWith('mail.') || normalizedBase.startsWith('mails.')) {
@@ -65,7 +65,7 @@ function getMailHost(primaryDomain: string): string {
     return normalizeDomain(`mails.${normalizedBase}`);
   }
 
-  return 'mails.nub-coder.tech';
+  throw new Error('DOMAIN or HOST environment variable must be configured');
 }
 
 async function safeResolveTxt(host: string): Promise<{ values: string[]; error?: string }> {

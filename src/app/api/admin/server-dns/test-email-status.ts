@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
 
 export async function GET(req: NextRequest) {
-  const domain = process.env.DOMAIN || 'nub-coder.tech';
+  const domain = process.env.DOMAIN;
+  if (!domain) {
+    return NextResponse.json({ error: 'DOMAIN environment variable is not configured' }, { status: 500 });
+  }
   const to = `test@${domain}`;
   // Check if the test email was received
   const { rows } = await pgQuery(

@@ -4,7 +4,10 @@ import { sendSmtpEmail } from '@/utils/smtp';
 
 export async function POST(req: NextRequest) {
   // Use test@domain as recipient and sender
-  const domain = process.env.DOMAIN || 'nub-coder.tech';
+  const domain = process.env.DOMAIN;
+  if (!domain) {
+    return NextResponse.json({ error: 'DOMAIN environment variable is not configured' }, { status: 500 });
+  }
   const to = `test@${domain}`;
   const from = to;
   try {
