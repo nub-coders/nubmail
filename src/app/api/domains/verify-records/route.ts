@@ -29,7 +29,7 @@ function getMailHost(domain?: string): string {
   if (baseDomain) {
     const normalizedBase = normalizeDomain(baseDomain);
     if (!normalizedBase) {
-      return 'mails.nub-coder.tech';
+      throw new Error('Invalid domain configuration');
     }
 
     if (normalizedBase.startsWith('mail.') || normalizedBase.startsWith('mails.')) {
@@ -39,7 +39,7 @@ function getMailHost(domain?: string): string {
     return `mails.${normalizedBase}`;
   }
 
-  return 'mails.nub-coder.tech';
+  throw new Error('DOMAIN or HOST environment variable must be configured');
 }
 
 function normalizeTxtMatch(value: string): string {
