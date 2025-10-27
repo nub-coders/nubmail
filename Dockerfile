@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:alpine AS base
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
@@ -12,6 +12,9 @@ WORKDIR /app
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Provide dummy database URL for build time (not used, just prevents build errors)
+ENV POSTGRES_URL="postgres://nubmail:nubmail@postgres:5432/nubmail"
 
 RUN npm run build
 
@@ -35,6 +38,8 @@ COPY --chown=nextjs:nodejs smtp ./smtp
 # Install dependencies in runner stage
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
+# Install PostgreSQL client utilities (provides psql and pg_isready)
+RUN apk add --no-cache postgresql-client
 
 USER nextjs
 
