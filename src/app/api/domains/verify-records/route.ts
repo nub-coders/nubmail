@@ -81,7 +81,7 @@ async function verifyDnsRecord(
             const normalizedRecord = normalizeTxtMatch(recordValue);
             const normalizedExpected = normalizeTxtMatch(expectedValue);
             
-            // Extract the mail host from the expected value (e.g., "v=spf1 include:mails.nub-coder.tech ~all")
+            // Extract the mail host from the expected value (e.g., "v=spf1 include:mails.nubcoder.com ~all")
             const includeMatch = normalizedExpected.match(/include:([^\s~]+)/);
             if (includeMatch) {
               const expectedHost = includeMatch[1];

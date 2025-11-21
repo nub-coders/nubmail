@@ -46,7 +46,7 @@ services:
       VIRTUAL_HOST: ${HOST:-mails.localhost}
       VIRTUAL_PORT: 5000
       LETSENCRYPT_HOST: ${HOST:-mails.localhost}
-      LETSENCRYPT_EMAIL: dev@nub-coder.tech
+      LETSENCRYPT_EMAIL: dev@nubcoder.com
     depends_on:
       - postgres
     networks:
@@ -71,7 +71,7 @@ services:
       # DKIM disabled here; app signs per user domain using Nodemailer
   # - DKIM_AUTOGENERATE=0
   # - DKIM_SELECTOR=default
-  # - DKIM_DOMAINS=nub-coder.tech
+  # - DKIM_DOMAINS=nubcoder.com
       # Ensure OpenDKIM does not sign (verify-only)
       - OPENDKIM_Mode=v
   # Additional headers for better reputation

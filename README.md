@@ -61,7 +61,7 @@ SMTP_USER=your_smtp_user
 SMTP_PASS=your_smtp_password
 
 # Optional app domain config
-DOMAIN=mails.nub-coder.tech
+DOMAIN=mails.nubcoder.com
 PROTOCOL=https
 
 # Admin bootstrap (if applicable to your setup)
@@ -105,10 +105,10 @@ The application includes a Docker setup for PostgreSQL and the app:
 ### nginx-proxy Configuration
 
 The production app is configured to work with nginx-proxy:
-- Virtual Host: `mails.nub-coder.tech`
+- Virtual Host: `mails.nubcoder.com`
 - Virtual Port: `5000`
-- Let's Encrypt Host: `mails.nub-coder.tech`
-- Let's Encrypt Email: `dev@nub-coder.tech`
+- Let's Encrypt Host: `mails.nubcoder.com`
+- Let's Encrypt Email: `dev@nubcoder.com`
 
 Make sure nginx-proxy and letsencrypt-companion are running on the `web` network.
 

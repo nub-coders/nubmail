@@ -13,11 +13,11 @@
 **Action Required**: Contact your hosting provider
 **Details**: 
 - IP: 140.238.100.102 
-- Should point to: mails.nub-coder.tech
+- Should point to: mails.nubcoder.com
 
 ### 2. SPF Record Needs Update
 **Status**: ⚠️ Partially configured
-**Current**: `v=spf1 include:mails.nub-coder.tech ~all`
+**Current**: `v=spf1 include:mails.nubcoder.com ~all`
 **Recommended**: `v=spf1 a mx ip4:140.238.100.102 ~all`
 
 ### 3. DKIM Configuration

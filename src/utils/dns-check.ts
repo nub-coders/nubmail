@@ -7,7 +7,7 @@ export type DnsRecordStatus = {
 };
 
 export type DnsCheckInput = {
-  rootDomain: string; // apex like nub-coder.tech
+  rootDomain: string; // apex like nubcoder.com
   mailHostname: string; // host used by server, usually mail.<rootDomain>
   dkimSelector: string;
   serverPublicIp?: string;
