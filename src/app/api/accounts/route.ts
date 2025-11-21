@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken } from '@/lib/admin';
+import { getUserFromToken, getAdminFromToken, isServerDnsVerified } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
+
+function getPrimaryDomain(): string | null {
+  const domain = process.env.DOMAIN?.trim() || process.env.VIRTUAL_HOST?.trim() || null;
+  return domain ? domain.toLowerCase().trim() : null;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,15 +31,54 @@ export async function POST(req: NextRequest) {
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { emailAddress, domainId, smtpHost, smtpPort, smtpUser, smtpPass } = body;
+    const { emailAddress, domainId, smtpHost, smtpPort, smtpUser, smtpPass, useServerDomain } = body;
     
-    if (!emailAddress || !domainId) {
+    let actualDomainId = domainId;
+    
+    // If admin wants to use server domain, handle it specially
+    if (useServerDomain) {
+      const admin = await getAdminFromToken(req);
+      if (!admin) {
+        return NextResponse.json({ error: 'Only admins can use server domain' }, { status: 403 });
+      }
+      
+      const dnsVerified = await isServerDnsVerified();
+      if (!dnsVerified) {
+        return NextResponse.json({ error: 'Server DNS must be verified first' }, { status: 400 });
+      }
+      
+      const primaryDomain = getPrimaryDomain();
+      if (!primaryDomain) {
+        return NextResponse.json({ error: 'Server domain not configured' }, { status: 500 });
+      }
+      
+      // Check if server domain already exists in domains table
+      const { rows: existingDomain } = await pgQuery(
+        'SELECT id FROM domains WHERE domain_name = $1',
+        [primaryDomain]
+      );
+      
+      if (existingDomain.length === 0) {
+        // Create the server domain automatically
+        const { rows: newDomain } = await pgQuery(
+          `INSERT INTO domains (domain_name, user_id, verification_status, verification_token, created_at)
+           VALUES ($1, $2, $3, $4, $5)
+           RETURNING id`,
+          [primaryDomain, payload.sub, 'verified', 'server-domain-auto', new Date()]
+        );
+        actualDomainId = newDomain[0].id;
+      } else {
+        actualDomainId = existingDomain[0].id;
+      }
+    }
+    
+    if (!emailAddress || !actualDomainId) {
       return NextResponse.json({ error: 'emailAddress and domainId required' }, { status: 400 });
     }
 
     const { rows } = await pgQuery(
-      'SELECT id, domain_name FROM domains WHERE id = $1 AND user_id = $2 AND verification_status = $3',
-      [domainId, payload.sub, 'verified']
+      'SELECT id, domain_name FROM domains WHERE id = $1 AND verification_status = $2',
+      [actualDomainId, 'verified']
     );
     if (rows.length === 0) {
       return NextResponse.json({ error: 'Domain not found or not verified' }, { status: 404 });
@@ -60,7 +104,7 @@ export async function POST(req: NextRequest) {
       [
         emailLower,
         defaultQuota,
-        domainId,
+        actualDomainId,
         payload.sub,
         now,
         hasSmtp ? smtpHost : null,

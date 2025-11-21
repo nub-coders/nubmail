@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Mail, MailOpen, Clock, Archive, Trash2 } from 'lucide-react';
+import { Search, Mail, MailOpen, Clock, Archive, Trash2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthClient } from '@/lib/auth-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Email {
   id: string;
@@ -22,13 +29,39 @@ interface Email {
   read: boolean;
 }
 
+interface EmailAccount {
+  id: string;
+  emailAddress: string;
+  storageQuota: number;
+  domainId: string;
+  createdAt: string;
+}
+
 export default function InboxPage() {
   const router = useRouter();
   const { user } = useAuthClient();
   const [emails, setEmails] = useState<Email[]>([]);
+  const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+
+  const fetchEmailAccounts = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/accounts', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEmailAccounts(data.accounts || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch email accounts');
+    }
+  };
 
   const fetchEmails = async () => {
     if (!user) return;
@@ -47,8 +80,28 @@ export default function InboxPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    if (!user || isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      const res = await fetch('/api/emails?folder=inbox', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEmails(data.emails || []);
+      }
+    } catch (error) {
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    fetchEmails();
+    if (user) {
+      fetchEmailAccounts();
+      fetchEmails();
+    }
   }, [user]);
 
   const handleEmailClick = (email: Email) => {
@@ -63,7 +116,15 @@ export default function InboxPage() {
 
   const unreadCount = emails.filter(e => !e.read).length;
   
-  const filteredEmails = emails.filter(email => 
+  // Filter by selected account
+  const accountFilteredEmails = selectedAccount === 'all' 
+    ? emails 
+    : emails.filter(email => 
+        email.recipients.includes(selectedAccount)
+      );
+  
+  // Filter by search query
+  const filteredEmails = accountFilteredEmails.filter(email => 
     searchQuery === '' || 
     email.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
     email.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -94,6 +155,31 @@ export default function InboxPage() {
         
         {/* Search and Actions */}
         <div className="flex items-center gap-3">
+          <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="All inboxes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All inboxes</SelectItem>
+              {user?.email && (
+                <SelectItem value={user.email}>{user.email}</SelectItem>
+              )}
+              {emailAccounts.map((account) => (
+                <SelectItem key={account.id} value={account.emailAddress}>
+                  {account.emailAddress}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="shrink-0"
+          >
+            <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+          </Button>
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

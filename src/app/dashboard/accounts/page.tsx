@@ -38,6 +38,10 @@ export default function AccountsPage() {
   const [smtpPort, setSmtpPort] = useState('587');
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPass, setSmtpPass] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [serverDomain, setServerDomain] = useState<string | null>(null);
+  const [serverDnsVerified, setServerDnsVerified] = useState(false);
+  const [useServerDomain, setUseServerDomain] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,12 +49,16 @@ export default function AccountsPage() {
       
       setDataLoading(true);
       try {
-        const [accountsRes, domainsRes] = await Promise.all([
+        const [accountsRes, domainsRes, meRes] = await Promise.all([
           fetch('/api/accounts', { 
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store'
           }),
           fetch('/api/domains', { 
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store'
+          }),
+          fetch('/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store'
           })
@@ -62,10 +70,30 @@ export default function AccountsPage() {
 
         const accountsData = await accountsRes.json();
         const domainsData = await domainsRes.json();
+        const meData = meRes.ok ? await meRes.json() : null;
 
         setAccounts(accountsData.accounts || []);
         const verifiedDomains = domainsData.domains?.filter((d: Domain) => d.verificationStatus === 'verified') || [];
         setDomains(verifiedDomains);
+        
+        // Check if user is admin
+        if (meData?.user?.isAdmin) {
+          setIsAdmin(true);
+          // Fetch server DNS status for admins
+          const serverDnsRes = await fetch('/api/admin/server-dns', {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store'
+          });
+          if (serverDnsRes.ok) {
+            const serverDnsData = await serverDnsRes.json();
+            setServerDomain(serverDnsData.primaryDomain);
+            // Check if critical DNS records are configured
+            const mxRecord = serverDnsData.records?.find((r: any) => r.type === 'MX');
+            const aRecord = serverDnsData.records?.find((r: any) => r.type === 'A' && r.key === 'mail-a');
+            const dnsVerified = mxRecord?.status === 'configured' && aRecord?.status === 'configured';
+            setServerDnsVerified(dnsVerified);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
         toast({
@@ -82,8 +110,13 @@ export default function AccountsPage() {
   }, [token, authLoading, toast]);
 
   const handleCreateAccount = async () => {
-    if (!localPart || !selectedDomainId) {
-      toast({ title: 'Missing fields', description: 'Please fill in username and domain', variant: 'destructive' });
+    if (!localPart) {
+      toast({ title: 'Missing username', description: 'Please enter a username', variant: 'destructive' });
+      return;
+    }
+    
+    if (!useServerDomain && !selectedDomainId) {
+      toast({ title: 'Missing domain', description: 'Please select a domain', variant: 'destructive' });
       return;
     }
 
@@ -100,10 +133,14 @@ export default function AccountsPage() {
       return;
     }
 
-    const selectedDomain = domains.find(d => d.id === selectedDomainId);
-    if (!selectedDomain) return;
-
-    const emailAddress = `${localPart}@${selectedDomain.domainName}`;
+    let emailAddress: string;
+    if (useServerDomain) {
+      emailAddress = `${localPart}@${serverDomain}`;
+    } else {
+      const selectedDomain = domains.find(d => d.id === selectedDomainId);
+      if (!selectedDomain) return;
+      emailAddress = `${localPart}@${selectedDomain.domainName}`;
+    }
 
     try {
       const res = await fetch('/api/accounts', {
@@ -114,7 +151,8 @@ export default function AccountsPage() {
         },
         body: JSON.stringify({
           emailAddress,
-          domainId: selectedDomainId,
+          domainId: useServerDomain ? null : selectedDomainId,
+          useServerDomain,
           ...(useCustomSmtp && smtpHost && smtpPort && smtpUser && smtpPass ? {
             smtpHost,
             smtpPort,
@@ -133,6 +171,7 @@ export default function AccountsPage() {
       setLocalPart('');
       setSelectedDomainId('');
       setUseCustomSmtp(false);
+      setUseServerDomain(false);
       setSmtpHost('');
       setSmtpPort('587');
       setSmtpUser('');
@@ -188,7 +227,7 @@ export default function AccountsPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button disabled={domains.length === 0}>
+            <Button disabled={!isAdmin && domains.length === 0}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Create Account
             </Button>
@@ -210,24 +249,53 @@ export default function AccountsPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalPart(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''))}
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="domain">Domain</Label>
-                <Select value={selectedDomainId} onValueChange={setSelectedDomainId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a domain" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {domains.map(domain => (
-                      <SelectItem key={domain.id} value={domain.id}>
-                        @{domain.domainName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {localPart && selectedDomainId && (
+              
+              {isAdmin && serverDomain && serverDnsVerified && (
+                <div className="grid gap-2">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="useServerDomain"
+                      checked={useServerDomain}
+                      onCheckedChange={(checked) => {
+                        setUseServerDomain(Boolean(checked));
+                        if (checked) {
+                          setSelectedDomainId('');
+                        }
+                      }}
+                    />
+                    <Label htmlFor="useServerDomain" className="font-medium">
+                      Use server domain ({serverDomain})
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground ml-6">
+                    Admin option: Create accounts on the verified server domain without manually adding it.
+                  </p>
+                </div>
+              )}
+              
+              {!useServerDomain && (
+                <div className="grid gap-2">
+                  <Label htmlFor="domain">Domain</Label>
+                  <Select value={selectedDomainId} onValueChange={setSelectedDomainId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a domain" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {domains.map(domain => (
+                        <SelectItem key={domain.id} value={domain.id}>
+                          @{domain.domainName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {localPart && (useServerDomain ? serverDomain : selectedDomainId) && (
                 <div className="text-sm text-muted-foreground">
-                  Email address: <span className="font-medium">{localPart}@{domains.find(d => d.id === selectedDomainId)?.domainName}</span>
+                  Email address: <span className="font-medium">
+                    {localPart}@{useServerDomain ? serverDomain : domains.find(d => d.id === selectedDomainId)?.domainName}
+                  </span>
                 </div>
               )}
               <div className="border-t pt-4 space-y-4">

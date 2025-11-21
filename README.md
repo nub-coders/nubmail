@@ -44,7 +44,7 @@ docker compose down
 
 ## Environment Variables
 
-Create a `.env` file with the following:
+Create a `.env` file with the following (add new Outlook integration vars if using external mailbox sync):
 
 ```
 # App
@@ -64,6 +64,13 @@ SMTP_PASS=your_smtp_password
 DOMAIN=mails.nubcoder.com
 PROTOCOL=https
 
+# Outlook / Microsoft Graph (optional)
+AZURE_TENANT_ID=
+AZURE_CLIENT_ID=
+AZURE_CLIENT_SECRET=
+AZURE_OUTLOOK_REDIRECT_URI=https://your-host/api/integrations/outlook/callback
+TOKEN_ENCRYPTION_KEY=change_this_32_char_secret
+
 # Admin bootstrap (if applicable to your setup)
 ADMIN_PASS=your_admin_password
 ADMIN_EMAIL=
@@ -77,6 +84,8 @@ ADMIN_EMAIL=
 - Message composition and inbox
 - Receive inbound emails (SMTP receiver)
 - Modern UI with shadcn/ui components
+- (Optional) External mailbox integration scaffolding (Outlook via Microsoft Graph OAuth + delta sync stub)
+- API key based programmatic sending (create keys, use `X-Api-Key` header)
 
 ## Tech Stack
 
@@ -119,6 +128,33 @@ Make sure nginx-proxy and letsencrypt-companion are running on the `web` network
 - `/src/lib` - Utility functions and shared logic
 - `Dockerfile` - Multi-stage Docker build configuration
 - `docker-compose.yml` - Docker Compose orchestration
+
+## API Key Email Sending
+
+Workflow:
+1. Login and obtain JWT.
+2. `POST /api/auth/api-keys` with `{ "name": "prod" }` to create a key (store returned `key` once).
+3. Create or ensure an email account exists for the desired `from` address.
+4. Send mail with API key:
+```bash
+curl -X POST https://your-host/api/emails/send-api \
+	-H "X-Api-Key: nm_live_abcdef..." \
+	-H "Content-Type: application/json" \
+	-d '{
+		"from":"support@yourdomain.com",
+		"to":"user@example.com",
+		"subject":"Test",
+		"text":"Hello via key"
+	}'
+```
+Response:
+```json
+{ "message": "Email sent", "messageId": "<id>", "accepted": ["user@example.com"], "rejected": [] }
+```
+Notes:
+- API key authenticates only; sender must be an owned account.
+- Built-in SMTP is used if the account `use_built_in_smtp` is true; otherwise custom credentials.
+- DKIM auto-generation occurs on first send if domain present.
 
 ### Docker: PostgreSQL
 

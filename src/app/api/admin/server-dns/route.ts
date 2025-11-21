@@ -261,7 +261,7 @@ export async function GET(req: NextRequest) {
       type: 'MX',
       name: '@',
       host: primaryDomain,
-      expectedValue: `${mxExpectedPriority} ${ensureTrailingDot(mailHost)}`,
+      expectedValue: mailHost,
       priority: mxExpectedPriority,
       status: mxStatus,
       observedValues: mxObserved,
