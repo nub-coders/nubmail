@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
   full_name TEXT,
   is_admin BOOLEAN DEFAULT FALSE,
   email_verified BOOLEAN DEFAULT FALSE,
+  verification_code TEXT,
+  verification_code_expiry TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

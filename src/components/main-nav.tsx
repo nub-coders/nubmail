@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   UserCog,
   Server,
+  Key,
 } from 'lucide-react';
 
 import {
@@ -80,6 +81,19 @@ export function MainNav({ className }: { className?: string }) {
               <Link href="/dashboard/accounts">
                 <Users className="group-hover:scale-110 transition-transform" />
                 <span>Accounts</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/dashboard/api')}
+              tooltip="API Keys"
+              className="group hover:bg-sidebar-accent/80 transition-colors"
+            >
+              <Link href="/dashboard/api">
+                <Key className="group-hover:scale-110 transition-transform" />
+                <span>API Keys</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
