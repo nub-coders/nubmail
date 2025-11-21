@@ -3,8 +3,8 @@
 ## Current Status Analysis
 
 ✅ **Working:**
-- Domain resolution: mails.nub-coder.tech → 140.238.100.102
-- MX record: nub-coder.tech → mails.nub-coder.tech
+- Domain resolution: mails.nubcoder.com → 140.238.100.102
+- MX record: nubcoder.com → mails.nubcoder.com
 - Basic SPF record exists
 
 ❌ **Issues to Fix:**
@@ -18,28 +18,28 @@
 ### 1. PTR Record (Critical - Contact your hosting provider)
 **Record Type:** PTR
 **IP:** 140.238.100.102
-**Value:** mails.nub-coder.tech
+**Value:** mails.nubcoder.com
 **TTL:** 3600
 
 **Note:** This must be set by your hosting provider (VPS/cloud provider). Contact them to set up reverse DNS.
 
 ### 2. Update SPF Record
-**Domain:** nub-coder.tech
+**Domain:** nubcoder.com
 **Record Type:** TXT
-**Current:** `v=spf1 include:mails.nub-coder.tech ~all`
+**Current:** `v=spf1 include:mails.nubcoder.com ~all`
 **New:** `v=spf1 a mx ip4:140.238.100.102 ~all`
 
 ### 3. Add DKIM Record (Recommended)
-**Domain:** nub-coder.tech
+**Domain:** nubcoder.com
 **Record Type:** TXT
 **Name:** default._domainkey
 **Value:** `v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY`
 
 ### 4. Add DMARC Record (Recommended)
-**Domain:** nub-coder.tech
+**Domain:** nubcoder.com
 **Record Type:** TXT
 **Name:** _dmarc
-**Value:** `v=DMARC1; p=quarantine; rua=mailto:dmarc@nub-coder.tech`
+**Value:** `v=DMARC1; p=quarantine; rua=mailto:dmarc@nubcoder.com`
 
 ## Temporary Solutions (While fixing DNS)
 
