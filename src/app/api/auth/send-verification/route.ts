@@ -30,10 +30,17 @@ export async function POST(req: NextRequest) {
     await pgQuery('UPDATE users SET verification_code = $1, verification_code_expiry = $2 WHERE id = $3', [code, expiresAt, user.id]);
 
     try {
+      const domain = process.env.DOMAIN || 'nubcoder.com';
       await sendSmtpEmail({
+        from: `verify@${domain}`,
         to: user.email,
         subject: 'NubMail - Email Verification Code',
-        smtpConfig: getEnvSmtpConfig(),
+        smtpConfig: {
+          host: process.env.INTERNAL_SMTP_HOST || 'smtp-sender',
+          port: Number(process.env.INTERNAL_SMTP_PORT || 587),
+          user: '',
+          pass: '',
+        },
         html: `
           <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #A0C4FF;">Email Verification</h2>
