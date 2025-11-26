@@ -1,12 +1,15 @@
-// Minimal SMTP receiver that parses inbound messages and stores them in PostgreSQL
+// Minimal SMTP receiver that parses inbound messages and stores them in PostgreSQL and Maildir
 // Uses smtp-server and mailparser. Intended to run as a sidecar service.
 
 const { SMTPServer } = require('smtp-server');
 const { simpleParser } = require('mailparser');
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 
 const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 25; // container port
 const POSTGRES_URL = process.env.POSTGRES_URL || 'postgres://nubmail:nubmail@postgres:5432/nubmail';
+const MAILDIR_BASE = process.env.MAILDIR_BASE || '/app/maildata';
 
 let pgPool;
 function getPgPool() {
@@ -21,6 +24,40 @@ function extractAddresses(addressObject) {
   return addressObject.value
     .map((addr) => (addr && addr.address ? String(addr.address).toLowerCase() : null))
     .filter(Boolean);
+}
+
+// Write email to Maildir format
+async function writeToMaildir(emailAddress, subject, body, sentAt, sender, recipients, messageId) {
+  try {
+    // Use full email address with @ replaced by _at_ to avoid conflicts
+    const safeEmailName = emailAddress.replace('@', '_at_');
+    const maildirPath = path.join(MAILDIR_BASE, safeEmailName, 'Maildir', 'new');
+    
+    // Create Maildir structure if it doesn't exist
+    fs.mkdirSync(maildirPath, { recursive: true });
+    
+    // Create unique filename
+    const timestamp = Date.now();
+    const filename = path.join(maildirPath, `${messageId || timestamp}-${timestamp}`);
+    
+    // Format email message in RFC 5322 format
+    const emailContent = [
+      `From: ${sender}`,
+      `To: ${recipients.join(', ')}`,
+      `Subject: ${subject}`,
+      `Date: ${sentAt.toUTCString()}`,
+      `Message-ID: <${messageId || timestamp}@nubmail>`,
+      '',
+      body
+    ].join('\n');
+    
+    fs.writeFileSync(filename, emailContent);
+    console.log(`Wrote email to Maildir: ${filename}`);
+    return true;
+  } catch (err) {
+    console.error(`Error writing to Maildir for ${emailAddress}:`, err);
+    return false;
+  }
 }
 
 const server = new SMTPServer({
@@ -61,12 +98,16 @@ const server = new SMTPServer({
           for (const rcpt of recips) {
             const uid = addressToUser.get(String(rcpt).toLowerCase()) || null;
             if (uid) {
-              await pool.query(
+              const result = await pool.query(
                 `INSERT INTO email_messages (sender, recipients, subject, body, sent_at, user_id, read)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
                 [sender, [rcpt], subject, body, sentAt, uid, false]
               );
               inserted++;
+              
+              // Write to Maildir for IMAP/POP3 access
+              const messageId = result.rows[0]?.id || null;
+              await writeToMaildir(rcpt, subject, body, sentAt, sender, [rcpt], messageId);
             }
           }
         }

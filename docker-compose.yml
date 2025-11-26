@@ -17,7 +17,6 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - nubmail-network
       - web
   app:
     build:
@@ -49,8 +48,9 @@ services:
       LETSENCRYPT_EMAIL: dev@nubcoder.com
     depends_on:
       - postgres
+    volumes:
+      - ./maildata:/app/maildata
     networks:
-      - nubmail-network
       - web
     command: sh -c "until pg_isready -h postgres -U nubmail -d nubmail; do echo waiting for postgres; sleep 1; done; psql $POSTGRES_URL -f scripts/20251007_add_email_verified_to_users.sql || true && node scripts/init-admin.js && node server.js"
 
@@ -78,7 +78,6 @@ services:
       - POSTFIX_smtpd_helo_required=yes
       - POSTFIX_disable_vrfy_command=yes
     networks:
-      - nubmail-network
       - web
     ports:
       - "587:587"
@@ -91,21 +90,44 @@ services:
     environment:
       SMTP_PORT: 25
       POSTGRES_URL: ${POSTGRES_URL:-postgres://nubmail:nubmail@postgres:5432/nubmail}
+      MAILDIR_BASE: /app/maildata
     volumes:
       - .:/app
+      - ./maildata:/app/maildata
     command: sh -c "npm install smtp-server mailparser pg && node smtp/index.js"
     depends_on:
       - postgres
     networks:
-      - nubmail-network
       - web
     ports:
       - "25:25"
 
+  dovecot:
+    image: dovecot/dovecot
+    container_name: nubmail-dovecot
+    restart: unless-stopped
+    ports:
+      - "143:143"    # IMAP
+      - "993:993"    # IMAPS
+      - "110:110"    # POP3
+      - "995:995"    # POP3S
+    volumes:
+      - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
+      - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
+      - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
+      - ./maildata:/app/maildata
+    environment:
+      - POSTGRES_DB=nubmail
+      - POSTGRES_USER=nubmail
+      - POSTGRES_PASSWORD=nubmail
+      - POSTGRES_HOST=postgres
+    depends_on:
+      - postgres
+    networks:
+      - web
+
 
 networks:
-  nubmail-network:
-    driver: bridge
   web:
     external: true
 

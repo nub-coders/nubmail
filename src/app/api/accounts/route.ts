@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
 
     const { rows } = await pgQuery(
       `SELECT id, email_address AS "emailAddress", storage_quota AS "storageQuota", domain_id AS "domainId",
-              smtp_host AS "smtpHost", smtp_port AS "smtpPort", smtp_user AS "smtpUser", created_at AS "createdAt"
+              smtp_host AS "smtpHost", smtp_port AS "smtpPort", smtp_user AS "smtpUser", created_at AS "createdAt",
+              CASE WHEN password_hash IS NOT NULL AND password_hash != '' THEN true ELSE false END AS "hasImapPassword"
        FROM email_accounts WHERE user_id = $1 ORDER BY created_at DESC`,
       [payload.sub]
     );

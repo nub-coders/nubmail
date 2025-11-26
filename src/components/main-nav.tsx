@@ -87,13 +87,13 @@ export function MainNav({ className }: { className?: string }) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              isActive={isActive('/dashboard/api')}
-              tooltip="API Keys"
+              isActive={isActive('/dashboard/developer')}
+              tooltip="Developer"
               className="group hover:bg-sidebar-accent/80 transition-colors"
             >
-              <Link href="/dashboard/api">
+              <Link href="/dashboard/developer">
                 <Key className="group-hover:scale-110 transition-transform" />
-                <span>API Keys</span>
+                <span>Developer</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

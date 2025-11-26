@@ -41,6 +41,11 @@ RUN npm install --omit=dev
 # Install PostgreSQL client utilities (provides psql and pg_isready)
 RUN apk add --no-cache postgresql-client
 
+# Copy Dovecot configs
+COPY dovecot/10-auth.conf /etc/dovecot/conf.d/10-auth.conf
+COPY dovecot/auth-sql.conf.ext /etc/dovecot/conf.d/auth-sql.conf.ext
+COPY dovecot/dovecot-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext
+
 USER nextjs
 
 EXPOSE 5000

@@ -1,0 +1,8 @@
+driver = pgsql
+connect = host=postgres dbname=nubmail user=nubmail password=nubmail
+
+# Query to fetch email account credentials (not user login credentials)
+# Users authenticate with their email_address and email account password
+# Use full email address with @ replaced by underscore for directory naming
+user_query = SELECT email_address as user, '/app/maildata/' || replace(email_address, '@', '_at_') || '/Maildir' as home, 1001 AS uid, 1001 AS gid FROM email_accounts WHERE email_address = '%u'
+password_query = SELECT email_address as user, password_hash as password FROM email_accounts WHERE email_address = '%u' AND password_hash IS NOT NULL
