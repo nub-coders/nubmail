@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS email_accounts (
   smtp_port INT,
   smtp_user TEXT,
   smtp_pass TEXT,
+  password_hash TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_email_accounts_user_created ON email_accounts(user_id, created_at DESC);
@@ -43,7 +44,7 @@ CREATE INDEX IF NOT EXISTS idx_email_accounts_user_created ON email_accounts(use
 -- Email messages
 CREATE TABLE IF NOT EXISTS email_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   sender TEXT NOT NULL,
   recipients TEXT[] NOT NULL,
   subject TEXT,
@@ -64,3 +65,26 @@ CREATE TABLE IF NOT EXISTS email_reads (
 CREATE UNIQUE INDEX IF NOT EXISTS email_reads_email_user_idx ON email_reads(email_id, user_id);
 
 
+
+-- DKIM keys for domains
+CREATE TABLE IF NOT EXISTS domain_dkim (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  domain_name TEXT NOT NULL UNIQUE,
+  selector TEXT NOT NULL,
+  public_key TEXT NOT NULL,
+  private_key TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_domain_dkim_domain_name ON domain_dkim(domain_name);
+
+-- API keys table to support programmatic email sending
+CREATE TABLE IF NOT EXISTS api_keys (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  key_hash TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  last_used TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_keys_last_used ON api_keys(last_used DESC);
