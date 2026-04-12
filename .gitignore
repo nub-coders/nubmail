@@ -46,3 +46,9 @@ firestore-debug.log
 
 # attached assets
 /attached_assets
+
+# graphify
+graphify-out/
+
+# agent
+.agent/
