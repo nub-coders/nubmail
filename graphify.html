@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nubmail · Architecture Graph</title>
+  <meta name="description" content="Interactive architecture dependency graph for the nubmail project — visualize services, routes, data flows, and module relationships." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07080f;
+      --surface: #0d0f1c;
+      --surface2: #12152a;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #e8eaf0;
+      --text-dim: #6b7280;
+      --text-muted: #374151;
+
+      /* Layer colors */
+      --c-client:    #38bdf8;
+      --c-api:       #a78bfa;
+      --c-service:   #34d399;
+      --c-infra:     #f59e0b;
+      --c-data:      #fb7185;
+      --c-external:  #94a3b8;
+
+      --glow-client:   0 0 18px rgba(56,189,248,0.35);
+      --glow-api:      0 0 18px rgba(167,139,250,0.35);
+      --glow-service:  0 0 18px rgba(52,211,153,0.35);
+      --glow-infra:    0 0 18px rgba(245,158,11,0.35);
+      --glow-data:     0 0 18px rgba(251,113,133,0.35);
+      --glow-external: 0 0 18px rgba(148,163,184,0.25);
+    }
+
+    html, body { width: 100%; height: 100%; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow: hidden; }
+
+    /* ── Header ─────────────────────────────── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 56px;
+      display: flex; align-items: center; gap: 16px; padding: 0 20px;
+      background: rgba(7,8,15,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    #header .logo {
+      font-size: 15px; font-weight: 700; letter-spacing: -0.3px;
+      background: linear-gradient(90deg, #38bdf8, #a78bfa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+    #header .sep { width: 1px; height: 22px; background: var(--border); }
+    #search-wrap {
+      flex: 1; max-width: 280px;
+      position: relative;
+    }
+    #search-icon {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      color: var(--text-dim); pointer-events: none;
+    }
+    #search {
+      width: 100%; padding: 6px 10px 6px 32px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      font-family: inherit; outline: none; transition: border-color .2s;
+    }
+    #search:focus { border-color: #38bdf8; }
+    #search::placeholder { color: var(--text-dim); }
+
+    .legend {
+      display: flex; gap: 12px; align-items: center; margin-left: auto;
+    }
+    .leg-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--text-dim); cursor: pointer;
+      padding: 3px 8px; border-radius: 20px;
+      border: 1px solid transparent;
+      transition: all .2s;
+    }
+    .leg-item:hover { border-color: var(--border-hover); color: var(--text); }
+    .leg-item.active { border-color: var(--border-hover); color: var(--text); background: var(--surface2); }
+    .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .btn-group { display: flex; gap: 6px; }
+    .icon-btn {
+      width: 30px; height: 30px; border-radius: 7px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text-dim); cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .icon-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface); }
+
+    /* ── Canvas ─────────────────────────────── */
+    #canvas-wrap {
+      position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+      overflow: hidden; cursor: grab;
+    }
+    #canvas-wrap.grabbing { cursor: grabbing; }
+    #canvas { position: absolute; top: 0; left: 0; }
+
+    /* ── Nodes ──────────────────────────────── */
+    .node {
+      position: absolute;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, transform .15s, opacity .3s;
+      user-select: none;
+      min-width: 140px;
+    }
+    .node:hover { transform: translateY(-2px); border-color: var(--border-hover); }
+    .node.highlighted { z-index: 10; }
+    .node.dimmed { opacity: 0.22; }
+
+    .node-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .node-icon { font-size: 16px; flex-shrink: 0; }
+    .node-name { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+    .node-badge {
+      font-size: 9.5px; font-family: 'JetBrains Mono', monospace;
+      padding: 1px 6px; border-radius: 4px; font-weight: 500;
+      margin-left: auto; white-space: nowrap;
+    }
+    .node-sub {
+      font-size: 10.5px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.5;
+    }
+    .node-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag {
+      font-size: 9px; padding: 1px 6px; border-radius: 20px;
+      color: var(--text-dim); border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* client */
+    .node.client { border-color: rgba(56,189,248,0.25); }
+    .node.client:hover, .node.client.highlighted { border-color: var(--c-client); box-shadow: var(--glow-client); }
+    .node.client .node-name { color: var(--c-client); }
+    .node.client .node-badge { background: rgba(56,189,248,0.12); color: var(--c-client); }
+    /* api */
+    .node.api { border-color: rgba(167,139,250,0.25); }
+    .node.api:hover, .node.api.highlighted { border-color: var(--c-api); box-shadow: var(--glow-api); }
+    .node.api .node-name { color: var(--c-api); }
+    .node.api .node-badge { background: rgba(167,139,250,0.12); color: var(--c-api); }
+    /* service */
+    .node.service { border-color: rgba(52,211,153,0.25); }
+    .node.service:hover, .node.service.highlighted { border-color: var(--c-service); box-shadow: var(--glow-service); }
+    .node.service .node-name { color: var(--c-service); }
+    .node.service .node-badge { background: rgba(52,211,153,0.12); color: var(--c-service); }
+    /* infra */
+    .node.infra { border-color: rgba(245,158,11,0.25); }
+    .node.infra:hover, .node.infra.highlighted { border-color: var(--c-infra); box-shadow: var(--glow-infra); }
+    .node.infra .node-name { color: var(--c-infra); }
+    .node.infra .node-badge { background: rgba(245,158,11,0.12); color: var(--c-infra); }
+    /* data */
+    .node.data { border-color: rgba(251,113,133,0.25); }
+    .node.data:hover, .node.data.highlighted { border-color: var(--c-data); box-shadow: var(--glow-data); }
+    .node.data .node-name { color: var(--c-data); }
+    .node.data .node-badge { background: rgba(251,113,133,0.12); color: var(--c-data); }
+    /* external */
+    .node.external { border-color: rgba(148,163,184,0.2); }
+    .node.external:hover, .node.external.highlighted { border-color: var(--c-external); box-shadow: var(--glow-external); }
+    .node.external .node-name { color: var(--c-external); }
+    .node.external .node-badge { background: rgba(148,163,184,0.1); color: var(--c-external); }
+
+    /* ── SVG edges ──────────────────────────── */
+    #svg-layer { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+    .edge { stroke-width: 1.5; fill: none; transition: opacity .3s; }
+    .edge.dimmed { opacity: 0.06; }
+    .edge.highlighted { stroke-width: 2.5; filter: drop-shadow(0 0 4px currentColor); }
+    .edge-arrow { transition: opacity .3s; }
+    .edge-arrow.dimmed { opacity: 0.06; }
+
+    /* ── Info panel ─────────────────────────── */
+    #info-panel {
+      position: fixed; right: 0; top: 56px; bottom: 0;
+      width: 300px; background: rgba(13,15,28,0.92);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid var(--border);
+      padding: 24px 20px;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      z-index: 50; overflow-y: auto;
+    }
+    #info-panel.open { transform: translateX(0); }
+    #panel-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 28px; height: 28px; border-radius: 6px;
+      border: 1px solid var(--border); background: none;
+      color: var(--text-dim); cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    #panel-close:hover { border-color: var(--border-hover); color: var(--text); }
+    #panel-type {
+      font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    #panel-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    #panel-path {
+      font-size: 10.5px; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dim); margin-bottom: 16px;
+      word-break: break-all;
+    }
+    #panel-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.7; margin-bottom: 20px; }
+    .panel-section-title {
+      font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 10px; margin-top: 20px;
+    }
+    .conn-item {
+      display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+      border-radius: 8px; margin-bottom: 4px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 11.5px; cursor: pointer; transition: border-color .2s;
+    }
+    .conn-item:hover { border-color: var(--border-hover); }
+    .conn-arrow { font-size: 9px; color: var(--text-muted); }
+    .conn-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); margin-left: auto; }
+    #panel-tech { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tech-pill {
+      font-size: 10px; padding: 3px 9px; border-radius: 20px;
+      border: 1px solid var(--border); color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Minimap ────────────────────────────── */
+    #minimap {
+      position: fixed; bottom: 20px; left: 20px;
+      width: 160px; height: 100px;
+      background: rgba(13,15,28,0.9);
+      border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    #minimap canvas { width: 100%; height: 100%; }
+    #minimap-vp {
+      position: absolute; border: 1px solid rgba(56,189,248,0.5);
+      background: rgba(56,189,248,0.07); pointer-events: none;
+      border-radius: 3px;
+    }
+
+    /* ── Toast ──────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 16px;
+      font-size: 12px; color: var(--text-dim);
+      transform: translateY(60px); opacity: 0;
+      transition: all .3s; pointer-events: none;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── Scrollbar ──────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header id="header">
+  <span class="logo">✉ nubmail</span>
+  <div class="sep"></div>
+
+  <div id="search-wrap">
+    <svg id="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input id="search" type="text" placeholder="Search nodes…" autocomplete="off" spellcheck="false" />
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="leg-item active" data-layer="client">
+      <span class="leg-dot" style="background:#38bdf8"></span>Client
+    </div>
+    <div class="leg-item active" data-layer="api">
+      <span class="leg-dot" style="background:#a78bfa"></span>API
+    </div>
+    <div class="leg-item active" data-layer="service">
+      <span class="leg-dot" style="background:#34d399"></span>Services
+    </div>
+    <div class="leg-item active" data-layer="infra">
+      <span class="leg-dot" style="background:#f59e0b"></span>Infra
+    </div>
+    <div class="leg-item active" data-layer="data">
+      <span class="leg-dot" style="background:#fb7185"></span>Data
+    </div>
+    <div class="leg-item active" data-layer="external">
+      <span class="leg-dot" style="background:#94a3b8"></span>External
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="icon-btn" id="btn-fit" title="Fit to screen">⊞</button>
+    <button class="icon-btn" id="btn-zoom-in" title="Zoom in">+</button>
+    <button class="icon-btn" id="btn-zoom-out" title="Zoom out">−</button>
+  </div>
+</header>
+
+<!-- Canvas -->
+<div id="canvas-wrap">
+  <div id="canvas">
+    <svg id="svg-layer"></svg>
+  </div>
+</div>
+
+<!-- Info Panel -->
+<aside id="info-panel">
+  <button id="panel-close">✕</button>
+  <div id="panel-type"></div>
+  <div id="panel-name"></div>
+  <div id="panel-path"></div>
+  <div id="panel-desc"></div>
+  <div id="panel-conns-in-wrap">
+    <div class="panel-section-title">Incoming Connections</div>
+    <div id="panel-conns-in"></div>
+  </div>
+  <div id="panel-conns-out-wrap">
+    <div class="panel-section-title">Outgoing Connections</div>
+    <div id="panel-conns-out"></div>
+  </div>
+  <div id="panel-tech-wrap">
+    <div class="panel-section-title">Tech / Tags</div>
+    <div id="panel-tech"></div>
+  </div>
+</aside>
+
+<!-- Minimap -->
+<div id="minimap"><canvas id="mm-canvas"></canvas><div id="minimap-vp"></div></div>
+
+<div id="toast">📋 Copied to clipboard</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  GRAPH DATA
+// ══════════════════════════════════════════════
+const NODES = [
+  // ── CLIENT LAYER ──
+  {
+    id: 'page-login', layer: 'client', icon: '🏠', name: 'Login Page',
+    badge: 'page', path: 'src/app/page.tsx',
+    desc: 'Root login/register entry page. Renders auth forms, handles JWT session redirect.',
+    tech: ['Next.js','react-hook-form','zod','JWT'],
+    x: 100, y: 80
+  },
+  {
+    id: 'page-register', layer: 'client', icon: '📝', name: 'Register',
+    badge: 'page', path: 'src/app/register/page.tsx',
+    desc: 'New user registration flow with email verification trigger.',
+    tech: ['Next.js','react-hook-form','zod'],
+    x: 100, y: 220
+  },
+  {
+    id: 'page-forgot', layer: 'client', icon: '🔑', name: 'Forgot Password',
+    badge: 'page', path: 'src/app/forgot-password/page.tsx',
+    desc: 'Password reset request flow — sends reset token via email.',
+    tech: ['Next.js','nodemailer'],
+    x: 100, y: 350
+  },
+  {
+    id: 'page-verify', layer: 'client', icon: '✉', name: 'Verify Email',
+    badge: 'page', path: 'src/app/verify-email/page.tsx',
+    desc: 'Email verification landing page. Validates token from URL param.',
+    tech: ['Next.js'],
+    x: 100, y: 470
+  },
+  {
+    id: 'dash-layout', layer: 'client', icon: '🗂', name: 'Dashboard Layout',
+    badge: 'layout', path: 'src/app/dashboard/layout.tsx',
+    desc: 'Authenticated dashboard shell. Wraps all /dashboard routes with AuthProvider and MainNav.',
+    tech: ['Next.js','AuthProvider'],
+    x: 360, y: 160
+  },
+  {
+    id: 'dash-home', layer: 'client', icon: '📊', name: 'Dashboard Home',
+    badge: 'page', path: 'src/app/dashboard/page.tsx',
+    desc: 'Overview page — displays stats, recent emails, quick-compose CTA.',
+    tech: ['recharts','lucide-react'],
+    x: 360, y: 290
+  },
+  {
+    id: 'dash-inbox', layer: 'client', icon: '📥', name: 'Inbox',
+    badge: 'page', path: 'src/app/dashboard/inbox/',
+    desc: 'Paginated email inbox. Real-time read/unread state via PATCH /api/emails.',
+    tech: ['lucide-react','date-fns'],
+    x: 560, y: 80
+  },
+  {
+    id: 'dash-sent', layer: 'client', icon: '📤', name: 'Sent',
+    badge: 'page', path: 'src/app/dashboard/sent/',
+    desc: 'Sent email folder filtered by sender ownership.',
+    tech: ['lucide-react'],
+    x: 560, y: 190
+  },
+  {
+    id: 'dash-compose', layer: 'client', icon: '✏️', name: 'Compose',
+    badge: 'page', path: 'src/app/dashboard/compose/',
+    desc: 'Email compose window. Calls POST /api/emails/send. Supports reply/forward.',
+    tech: ['react-hook-form','nodemailer'],
+    x: 560, y: 300
+  },
+  {
+    id: 'dash-drafts', layer: 'client', icon: '📋', name: 'Drafts',
+    badge: 'page', path: 'src/app/dashboard/drafts/',
+    desc: 'Draft management. Auto-saves compose state to local storage.',
+    tech: ['localStorage'],
+    x: 560, y: 400
+  },
+  {
+    id: 'dash-spam', layer: 'client', icon: '🚫', name: 'Spam / Trash',
+    badge: 'page', path: 'src/app/dashboard/spam/',
+    desc: 'Spam & Trash folder views.',
+    tech: ['lucide-react'],
+    x: 560, y: 490
+  },
+  {
+    id: 'dash-accounts', layer: 'client', icon: '📬', name: 'Email Accounts',
+    badge: 'page', path: 'src/app/dashboard/accounts/',
+    desc: 'Manage additional email addresses per user. IMAP password management.',
+    tech: [],
+    x: 360, y: 430
+  },
+  {
+    id: 'dash-domains', layer: 'client', icon: '🌐', name: 'Domains',
+    badge: 'page', path: 'src/app/dashboard/domains/',
+    desc: 'Custom domain management — add domain, view DNS records, verify MX/SPF/DKIM/DMARC.',
+    tech: ['DKIM','DNS'],
+    x: 360, y: 540
+  },
+  {
+    id: 'dash-developer', layer: 'client', icon: '🔧', name: 'Developer',
+    badge: 'page', path: 'src/app/dashboard/developer/',
+    desc: 'API key management for external SMTP/send-api integration.',
+    tech: ['API Keys'],
+    x: 360, y: 640
+  },
+  {
+    id: 'dash-admin', layer: 'client', icon: '🛡', name: 'Admin Panel',
+    badge: 'page', path: 'src/app/dashboard/admin/',
+    desc: 'Admin-only area: manage users, server config, and provisioned domains.',
+    tech: ['admin-guard'],
+    x: 560, y: 580
+  },
+  {
+    id: 'comp-mainnav', layer: 'client', icon: '🔗', name: 'MainNav',
+    badge: 'component', path: 'src/components/main-nav.tsx',
+    desc: 'Sidebar navigation component with folder list, account switcher.',
+    tech: ['lucide-react','radix-ui'],
+    x: 200, y: 700
+  },
+  {
+    id: 'comp-usernav', layer: 'client', icon: '👤', name: 'UserNav',
+    badge: 'component', path: 'src/components/user-nav.tsx',
+    desc: 'User avatar dropdown — profile, logout, account switch.',
+    tech: ['radix-ui/dropdown','JWT'],
+    x: 360, y: 760
+  },
+
+  // ── API LAYER ──
+  {
+    id: 'api-auth', layer: 'api', icon: '🔐', name: 'Auth API',
+    badge: '/api/auth', path: 'src/app/api/auth/',
+    desc: 'Auth routes: login, register, forgot-password, reset-password, verify-email, verify-code, me.',
+    tech: ['JWT','bcryptjs','nodemailer'],
+    x: 820, y: 80
+  },
+  {
+    id: 'api-emails', layer: 'api', icon: '📨', name: 'Emails API',
+    badge: '/api/emails', path: 'src/app/api/emails/route.ts',
+    desc: 'GET emails by folder (inbox/sent); PATCH read state. Scoped to user-owned email addresses.',
+    tech: ['PostgreSQL','JWT'],
+    x: 820, y: 210
+  },
+  {
+    id: 'api-send', layer: 'api', icon: '🚀', name: 'Send API',
+    badge: '/api/emails/send', path: 'src/app/api/emails/send/',
+    desc: 'Compose & send emails via Nodemailer/SMTP. Handles DKIM signing per domain.',
+    tech: ['nodemailer','DKIM','Postfix'],
+    x: 820, y: 330
+  },
+  {
+    id: 'api-send-api', layer: 'api', icon: '⚡', name: 'Send API (External)',
+    badge: '/api/emails/send-api', path: 'src/app/api/emails/send-api/',
+    desc: 'Programmatic send endpoint authenticated via API key instead of JWT cookie.',
+    tech: ['API Keys','nodemailer'],
+    x: 820, y: 450
+  },
+  {
+    id: 'api-accounts', layer: 'api', icon: '📌', name: 'Accounts API',
+    badge: '/api/accounts', path: 'src/app/api/accounts/route.ts',
+    desc: 'CRUD for additional email accounts. Also exposes IMAP password update sub-route.',
+    tech: ['PostgreSQL','bcryptjs'],
+    x: 1020, y: 80
+  },
+  {
+    id: 'api-domains', layer: 'api', icon: '🌍', name: 'Domains API',
+    badge: '/api/domains', path: 'src/app/api/domains/',
+    desc: 'Domain CRUD, DNS status check, DKIM key-pair generation, record verification.',
+    tech: ['DNS','DKIM','PostgreSQL'],
+    x: 1020, y: 240
+  },
+  {
+    id: 'api-admin', layer: 'api', icon: '🗄', name: 'Admin API',
+    badge: '/api/admin', path: 'src/app/api/admin/',
+    desc: 'Admin routes: list/update/delete users, server DNS, domain provisioning.',
+    tech: ['admin-guard','PostgreSQL'],
+    x: 1020, y: 400
+  },
+  {
+    id: 'api-stats', layer: 'api', icon: '📈', name: 'Stats API',
+    badge: '/api/stats', path: 'src/app/api/stats/',
+    desc: 'Returns aggregated per-user email counts and storage usage.',
+    tech: ['PostgreSQL'],
+    x: 1020, y: 530
+  },
+  {
+    id: 'api-health', layer: 'api', icon: '💚', name: 'Health API',
+    badge: '/api/health', path: 'src/app/api/health/',
+    desc: 'Liveness probe. Returns 200 OK with service status.',
+    tech: [],
+    x: 820, y: 570
+  },
+
+  // ── SERVICE LAYER ──
+  {
+    id: 'lib-admin', layer: 'service', icon: '🛡', name: 'admin.ts',
+    badge: 'lib', path: 'src/lib/admin.ts',
+    desc: 'getUserFromToken helper — extracts & verifies JWT from cookie/header. Used by all protected routes.',
+    tech: ['jsonwebtoken'],
+    x: 1240, y: 80
+  },
+  {
+    id: 'lib-jwt', layer: 'service', icon: '🎟', name: 'jwt.ts',
+    badge: 'lib', path: 'src/lib/jwt.ts',
+    desc: 'sign / verify JWT tokens. Configures secret from env.',
+    tech: ['jsonwebtoken'],
+    x: 1240, y: 200
+  },
+  {
+    id: 'lib-postgres', layer: 'service', icon: '🗃', name: 'postgres.ts',
+    badge: 'lib', path: 'src/lib/postgres.ts',
+    desc: 'pg Pool wrapper — pgQuery<T>() typed query helper used across all API routes.',
+    tech: ['pg','Pool'],
+    x: 1240, y: 320
+  },
+  {
+    id: 'lib-api-keys', layer: 'service', icon: '🔑', name: 'api-keys.ts',
+    badge: 'lib', path: 'src/lib/api-keys.ts',
+    desc: 'Generate/validate API keys stored in the api_keys table.',
+    tech: ['crypto','PostgreSQL'],
+    x: 1240, y: 440
+  },
+  {
+    id: 'lib-auth-provider', layer: 'service', icon: '⚙️', name: 'AuthProvider',
+    badge: 'lib', path: 'src/lib/auth-provider.tsx',
+    desc: 'React context: useAuth() hook delivering user session, login, logout to client components.',
+    tech: ['React Context','JWT'],
+    x: 1240, y: 560
+  },
+  {
+    id: 'util-smtp', layer: 'service', icon: '📡', name: 'smtp.ts',
+    badge: 'util', path: 'src/utils/smtp.ts',
+    desc: 'Nodemailer transporter factory. Reads SMTP_HOST/PORT/USER/PASS from env.',
+    tech: ['nodemailer','env'],
+    x: 1240, y: 670
+  },
+  {
+    id: 'util-dns', layer: 'service', icon: '🔍', name: 'dns-check.ts',
+    badge: 'util', path: 'src/utils/dns-check.ts',
+    desc: 'DNS record lookup helpers: checkMX, checkSPF, checkDKIM, checkDMARC.',
+    tech: ['dns/promises'],
+    x: 1440, y: 80
+  },
+  {
+    id: 'util-replitmail', layer: 'service', icon: '📬', name: 'replitmail.ts',
+    badge: 'util', path: 'src/utils/replitmail.ts',
+    desc: 'Replit-specific transporter shim for dev environment email delivery.',
+    tech: ['nodemailer'],
+    x: 1440, y: 200
+  },
+  {
+    id: 'lib-types', layer: 'service', icon: '📄', name: 'types.ts',
+    badge: 'lib', path: 'src/lib/types.ts',
+    desc: 'Shared TypeScript types: User, EmailMessage, EmailAccount, Domain, JWTPayload.',
+    tech: ['TypeScript'],
+    x: 1440, y: 320
+  },
+  {
+    id: 'ai-genkit', layer: 'service', icon: '🤖', name: 'Genkit AI',
+    badge: 'ai', path: 'src/ai/genkit.ts',
+    desc: 'Firebase Genkit setup with Google GenAI plugin. AI-powered email features.',
+    tech: ['genkit','@genkit-ai/google-genai'],
+    x: 1440, y: 440
+  },
+
+  // ── INFRA LAYER (Docker Services) ──
+  {
+    id: 'infra-app', layer: 'infra', icon: '🟢', name: 'Next.js App',
+    badge: ':5000', path: 'Dockerfile / docker-compose.yml',
+    desc: 'Main app container. Runs `node server.js` after pg_isready and init-admin.js.',
+    tech: ['Docker','Node.js','Next.js'],
+    x: 1660, y: 80
+  },
+  {
+    id: 'infra-smtp-sender', layer: 'infra', icon: '📮', name: 'SMTP Sender',
+    badge: ':587', path: 'docker-compose.yml (smtp-sender)',
+    desc: 'boky/postfix container. Relays outbound email. OpenDKIM in verify-only mode.',
+    tech: ['Postfix','OpenDKIM'],
+    x: 1660, y: 220
+  },
+  {
+    id: 'infra-smtp-receiver', layer: 'infra', icon: '📥', name: 'SMTP Receiver',
+    badge: ':25', path: 'smtp/index.js',
+    desc: 'Custom Node smtp-server (port 25). Parses inbound email, stores to maildata & PostgreSQL.',
+    tech: ['smtp-server','mailparser','pg'],
+    x: 1660, y: 360
+  },
+  {
+    id: 'infra-dovecot', layer: 'infra', icon: '🦅', name: 'Dovecot',
+    badge: ':143/:993', path: 'docker-compose.yml (dovecot)',
+    desc: 'IMAP/POP3 server. Auth via PostgreSQL (dovecot-sql). Delivers mail from maildata Maildir.',
+    tech: ['IMAP','POP3','TLS'],
+    x: 1660, y: 500
+  },
+
+  // ── DATA LAYER ──
+  {
+    id: 'data-postgres', layer: 'data', icon: '🐘', name: 'PostgreSQL',
+    badge: ':5432', path: 'docs/postgres-schema.sql',
+    desc: 'Primary database. Tables: users, email_accounts, email_messages, email_reads, domains, domain_dkim, api_keys.',
+    tech: ['PostgreSQL 16','pg_isready'],
+    x: 1900, y: 200
+  },
+  {
+    id: 'data-maildir', layer: 'data', icon: '📁', name: 'Maildir',
+    badge: 'volume', path: './maildata/',
+    desc: 'Persistent Maildir volume mounted into smtp-receiver, Dovecot, and Next.js app containers.',
+    tech: ['Maildir','Docker Volume'],
+    x: 1900, y: 420
+  },
+  {
+    id: 'data-pgvol', layer: 'data', icon: '💾', name: 'pg_data Volume',
+    badge: 'volume', path: 'pg_data (docker volume)',
+    desc: 'Named Docker volume for PostgreSQL data persistence.',
+    tech: ['Docker Volume'],
+    x: 1900, y: 560
+  },
+
+  // ── EXTERNAL ──
+  {
+    id: 'ext-google-genai', layer: 'external', icon: '🧠', name: 'Google GenAI',
+    badge: 'external', path: 'GEMINI_API_KEY',
+    desc: 'Google Gemini API via Genkit. Powers AI email features (summarisation, reply suggestions).',
+    tech: ['REST API'],
+    x: 1440, y: 580
+  },
+  {
+    id: 'ext-nginx', layer: 'external', icon: '🌐', name: 'nginx-proxy',
+    badge: 'external', path: 'VIRTUAL_HOST env',
+    desc: 'Reverse proxy routing mails.localhost → nubmail-app:5000. Handles TLS via LetsEncrypt.',
+    tech: ['nginx','LetsEncrypt'],
+    x: 1660, y: 640
+  },
+];
+
+const EDGES = [
+  // Client → API
+  { from: 'page-login',     to: 'api-auth',         label: 'POST /login' },
+  { from: 'page-register',  to: 'api-auth',         label: 'POST /register' },
+  { from: 'page-forgot',    to: 'api-auth',         label: 'POST /forgot-password' },
+  { from: 'page-verify',    to: 'api-auth',         label: 'GET /verify' },
+  { from: 'dash-layout',    to: 'lib-auth-provider', label: 'AuthProvider' },
+  { from: 'dash-inbox',     to: 'api-emails',       label: 'GET ?folder=inbox' },
+  { from: 'dash-sent',      to: 'api-emails',       label: 'GET ?folder=sent' },
+  { from: 'dash-compose',   to: 'api-send',         label: 'POST /send' },
+  { from: 'dash-drafts',    to: 'api-emails',       label: 'GET drafts' },
+  { from: 'dash-accounts',  to: 'api-accounts',     label: 'CRUD' },
+  { from: 'dash-domains',   to: 'api-domains',      label: 'CRUD + DNS verify' },
+  { from: 'dash-developer', to: 'api-accounts',     label: 'IMAP password' },
+  { from: 'dash-developer', to: 'lib-api-keys',     label: 'manage keys' },
+  { from: 'dash-admin',     to: 'api-admin',        label: 'admin ops' },
+  { from: 'dash-home',      to: 'api-stats',        label: 'GET stats' },
+  { from: 'comp-mainnav',   to: 'dash-layout',      label: 'sidebar' },
+  { from: 'comp-usernav',   to: 'lib-auth-provider', label: 'useAuth' },
+
+  // API → Lib/Service
+  { from: 'api-auth',      to: 'lib-admin',         label: 'getUserFromToken' },
+  { from: 'api-auth',      to: 'lib-jwt',           label: 'sign/verify' },
+  { from: 'api-auth',      to: 'lib-postgres',      label: 'pgQuery' },
+  { from: 'api-auth',      to: 'util-smtp',         label: 'send verify/reset email' },
+  { from: 'api-emails',    to: 'lib-admin',         label: 'getUserFromToken' },
+  { from: 'api-emails',    to: 'lib-postgres',      label: 'pgQuery' },
+  { from: 'api-send',      to: 'util-smtp',         label: 'transporter' },
+  { from: 'api-send',      to: 'lib-admin',         label: 'auth' },
+  { from: 'api-send',      to: 'lib-postgres',      label: 'store message' },
+  { from: 'api-send-api',  to: 'lib-api-keys',      label: 'validate key' },
+  { from: 'api-send-api',  to: 'util-smtp',         label: 'transporter' },
+  { from: 'api-accounts',  to: 'lib-postgres',      label: 'pgQuery' },
+  { from: 'api-accounts',  to: 'lib-admin',         label: 'auth' },
+  { from: 'api-domains',   to: 'lib-postgres',      label: 'pgQuery' },
+  { from: 'api-domains',   to: 'util-dns',          label: 'DNS check' },
+  { from: 'api-admin',     to: 'lib-postgres',      label: 'pgQuery' },
+  { from: 'api-admin',     to: 'lib-admin',         label: 'verify admin' },
+  { from: 'api-stats',     to: 'lib-postgres',      label: 'pgQuery' },
+
+  // Service → Data
+  { from: 'lib-postgres',       to: 'data-postgres',      label: 'TCP :5432' },
+  { from: 'util-smtp',          to: 'infra-smtp-sender',  label: 'relay :587' },
+  { from: 'util-replitmail',    to: 'ext-google-genai',   label: 'dev fallback' },
+  { from: 'ai-genkit',          to: 'ext-google-genai',   label: 'Gemini API' },
+
+  // Infra → Data
+  { from: 'infra-smtp-receiver', to: 'data-postgres',  label: 'store message' },
+  { from: 'infra-smtp-receiver', to: 'data-maildir',   label: 'write Maildir' },
+  { from: 'infra-dovecot',       to: 'data-postgres',  label: 'auth SQL' },
+  { from: 'infra-dovecot',       to: 'data-maildir',   label: 'read Maildir' },
+  { from: 'infra-app',           to: 'data-maildir',   label: 'read/write' },
+  { from: 'infra-app',           to: 'infra-smtp-sender', label: 'relay outbound' },
+  { from: 'data-postgres',       to: 'data-pgvol',     label: 'persistence' },
+  { from: 'infra-app',           to: 'data-postgres',  label: 'depends_on' },
+  { from: 'infra-smtp-receiver', to: 'data-postgres',  label: 'depends_on' },
+  { from: 'infra-dovecot',       to: 'data-postgres',  label: 'depends_on' },
+
+  // External
+  { from: 'ext-nginx', to: 'infra-app', label: 'proxy :5000' },
+];
+
+// ══════════════════════════════════════════════
+//  ENGINE
+// ══════════════════════════════════════════════
+const LAYER_COLOR = {
+  client: '#38bdf8', api: '#a78bfa', service: '#34d399',
+  infra: '#f59e0b', data: '#fb7185', external: '#94a3b8'
+};
+
+const nodeMap = {};
+NODES.forEach(n => { nodeMap[n.id] = n; });
+
+// Build adjacency
+const edgesFrom = {}, edgesTo = {};
+NODES.forEach(n => { edgesFrom[n.id] = []; edgesTo[n.id] = []; });
+EDGES.forEach(e => {
+  if (edgesFrom[e.from]) edgesFrom[e.from].push(e);
+  if (edgesTo[e.to]) edgesTo[e.to].push(e);
+});
+
+// ── State ──
+let scale = 0.72, tx = 60, ty = 60;
+let dragging = false, dragStart = null, dragOrigin = null;
+let selectedId = null;
+let hiddenLayers = new Set();
+let searchQuery = '';
+
+// ── DOM refs ──
+const canvasWrap = document.getElementById('canvas-wrap');
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('svg-layer');
+const infoPanel = document.getElementById('info-panel');
+
+// ── Create node DOM ──
+const nodeEls = {};
+NODES.forEach(n => {
+  const el = document.createElement('div');
+  el.className = `node ${n.layer}`;
+  el.id = `node-${n.id}`;
+  el.style.left = n.x + 'px';
+  el.style.top  = n.y + 'px';
+  el.innerHTML = `
+    <div class="node-header">
+      <span class="node-icon">${n.icon}</span>
+      <span class="node-name">${n.name}</span>
+      <span class="node-badge">${n.badge}</span>
+    </div>
+    <div class="node-sub">${n.path.split('/').pop()}</div>
+  `;
+  el.addEventListener('click', () => selectNode(n.id));
+  canvas.appendChild(el);
+  nodeEls[n.id] = el;
+  n._el = el;
+});
+
+// ── Create edges ──
+const svgNS = 'http://www.w3.org/2000/svg';
+svg.appendChild(Object.assign(document.createElementNS(svgNS,'defs'), {
+  innerHTML: `
+    ${Object.entries(LAYER_COLOR).map(([k,c]) => `
+      <marker id="arr-${k}" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 z" fill="${c}" opacity="0.7"/>
+      </marker>
+    `).join('')}
+  `
+}));
+
+const edgeEls = EDGES.map((e, i) => {
+  const fromNode = nodeMap[e.from], toNode = nodeMap[e.to];
+  if (!fromNode || !toNode) return null;
+  const layer = fromNode.layer;
+  const line = document.createElementNS(svgNS, 'path');
+  line.setAttribute('class', 'edge');
+  line.setAttribute('stroke', LAYER_COLOR[layer]);
+  line.setAttribute('opacity', '0.45');
+  line.setAttribute('marker-end', `url(#arr-${layer})`);
+  line.dataset.from = e.from;
+  line.dataset.to = e.to;
+  line.dataset.idx = i;
+  svg.appendChild(line);
+  return { line, from: e.from, to: e.to, label: e.label, layer };
+}).filter(Boolean);
+
+function getNodeCenter(n) {
+  const el = n._el;
+  const w = el.offsetWidth || 155;
+  const h = el.offsetHeight || 70;
+  return { x: n.x + w / 2, y: n.y + h / 2 };
+}
+
+function updateEdges() {
+  edgeEls.forEach(({ line, from, to }) => {
+    const fn = nodeMap[from], tn = nodeMap[to];
+    if (!fn || !tn) return;
+    const fc = getNodeCenter(fn), tc = getNodeCenter(tn);
+    const dx = tc.x - fc.x, dy = tc.y - fc.y;
+    const cx1 = fc.x + dx * 0.5;
+    const cy1 = fc.y;
+    const cx2 = tc.x - dx * 0.5;
+    const cy2 = tc.y;
+    line.setAttribute('d', `M${fc.x},${fc.y} C${cx1},${cy1} ${cx2},${cy2} ${tc.x},${tc.y}`);
+  });
+}
+
+// ── Transform ──
+function applyTransform() {
+  canvas.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  canvas.style.transformOrigin = '0 0';
+}
+
+function fitAll() {
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  NODES.forEach(n => {
+    const w = (n._el?.offsetWidth||155), h = (n._el?.offsetHeight||70);
+    minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x+w); maxY = Math.max(maxY, n.y+h);
+  });
+  const vw = canvasWrap.offsetWidth, vh = canvasWrap.offsetHeight;
+  const pad = 60;
+  const sw = (vw - pad*2) / (maxX - minX);
+  const sh = (vh - pad*2) / (maxY - minY);
+  scale = Math.min(sw, sh, 1.2);
+  tx = (vw - (maxX-minX)*scale) / 2 - minX*scale;
+  ty = (vh - (maxY-minY)*scale) / 2 - minY*scale;
+  applyTransform();
+  updateMinimap();
+}
+
+// ── Drag / Pan ──
+canvasWrap.addEventListener('mousedown', e => {
+  if (e.target.closest('.node')) return;
+  dragging = true;
+  dragStart = { x: e.clientX, y: e.clientY };
+  dragOrigin = { tx, ty };
+  canvasWrap.classList.add('grabbing');
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  tx = dragOrigin.tx + e.clientX - dragStart.x;
+  ty = dragOrigin.ty + e.clientY - dragStart.y;
+  applyTransform();
+  updateMinimap();
+});
+window.addEventListener('mouseup', () => {
+  dragging = false;
+  canvasWrap.classList.remove('grabbing');
+});
+
+// ── Zoom ──
+canvasWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = canvasWrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.1 : 0.91;
+  const newScale = Math.min(Math.max(scale * factor, 0.18), 2.5);
+  tx = mx - (mx - tx) * (newScale / scale);
+  ty = my - (my - ty) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+  updateMinimap();
+}, { passive: false });
+
+document.getElementById('btn-zoom-in').onclick  = () => zoom(1.15);
+document.getElementById('btn-zoom-out').onclick = () => zoom(0.87);
+document.getElementById('btn-fit').onclick      = fitAll;
+function zoom(f) {
+  const cx = canvasWrap.offsetWidth/2, cy = canvasWrap.offsetHeight/2;
+  scale = Math.min(Math.max(scale*f, 0.18), 2.5);
+  tx = cx - (cx-tx)*(scale/(scale/f));
+  ty = cy - (cy-ty)*(scale/(scale/f));
+  applyTransform(); updateMinimap();
+}
+
+// ── Select ──
+function selectNode(id) {
+  selectedId = id;
+  const node = nodeMap[id];
+  const col = LAYER_COLOR[node.layer];
+
+  // dim/highlight nodes
+  NODES.forEach(n => {
+    const el = n._el;
+    el.classList.remove('highlighted','dimmed');
+    const isConn = edgesFrom[id].some(e=>e.to===n.id) ||
+                   edgesTo[id].some(e=>e.from===n.id) || n.id===id;
+    el.classList.add(isConn ? 'highlighted' : 'dimmed');
+  });
+
+  // dim/highlight edges
+  edgeEls.forEach(({ line, from, to }) => {
+    const connected = from===id || to===id;
+    line.classList.toggle('dimmed', !connected);
+    line.classList.toggle('highlighted', connected);
+  });
+
+  // Panel
+  document.getElementById('panel-type').textContent  = node.layer.toUpperCase();
+  document.getElementById('panel-type').style.color  = col;
+  document.getElementById('panel-name').textContent  = `${node.icon} ${node.name}`;
+  document.getElementById('panel-name').style.color  = col;
+  document.getElementById('panel-path').textContent  = node.path;
+  document.getElementById('panel-desc').textContent  = node.desc;
+
+  // Connections in
+  const inEl = document.getElementById('panel-conns-in');
+  inEl.innerHTML = '';
+  edgesTo[id].forEach(e => {
+    const fn = nodeMap[e.from];
+    const d = document.createElement('div');
+    d.className = 'conn-item';
+    d.innerHTML = `<span style="color:${LAYER_COLOR[fn.layer]}">${fn.icon} ${fn.name}</span><span class="conn-arrow">→ here</span><span class="conn-label">${e.label||''}</span>`;
+    d.onclick = () => selectNode(fn.id);
+    inEl.appendChild(d);
+  });
+  if (!edgesTo[id].length) inEl.innerHTML = '<div style="font-size:11px;color:#374151">None</div>';
+
+  // Connections out
+  const outEl = document.getElementById('panel-conns-out');
+  outEl.innerHTML = '';
+  edgesFrom[id].forEach(e => {
+    const tn = nodeMap[e.to];
+    const d = document.createElement('div');
+    d.className = 'conn-item';
+    d.innerHTML = `<span class="conn-arrow">→</span><span style="color:${LAYER_COLOR[tn.layer]}">${tn.icon} ${tn.name}</span><span class="conn-label">${e.label||''}</span>`;
+    d.onclick = () => selectNode(tn.id);
+    outEl.appendChild(d);
+  });
+  if (!edgesFrom[id].length) outEl.innerHTML = '<div style="font-size:11px;color:#374151">None</div>';
+
+  // Tech pills
+  const techEl = document.getElementById('panel-tech');
+  techEl.innerHTML = (node.tech||[]).map(t=>`<span class="tech-pill">${t}</span>`).join('');
+
+  infoPanel.classList.add('open');
+}
+
+function clearSelection() {
+  selectedId = null;
+  NODES.forEach(n => n._el.classList.remove('highlighted','dimmed'));
+  edgeEls.forEach(({line}) => { line.classList.remove('dimmed','highlighted'); });
+  infoPanel.classList.remove('open');
+}
+
+document.getElementById('panel-close').onclick = clearSelection;
+canvasWrap.addEventListener('click', e => {
+  if (!e.target.closest('.node') && !e.target.closest('#info-panel')) clearSelection();
+});
+
+// ── Legend filter ──
+document.querySelectorAll('.leg-item').forEach(el => {
+  el.addEventListener('click', () => {
+    const layer = el.dataset.layer;
+    if (hiddenLayers.has(layer)) {
+      hiddenLayers.delete(layer);
+      el.classList.add('active');
+    } else {
+      hiddenLayers.add(layer);
+      el.classList.remove('active');
+    }
+    applyLayerFilter();
+  });
+});
+
+function applyLayerFilter() {
+  NODES.forEach(n => {
+    const hidden = hiddenLayers.has(n.layer);
+    n._el.style.display = hidden ? 'none' : '';
+  });
+  edgeEls.forEach(({line, from, to}) => {
+    const fh = hiddenLayers.has(nodeMap[from]?.layer);
+    const th = hiddenLayers.has(nodeMap[to]?.layer);
+    line.style.display = (fh || th) ? 'none' : '';
+  });
+}
+
+// ── Search ──
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  if (!searchQuery) { NODES.forEach(n => n._el.classList.remove('highlighted','dimmed')); return; }
+  NODES.forEach(n => {
+    const match = n.name.toLowerCase().includes(searchQuery) ||
+                  n.path.toLowerCase().includes(searchQuery) ||
+                  n.badge.toLowerCase().includes(searchQuery) ||
+                  (n.tech||[]).some(t=>t.toLowerCase().includes(searchQuery));
+    n._el.classList.toggle('highlighted', match);
+    n._el.classList.toggle('dimmed', !match);
+  });
+  edgeEls.forEach(({line}) => line.classList.add('dimmed'));
+});
+
+// ── Minimap ──
+const mmCanvas = document.getElementById('mm-canvas');
+const mmCtx = mmCanvas.getContext('2d');
+const mmVp = document.getElementById('minimap-vp');
+mmCanvas.width = 320; mmCanvas.height = 200;
+
+function updateMinimap() {
+  mmCtx.clearRect(0, 0, 320, 200);
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  NODES.forEach(n => {
+    minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
+    maxX=Math.max(maxX,n.x+160); maxY=Math.max(maxY,n.y+80);
+  });
+  const scx = 310/(maxX-minX), scy = 190/(maxY-minY);
+  const mmScale = Math.min(scx,scy);
+
+  NODES.forEach(n => {
+    if (hiddenLayers.has(n.layer)) return;
+    const x = (n.x-minX)*mmScale+5, y = (n.y-minY)*mmScale+5;
+    mmCtx.fillStyle = LAYER_COLOR[n.layer]+'60';
+    mmCtx.beginPath();
+    mmCtx.roundRect(x, y, 18, 10, 2);
+    mmCtx.fill();
+  });
+
+  // viewport box
+  const vpW = canvasWrap.offsetWidth, vpH = canvasWrap.offsetHeight;
+  const vx = (-tx/scale - minX)*mmScale+5;
+  const vy = (-ty/scale - minY)*mmScale+5;
+  const vw2 = (vpW/scale)*mmScale;
+  const vh2 = (vpH/scale)*mmScale;
+  mmVp.style.left = (vx/320*160)+'px';
+  mmVp.style.top  = (vy/200*100)+'px';
+  mmVp.style.width = (vw2/320*160)+'px';
+  mmVp.style.height = (vh2/200*100)+'px';
+}
+
+// ── Init ──
+setTimeout(() => {
+  updateEdges();
+  fitAll();
+  updateMinimap();
+  // Animated entrance
+  NODES.forEach((n, i) => {
+    n._el.style.opacity = '0';
+    n._el.style.transition = `opacity .4s ease ${i*12}ms, transform .4s ease ${i*12}ms`;
+    n._el.style.transform = 'translateY(8px)';
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        n._el.style.opacity = '';
+        n._el.style.transform = '';
+      }, i * 12);
+    });
+  });
+}, 80);
+
+// Keyboard shortcuts
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') clearSelection();
+  if ((e.key==='f'||e.key==='F') && !e.ctrlKey) fitAll();
+});
+</script>
+</body>
+</html>
