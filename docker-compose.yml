@@ -42,9 +42,9 @@ services:
       PROTOCOL: ${PROTOCOL:-http}
       ADMIN_PASS: ${ADMIN_PASS}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
-      VIRTUAL_HOST: ${HOST:-mails.localhost}
+      VIRTUAL_HOST: ${HOST:-mails.nubcoder.com}
       VIRTUAL_PORT: 5000
-      LETSENCRYPT_HOST: ${HOST:-mails.localhost}
+      LETSENCRYPT_HOST: ${HOST:-mails.nubcoder.com}
       LETSENCRYPT_EMAIL: dev@nubcoder.com
     depends_on:
       - postgres
@@ -59,7 +59,7 @@ services:
     container_name: nubmail-smtp-sender
     restart: unless-stopped
     environment:
-      - POSTFIX_myhostname=${HOST:-mail.localhost}
+      - POSTFIX_myhostname=${HOST:-mail.nubcoder.com}
       - ALLOWED_SENDER_DOMAINS=*
       - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
       - POSTFIX_smtpd_tls_security_level=may
@@ -116,6 +116,8 @@ services:
       - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
       - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
+      - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
+      - ./dovecot/ssl:/etc/dovecot/ssl:ro
       - ./maildata:/app/maildata
     environment:
       - POSTGRES_DB=nubmail
