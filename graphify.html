@@ -20,7 +20,6 @@
       --text-dim: #6b7280;
       --text-muted: #374151;
 
-      /* Layer colors */
       --c-client:    #38bdf8;
       --c-api:       #a78bfa;
       --c-service:   #34d399;
@@ -28,12 +27,12 @@
       --c-data:      #fb7185;
       --c-external:  #94a3b8;
 
-      --glow-client:   0 0 18px rgba(56,189,248,0.35);
-      --glow-api:      0 0 18px rgba(167,139,250,0.35);
-      --glow-service:  0 0 18px rgba(52,211,153,0.35);
-      --glow-infra:    0 0 18px rgba(245,158,11,0.35);
-      --glow-data:     0 0 18px rgba(251,113,133,0.35);
-      --glow-external: 0 0 18px rgba(148,163,184,0.25);
+      --glow-client:   0 0 20px rgba(56,189,248,0.4);
+      --glow-api:      0 0 20px rgba(167,139,250,0.4);
+      --glow-service:  0 0 20px rgba(52,211,153,0.4);
+      --glow-infra:    0 0 20px rgba(245,158,11,0.4);
+      --glow-data:     0 0 20px rgba(251,113,133,0.4);
+      --glow-external: 0 0 20px rgba(148,163,184,0.3);
     }
 
     html, body { width: 100%; height: 100%; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow: hidden; }
@@ -41,63 +40,71 @@
     /* ── Header ─────────────────────────────── */
     #header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 56px;
-      display: flex; align-items: center; gap: 16px; padding: 0 20px;
-      background: rgba(7,8,15,0.85);
-      backdrop-filter: blur(16px);
+      height: 52px;
+      display: flex; align-items: center; gap: 14px; padding: 0 18px;
+      background: rgba(7,8,15,0.9);
+      backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border);
     }
     #header .logo {
-      font-size: 15px; font-weight: 700; letter-spacing: -0.3px;
+      font-size: 14px; font-weight: 700; letter-spacing: -0.3px;
       background: linear-gradient(90deg, #38bdf8, #a78bfa);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      white-space: nowrap;
+      white-space: nowrap; flex-shrink: 0;
     }
-    #header .sep { width: 1px; height: 22px; background: var(--border); }
-    #search-wrap {
-      flex: 1; max-width: 280px;
-      position: relative;
-    }
+    #header .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+    #search-wrap { flex: 1; max-width: 260px; position: relative; }
     #search-icon {
       position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
       color: var(--text-dim); pointer-events: none;
     }
     #search {
-      width: 100%; padding: 6px 10px 6px 32px;
+      width: 100%; padding: 5px 10px 5px 30px;
       background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text); font-size: 13px;
+      border-radius: 7px; color: var(--text); font-size: 12.5px;
       font-family: inherit; outline: none; transition: border-color .2s;
     }
     #search:focus { border-color: #38bdf8; }
     #search::placeholder { color: var(--text-dim); }
 
+    /* stats chips */
+    #stats-bar { display: flex; gap: 6px; align-items: center; }
+    .stat-chip {
+      display: flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--surface2);
+      font-size: 10.5px; color: var(--text-dim);
+    }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
     .legend {
-      display: flex; gap: 12px; align-items: center; margin-left: auto;
+      display: flex; gap: 8px; align-items: center; margin-left: auto;
     }
     .leg-item {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: var(--text-dim); cursor: pointer;
-      padding: 3px 8px; border-radius: 20px;
-      border: 1px solid transparent;
-      transition: all .2s;
+      display: flex; align-items: center; gap: 4px;
+      font-size: 10.5px; color: var(--text-dim); cursor: pointer;
+      padding: 2px 7px; border-radius: 20px;
+      border: 1px solid transparent; transition: all .2s;
     }
     .leg-item:hover { border-color: var(--border-hover); color: var(--text); }
     .leg-item.active { border-color: var(--border-hover); color: var(--text); background: var(--surface2); }
-    .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-    .btn-group { display: flex; gap: 6px; }
+    .btn-group { display: flex; gap: 4px; flex-shrink: 0; }
     .icon-btn {
-      width: 30px; height: 30px; border-radius: 7px;
+      height: 28px; min-width: 28px; padding: 0 8px;
+      border-radius: 6px;
       border: 1px solid var(--border); background: var(--surface2);
-      color: var(--text-dim); cursor: pointer; font-size: 14px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
+      color: var(--text-dim); cursor: pointer; font-size: 13px;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      transition: all .2s; white-space: nowrap; font-family: inherit;
     }
     .icon-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface); }
+    .icon-btn .btn-text { font-size: 10.5px; }
 
     /* ── Canvas ─────────────────────────────── */
     #canvas-wrap {
-      position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+      position: fixed; top: 52px; left: 0; right: 0; bottom: 0;
       overflow: hidden; cursor: grab;
     }
     #canvas-wrap.grabbing { cursor: grabbing; }
@@ -108,156 +115,206 @@
       position: absolute;
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 14px;
+      border-radius: 11px;
+      padding: 9px 13px;
       cursor: pointer;
-      transition: border-color .2s, box-shadow .2s, transform .15s, opacity .3s;
+      transition: border-color .2s, box-shadow .2s, opacity .3s;
       user-select: none;
-      min-width: 140px;
+      min-width: 145px;
+      max-width: 200px;
     }
-    .node:hover { transform: translateY(-2px); border-color: var(--border-hover); }
+    .node:hover { border-color: var(--border-hover); }
+    .node.dragging-node { z-index: 20; transition: none; cursor: grabbing; }
     .node.highlighted { z-index: 10; }
-    .node.dimmed { opacity: 0.22; }
+    .node.dimmed { opacity: 0.18; pointer-events: none; }
+    .node.search-match { animation: pulse-border 1.5s ease infinite; }
 
-    .node-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .node-icon { font-size: 16px; flex-shrink: 0; }
-    .node-name { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+    @keyframes pulse-border {
+      0%,100% { box-shadow: none; }
+      50% { box-shadow: 0 0 0 2px rgba(255,255,255,0.15); }
+    }
+
+    .node-header { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+    .node-icon { font-size: 15px; flex-shrink: 0; line-height: 1; }
+    .node-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .node-badge {
-      font-size: 9.5px; font-family: 'JetBrains Mono', monospace;
-      padding: 1px 6px; border-radius: 4px; font-weight: 500;
-      margin-left: auto; white-space: nowrap;
+      font-size: 9px; font-family: 'JetBrains Mono', monospace;
+      padding: 1px 5px; border-radius: 4px; font-weight: 500;
+      margin-left: auto; white-space: nowrap; flex-shrink: 0;
     }
     .node-sub {
-      font-size: 10.5px; color: var(--text-dim);
+      font-size: 10px; color: var(--text-dim);
       font-family: 'JetBrains Mono', monospace;
-      line-height: 1.5;
-    }
-    .node-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-    .tag {
-      font-size: 9px; padding: 1px 6px; border-radius: 20px;
-      color: var(--text-dim); border: 1px solid var(--border);
-      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* client */
-    .node.client { border-color: rgba(56,189,248,0.25); }
+    /* layer colors */
+    .node.client { border-color: rgba(56,189,248,0.22); }
     .node.client:hover, .node.client.highlighted { border-color: var(--c-client); box-shadow: var(--glow-client); }
     .node.client .node-name { color: var(--c-client); }
     .node.client .node-badge { background: rgba(56,189,248,0.12); color: var(--c-client); }
-    /* api */
-    .node.api { border-color: rgba(167,139,250,0.25); }
+
+    .node.api { border-color: rgba(167,139,250,0.22); }
     .node.api:hover, .node.api.highlighted { border-color: var(--c-api); box-shadow: var(--glow-api); }
     .node.api .node-name { color: var(--c-api); }
     .node.api .node-badge { background: rgba(167,139,250,0.12); color: var(--c-api); }
-    /* service */
-    .node.service { border-color: rgba(52,211,153,0.25); }
+
+    .node.service { border-color: rgba(52,211,153,0.22); }
     .node.service:hover, .node.service.highlighted { border-color: var(--c-service); box-shadow: var(--glow-service); }
     .node.service .node-name { color: var(--c-service); }
     .node.service .node-badge { background: rgba(52,211,153,0.12); color: var(--c-service); }
-    /* infra */
-    .node.infra { border-color: rgba(245,158,11,0.25); }
+
+    .node.infra { border-color: rgba(245,158,11,0.22); }
     .node.infra:hover, .node.infra.highlighted { border-color: var(--c-infra); box-shadow: var(--glow-infra); }
     .node.infra .node-name { color: var(--c-infra); }
     .node.infra .node-badge { background: rgba(245,158,11,0.12); color: var(--c-infra); }
-    /* data */
-    .node.data { border-color: rgba(251,113,133,0.25); }
+
+    .node.data { border-color: rgba(251,113,133,0.22); }
     .node.data:hover, .node.data.highlighted { border-color: var(--c-data); box-shadow: var(--glow-data); }
     .node.data .node-name { color: var(--c-data); }
     .node.data .node-badge { background: rgba(251,113,133,0.12); color: var(--c-data); }
-    /* external */
-    .node.external { border-color: rgba(148,163,184,0.2); }
+
+    .node.external { border-color: rgba(148,163,184,0.18); }
     .node.external:hover, .node.external.highlighted { border-color: var(--c-external); box-shadow: var(--glow-external); }
     .node.external .node-name { color: var(--c-external); }
     .node.external .node-badge { background: rgba(148,163,184,0.1); color: var(--c-external); }
 
     /* ── SVG edges ──────────────────────────── */
     #svg-layer { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
-    .edge { stroke-width: 1.5; fill: none; transition: opacity .3s; }
-    .edge.dimmed { opacity: 0.06; }
-    .edge.highlighted { stroke-width: 2.5; filter: drop-shadow(0 0 4px currentColor); }
-    .edge-arrow { transition: opacity .3s; }
-    .edge-arrow.dimmed { opacity: 0.06; }
+    .edge { stroke-width: 1.4; fill: none; transition: opacity .25s; cursor: pointer; pointer-events: stroke; }
+    .edge.dimmed { opacity: 0.05; }
+    .edge.highlighted { stroke-width: 2.4; filter: drop-shadow(0 0 5px currentColor); }
+    .edge:hover { stroke-width: 2.2; opacity: 0.9 !important; }
+
+    /* ── Edge tooltip ──────────────────────── */
+    #edge-tip {
+      position: fixed; z-index: 200;
+      background: var(--surface2); border: 1px solid var(--border-hover);
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 10.5px; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dim); pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+      white-space: nowrap;
+    }
+    #edge-tip.show { opacity: 1; }
 
     /* ── Info panel ─────────────────────────── */
     #info-panel {
-      position: fixed; right: 0; top: 56px; bottom: 0;
-      width: 300px; background: rgba(13,15,28,0.92);
-      backdrop-filter: blur(20px);
+      position: fixed; right: 0; top: 52px; bottom: 0;
+      width: 290px; background: rgba(13,15,28,0.94);
+      backdrop-filter: blur(22px);
       border-left: 1px solid var(--border);
-      padding: 24px 20px;
+      padding: 22px 18px;
       transform: translateX(100%);
       transition: transform .3s cubic-bezier(.4,0,.2,1);
       z-index: 50; overflow-y: auto;
     }
     #info-panel.open { transform: translateX(0); }
     #panel-close {
-      position: absolute; top: 16px; right: 16px;
-      width: 28px; height: 28px; border-radius: 6px;
+      position: absolute; top: 14px; right: 14px;
+      width: 26px; height: 26px; border-radius: 6px;
       border: 1px solid var(--border); background: none;
-      color: var(--text-dim); cursor: pointer; font-size: 16px;
+      color: var(--text-dim); cursor: pointer; font-size: 14px;
       display: flex; align-items: center; justify-content: center;
       transition: all .2s;
     }
     #panel-close:hover { border-color: var(--border-hover); color: var(--text); }
-    #panel-type {
-      font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    #panel-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    #panel-type { font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+    #panel-name { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
     #panel-path {
-      font-size: 10.5px; font-family: 'JetBrains Mono', monospace;
-      color: var(--text-dim); margin-bottom: 16px;
-      word-break: break-all;
+      font-size: 10px; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dim); margin-bottom: 14px; word-break: break-all;
     }
-    #panel-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.7; margin-bottom: 20px; }
+    #panel-desc { font-size: 12px; color: var(--text-dim); line-height: 1.75; margin-bottom: 18px; }
     .panel-section-title {
-      font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
-      color: var(--text-muted); margin-bottom: 10px; margin-top: 20px;
+      font-size: 9.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 8px; margin-top: 18px;
     }
     .conn-item {
-      display: flex; align-items: center; gap: 8px; padding: 7px 10px;
-      border-radius: 8px; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 7px; padding: 6px 9px;
+      border-radius: 7px; margin-bottom: 3px;
       background: var(--surface); border: 1px solid var(--border);
-      font-size: 11.5px; cursor: pointer; transition: border-color .2s;
+      font-size: 11px; cursor: pointer; transition: border-color .2s;
     }
     .conn-item:hover { border-color: var(--border-hover); }
-    .conn-arrow { font-size: 9px; color: var(--text-muted); }
-    .conn-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); margin-left: auto; }
-    #panel-tech { display: flex; flex-wrap: wrap; gap: 6px; }
+    .conn-arrow { font-size: 9px; color: var(--text-muted); flex-shrink: 0; }
+    .conn-label { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--text-dim); margin-left: auto; }
+    #panel-tech { display: flex; flex-wrap: wrap; gap: 5px; }
     .tech-pill {
-      font-size: 10px; padding: 3px 9px; border-radius: 20px;
+      font-size: 9.5px; padding: 2px 8px; border-radius: 20px;
       border: 1px solid var(--border); color: var(--text-dim);
       font-family: 'JetBrains Mono', monospace;
     }
 
     /* ── Minimap ────────────────────────────── */
     #minimap {
-      position: fixed; bottom: 20px; left: 20px;
-      width: 160px; height: 100px;
-      background: rgba(13,15,28,0.9);
+      position: fixed; bottom: 18px; left: 18px;
+      width: 168px; height: 108px;
+      background: rgba(13,15,28,0.92);
       border: 1px solid var(--border);
       border-radius: 10px; overflow: hidden;
       backdrop-filter: blur(10px);
+      cursor: crosshair;
     }
     #minimap canvas { width: 100%; height: 100%; }
     #minimap-vp {
-      position: absolute; border: 1px solid rgba(56,189,248,0.5);
-      background: rgba(56,189,248,0.07); pointer-events: none;
+      position: absolute; border: 1px solid rgba(56,189,248,0.55);
+      background: rgba(56,189,248,0.06); pointer-events: none;
       border-radius: 3px;
     }
 
+    /* ── Keyboard help modal ─────────────── */
+    #kbd-modal {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(7,8,15,0.75); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    #kbd-modal.show { opacity: 1; pointer-events: auto; }
+    .kbd-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px 32px; width: 420px;
+      max-width: 95vw;
+    }
+    .kbd-box h2 { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+    .kbd-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); align-items: center; }
+    .kbd-row:last-child { border-bottom: none; }
+    .kbd-desc { font-size: 12px; color: var(--text-dim); }
+    .kbd-key {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      background: var(--surface2); border: 1px solid var(--border-hover);
+      border-radius: 5px; padding: 2px 8px; color: var(--text);
+    }
+    #kbd-close-btn {
+      margin-top: 18px; width: 100%; padding: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-dim); cursor: pointer; font-size: 12px;
+      font-family: inherit; transition: all .2s;
+    }
+    #kbd-close-btn:hover { border-color: var(--border-hover); color: var(--text); }
+
     /* ── Toast ──────────────────────────────── */
     #toast {
-      position: fixed; bottom: 24px; right: 24px;
+      position: fixed; bottom: 22px; right: 22px;
       background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 16px;
-      font-size: 12px; color: var(--text-dim);
+      border-radius: 9px; padding: 9px 14px;
+      font-size: 11.5px; color: var(--text-dim);
       transform: translateY(60px); opacity: 0;
-      transition: all .3s; pointer-events: none;
+      transition: all .3s; pointer-events: none; z-index: 999;
     }
     #toast.show { transform: translateY(0); opacity: 1; }
 
-    /* ── Scrollbar ──────────────────────────── */
+    /* ── Grid background ─────────────────── */
+    #canvas-wrap::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
@@ -271,37 +328,29 @@
   <div class="sep"></div>
 
   <div id="search-wrap">
-    <svg id="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+    <svg id="search-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
     </svg>
     <input id="search" type="text" placeholder="Search nodes…" autocomplete="off" spellcheck="false" />
   </div>
 
+  <div id="stats-bar"></div>
+
   <div class="legend" id="legend">
-    <div class="leg-item active" data-layer="client">
-      <span class="leg-dot" style="background:#38bdf8"></span>Client
-    </div>
-    <div class="leg-item active" data-layer="api">
-      <span class="leg-dot" style="background:#a78bfa"></span>API
-    </div>
-    <div class="leg-item active" data-layer="service">
-      <span class="leg-dot" style="background:#34d399"></span>Services
-    </div>
-    <div class="leg-item active" data-layer="infra">
-      <span class="leg-dot" style="background:#f59e0b"></span>Infra
-    </div>
-    <div class="leg-item active" data-layer="data">
-      <span class="leg-dot" style="background:#fb7185"></span>Data
-    </div>
-    <div class="leg-item active" data-layer="external">
-      <span class="leg-dot" style="background:#94a3b8"></span>External
-    </div>
+    <div class="leg-item active" data-layer="client"><span class="leg-dot" style="background:#38bdf8"></span>Client</div>
+    <div class="leg-item active" data-layer="api"><span class="leg-dot" style="background:#a78bfa"></span>API</div>
+    <div class="leg-item active" data-layer="service"><span class="leg-dot" style="background:#34d399"></span>Services</div>
+    <div class="leg-item active" data-layer="infra"><span class="leg-dot" style="background:#f59e0b"></span>Infra</div>
+    <div class="leg-item active" data-layer="data"><span class="leg-dot" style="background:#fb7185"></span>Data</div>
+    <div class="leg-item active" data-layer="external"><span class="leg-dot" style="background:#94a3b8"></span>External</div>
   </div>
 
   <div class="btn-group">
-    <button class="icon-btn" id="btn-fit" title="Fit to screen">⊞</button>
-    <button class="icon-btn" id="btn-zoom-in" title="Zoom in">+</button>
-    <button class="icon-btn" id="btn-zoom-out" title="Zoom out">−</button>
+    <button class="icon-btn" id="btn-fit" title="Fit to screen (F)">⊞</button>
+    <button class="icon-btn" id="btn-zoom-in" title="Zoom in (+)">+</button>
+    <button class="icon-btn" id="btn-zoom-out" title="Zoom out (-)">−</button>
+    <button class="icon-btn" id="btn-export" title="Export PNG"><span>⬇</span><span class="btn-text">PNG</span></button>
+    <button class="icon-btn" id="btn-help" title="Keyboard shortcuts (?)"><span>?</span></button>
   </div>
 </header>
 
@@ -320,15 +369,15 @@
   <div id="panel-path"></div>
   <div id="panel-desc"></div>
   <div id="panel-conns-in-wrap">
-    <div class="panel-section-title">Incoming Connections</div>
+    <div class="panel-section-title">Incoming</div>
     <div id="panel-conns-in"></div>
   </div>
   <div id="panel-conns-out-wrap">
-    <div class="panel-section-title">Outgoing Connections</div>
+    <div class="panel-section-title">Outgoing</div>
     <div id="panel-conns-out"></div>
   </div>
   <div id="panel-tech-wrap">
-    <div class="panel-section-title">Tech / Tags</div>
+    <div class="panel-section-title">Tech Stack</div>
     <div id="panel-tech"></div>
   </div>
 </aside>
@@ -336,401 +385,444 @@
 <!-- Minimap -->
 <div id="minimap"><canvas id="mm-canvas"></canvas><div id="minimap-vp"></div></div>
 
-<div id="toast">📋 Copied to clipboard</div>
+<!-- Edge tooltip -->
+<div id="edge-tip"></div>
+
+<!-- Keyboard help -->
+<div id="kbd-modal">
+  <div class="kbd-box">
+    <h2>⌨ Keyboard Shortcuts</h2>
+    <div class="kbd-row"><span class="kbd-desc">Fit all nodes to screen</span><span class="kbd-key">F</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Zoom in</span><span class="kbd-key">+</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Zoom out</span><span class="kbd-key">−</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Deselect / close panel</span><span class="kbd-key">Esc</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Focus search</span><span class="kbd-key">/</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Show this panel</span><span class="kbd-key">?</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Pan canvas</span><span class="kbd-desc">Drag background</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Zoom canvas</span><span class="kbd-desc">Scroll / pinch</span></div>
+    <div class="kbd-row"><span class="kbd-desc">Drag node</span><span class="kbd-desc">Drag node element</span></div>
+    <button id="kbd-close-btn">Close</button>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
 // ══════════════════════════════════════════════
-//  GRAPH DATA
+//  GRAPH DATA — Architecture of nubmail
 // ══════════════════════════════════════════════
 const NODES = [
-  // ── CLIENT LAYER ──
+  // ── CLIENT LAYER ──────────────────────────────────────────────────────
   {
     id: 'page-login', layer: 'client', icon: '🏠', name: 'Login Page',
     badge: 'page', path: 'src/app/page.tsx',
-    desc: 'Root login/register entry page. Renders auth forms, handles JWT session redirect.',
-    tech: ['Next.js','react-hook-form','zod','JWT'],
-    x: 100, y: 80
+    desc: 'Root entry page: login form with JWT session redirect. Sends POST /api/auth/login.',
+    tech: ['Next.js','react','JWT','lucide-react'],
+    x: 60, y: 90
   },
   {
     id: 'page-register', layer: 'client', icon: '📝', name: 'Register',
     badge: 'page', path: 'src/app/register/page.tsx',
-    desc: 'New user registration flow with email verification trigger.',
-    tech: ['Next.js','react-hook-form','zod'],
-    x: 100, y: 220
+    desc: 'New user registration. Validates password strength, calls POST /api/auth/register.',
+    tech: ['Next.js','react','zod'],
+    x: 60, y: 220
   },
   {
     id: 'page-forgot', layer: 'client', icon: '🔑', name: 'Forgot Password',
     badge: 'page', path: 'src/app/forgot-password/page.tsx',
-    desc: 'Password reset request flow — sends reset token via email.',
-    tech: ['Next.js','nodemailer'],
-    x: 100, y: 350
+    desc: 'Password reset request — sends reset link via SMTP.',
+    tech: ['Next.js','SMTP'],
+    x: 60, y: 350
   },
   {
     id: 'page-verify', layer: 'client', icon: '✉', name: 'Verify Email',
     badge: 'page', path: 'src/app/verify-email/page.tsx',
-    desc: 'Email verification landing page. Validates token from URL param.',
+    desc: 'Email verification landing: sends OTP code, verifies it, marks user as verified.',
     tech: ['Next.js'],
-    x: 100, y: 470
+    x: 60, y: 475
   },
   {
     id: 'dash-layout', layer: 'client', icon: '🗂', name: 'Dashboard Layout',
     badge: 'layout', path: 'src/app/dashboard/layout.tsx',
-    desc: 'Authenticated dashboard shell. Wraps all /dashboard routes with AuthProvider and MainNav.',
-    tech: ['Next.js','AuthProvider'],
-    x: 360, y: 160
+    desc: 'Authenticated shell wrapping all /dashboard/** routes with AuthProvider + MainNav sidebar.',
+    tech: ['Next.js','AuthProvider','sidebar'],
+    x: 320, y: 140
   },
   {
     id: 'dash-home', layer: 'client', icon: '📊', name: 'Dashboard Home',
     badge: 'page', path: 'src/app/dashboard/page.tsx',
-    desc: 'Overview page — displays stats, recent emails, quick-compose CTA.',
+    desc: 'Overview cards with email stats, quick links, account info.',
     tech: ['recharts','lucide-react'],
-    x: 360, y: 290
+    x: 320, y: 270
   },
   {
     id: 'dash-inbox', layer: 'client', icon: '📥', name: 'Inbox',
     badge: 'page', path: 'src/app/dashboard/inbox/',
-    desc: 'Paginated email inbox. Real-time read/unread state via PATCH /api/emails.',
-    tech: ['lucide-react','date-fns'],
-    x: 560, y: 80
+    desc: 'Paginated inbox. Fetches emails by account, marks read via PATCH /api/emails.',
+    tech: ['lucide-react','badge','empty-state'],
+    x: 520, y: 90
   },
   {
     id: 'dash-sent', layer: 'client', icon: '📤', name: 'Sent',
-    badge: 'page', path: 'src/app/dashboard/sent/',
-    desc: 'Sent email folder filtered by sender ownership.',
+    badge: 'page', path: 'src/app/dashboard/sent/page.tsx',
+    desc: 'Sent folder filtered by sender. Opens email in dialog.',
     tech: ['lucide-react'],
-    x: 560, y: 190
+    x: 520, y: 210
   },
   {
     id: 'dash-compose', layer: 'client', icon: '✏️', name: 'Compose',
-    badge: 'page', path: 'src/app/dashboard/compose/',
-    desc: 'Email compose window. Calls POST /api/emails/send. Supports reply/forward.',
-    tech: ['react-hook-form','nodemailer'],
-    x: 560, y: 300
+    badge: 'page', path: 'src/app/dashboard/compose/page.tsx',
+    desc: 'Email compose window. Loads email accounts, calls POST /api/emails/send.',
+    tech: ['react','nodemailer'],
+    x: 520, y: 330
   },
   {
     id: 'dash-drafts', layer: 'client', icon: '📋', name: 'Drafts',
-    badge: 'page', path: 'src/app/dashboard/drafts/',
-    desc: 'Draft management. Auto-saves compose state to local storage.',
-    tech: ['localStorage'],
-    x: 560, y: 400
+    badge: 'page', path: 'src/app/dashboard/drafts/page.tsx',
+    desc: 'Draft folder placeholder (empty state).',
+    tech: ['card'],
+    x: 520, y: 440
   },
   {
     id: 'dash-spam', layer: 'client', icon: '🚫', name: 'Spam / Trash',
     badge: 'page', path: 'src/app/dashboard/spam/',
-    desc: 'Spam & Trash folder views.',
+    desc: 'Spam and Trash folder views.',
     tech: ['lucide-react'],
-    x: 560, y: 490
+    x: 520, y: 545
   },
   {
     id: 'dash-accounts', layer: 'client', icon: '📬', name: 'Email Accounts',
     badge: 'page', path: 'src/app/dashboard/accounts/',
-    desc: 'Manage additional email addresses per user. IMAP password management.',
-    tech: [],
-    x: 360, y: 430
+    desc: 'Manage email accounts per user domain. IMAP password, create/delete flows.',
+    tech: ['select','dialog','checkbox'],
+    x: 320, y: 400
   },
   {
     id: 'dash-domains', layer: 'client', icon: '🌐', name: 'Domains',
     badge: 'page', path: 'src/app/dashboard/domains/',
-    desc: 'Custom domain management — add domain, view DNS records, verify MX/SPF/DKIM/DMARC.',
-    tech: ['DKIM','DNS'],
-    x: 360, y: 540
+    desc: 'Custom domain management. Add domain, view/verify DNS records (MX/SPF/DKIM/DMARC).',
+    tech: ['react-hook-form','zod','DNS','DKIM'],
+    x: 320, y: 530
   },
   {
     id: 'dash-developer', layer: 'client', icon: '🔧', name: 'Developer',
-    badge: 'page', path: 'src/app/dashboard/developer/',
-    desc: 'API key management for external SMTP/send-api integration.',
-    tech: ['API Keys'],
-    x: 360, y: 640
+    badge: 'page', path: 'src/app/dashboard/developer/page.tsx',
+    desc: 'API key management for external SMTP send-api integration.',
+    tech: ['API Keys','table'],
+    x: 320, y: 660
   },
   {
     id: 'dash-admin', layer: 'client', icon: '🛡', name: 'Admin Panel',
     badge: 'page', path: 'src/app/dashboard/admin/',
-    desc: 'Admin-only area: manage users, server config, and provisioned domains.',
+    desc: 'Admin-only: manage users, server DNS, provisioned domains.',
     tech: ['admin-guard'],
-    x: 560, y: 580
+    x: 520, y: 640
   },
   {
     id: 'comp-mainnav', layer: 'client', icon: '🔗', name: 'MainNav',
     badge: 'component', path: 'src/components/main-nav.tsx',
-    desc: 'Sidebar navigation component with folder list, account switcher.',
-    tech: ['lucide-react','radix-ui'],
-    x: 200, y: 700
+    desc: 'Sidebar nav: folder list, account switcher, active route highlighting.',
+    tech: ['lucide-react','radix-sidebar','AuthProvider'],
+    x: 160, y: 760
   },
   {
     id: 'comp-usernav', layer: 'client', icon: '👤', name: 'UserNav',
     badge: 'component', path: 'src/components/user-nav.tsx',
     desc: 'User avatar dropdown — profile, logout, account switch.',
-    tech: ['radix-ui/dropdown','JWT'],
-    x: 360, y: 760
+    tech: ['radix-ui/dropdown','AuthProvider'],
+    x: 360, y: 840
   },
 
-  // ── API LAYER ──
+  // ── API LAYER ─────────────────────────────────────────────────────────
   {
     id: 'api-auth', layer: 'api', icon: '🔐', name: 'Auth API',
     badge: '/api/auth', path: 'src/app/api/auth/',
-    desc: 'Auth routes: login, register, forgot-password, reset-password, verify-email, verify-code, me.',
-    tech: ['JWT','bcryptjs','nodemailer'],
-    x: 820, y: 80
+    desc: 'Routes: login, register, forgot-password, reset-password, verify, verify-code, me, seed, api-keys.',
+    tech: ['JWT','bcryptjs','nodemailer','PostgreSQL'],
+    x: 800, y: 90
   },
   {
     id: 'api-emails', layer: 'api', icon: '📨', name: 'Emails API',
     badge: '/api/emails', path: 'src/app/api/emails/route.ts',
-    desc: 'GET emails by folder (inbox/sent); PATCH read state. Scoped to user-owned email addresses.',
+    desc: 'GET emails by folder & account; PATCH read/unread state. Scoped to user-owned addresses.',
     tech: ['PostgreSQL','JWT'],
-    x: 820, y: 210
+    x: 800, y: 230
   },
   {
-    id: 'api-send', layer: 'api', icon: '🚀', name: 'Send API',
-    badge: '/api/emails/send', path: 'src/app/api/emails/send/',
-    desc: 'Compose & send emails via Nodemailer/SMTP. Handles DKIM signing per domain.',
-    tech: ['nodemailer','DKIM','Postfix'],
-    x: 820, y: 330
+    id: 'api-send', layer: 'api', icon: '🚀', name: 'Send Email',
+    badge: '/emails/send', path: 'src/app/api/emails/send/route.ts',
+    desc: 'Compose & send via Nodemailer/SMTP. Stores sent message in PostgreSQL.',
+    tech: ['nodemailer','DKIM','PostgreSQL'],
+    x: 800, y: 360
   },
   {
     id: 'api-send-api', layer: 'api', icon: '⚡', name: 'Send API (External)',
-    badge: '/api/emails/send-api', path: 'src/app/api/emails/send-api/',
-    desc: 'Programmatic send endpoint authenticated via API key instead of JWT cookie.',
-    tech: ['API Keys','nodemailer'],
-    x: 820, y: 450
+    badge: '/emails/send-api', path: 'src/app/api/emails/send-api/route.ts',
+    desc: 'Programmatic send authenticated via API key instead of JWT cookie.',
+    tech: ['API Keys','nodemailer','PostgreSQL'],
+    x: 800, y: 490
   },
   {
     id: 'api-accounts', layer: 'api', icon: '📌', name: 'Accounts API',
     badge: '/api/accounts', path: 'src/app/api/accounts/route.ts',
-    desc: 'CRUD for additional email accounts. Also exposes IMAP password update sub-route.',
+    desc: 'CRUD for email accounts. GET/POST/DELETE. Includes IMAP password sub-route.',
     tech: ['PostgreSQL','bcryptjs'],
-    x: 1020, y: 80
+    x: 1000, y: 90
   },
   {
     id: 'api-domains', layer: 'api', icon: '🌍', name: 'Domains API',
     badge: '/api/domains', path: 'src/app/api/domains/',
-    desc: 'Domain CRUD, DNS status check, DKIM key-pair generation, record verification.',
+    desc: 'Domain CRUD; DNS status checks; DKIM key-pair generation & record verification.',
     tech: ['DNS','DKIM','PostgreSQL'],
-    x: 1020, y: 240
+    x: 1000, y: 260
   },
   {
     id: 'api-admin', layer: 'api', icon: '🗄', name: 'Admin API',
     badge: '/api/admin', path: 'src/app/api/admin/',
-    desc: 'Admin routes: list/update/delete users, server DNS, domain provisioning.',
-    tech: ['admin-guard','PostgreSQL'],
-    x: 1020, y: 400
+    desc: 'Admin routes: list/update/delete users; server DNS checks & DKIM provisioning; domain management.',
+    tech: ['admin-guard','PostgreSQL','DNS'],
+    x: 1000, y: 430
   },
   {
     id: 'api-stats', layer: 'api', icon: '📈', name: 'Stats API',
-    badge: '/api/stats', path: 'src/app/api/stats/',
-    desc: 'Returns aggregated per-user email counts and storage usage.',
+    badge: '/api/stats', path: 'src/app/api/stats/route.ts',
+    desc: 'Returns aggregated per-user email counts and storage stats.',
     tech: ['PostgreSQL'],
-    x: 1020, y: 530
+    x: 1000, y: 560
   },
   {
     id: 'api-health', layer: 'api', icon: '💚', name: 'Health API',
-    badge: '/api/health', path: 'src/app/api/health/',
-    desc: 'Liveness probe. Returns 200 OK with service status.',
-    tech: [],
-    x: 820, y: 570
+    badge: '/api/health', path: 'src/app/api/health/route.ts',
+    desc: 'Liveness probe — returns 200 OK with DB connectivity check.',
+    tech: ['PostgreSQL'],
+    x: 800, y: 620
   },
 
-  // ── SERVICE LAYER ──
+  // ── SERVICE / LIB LAYER ───────────────────────────────────────────────
   {
     id: 'lib-admin', layer: 'service', icon: '🛡', name: 'admin.ts',
     badge: 'lib', path: 'src/lib/admin.ts',
-    desc: 'getUserFromToken helper — extracts & verifies JWT from cookie/header. Used by all protected routes.',
-    tech: ['jsonwebtoken'],
-    x: 1240, y: 80
+    desc: 'getUserFromToken & getAdminFromToken — extract & verify JWT from cookie/header. getDomain/mailhost helpers.',
+    tech: ['jsonwebtoken','PostgreSQL'],
+    x: 1230, y: 90
   },
   {
     id: 'lib-jwt', layer: 'service', icon: '🎟', name: 'jwt.ts',
     badge: 'lib', path: 'src/lib/jwt.ts',
-    desc: 'sign / verify JWT tokens. Configures secret from env.',
+    desc: 'parseJwt, isTokenExpired, getTokenExpiryMs — client-side JWT utils.',
     tech: ['jsonwebtoken'],
-    x: 1240, y: 200
+    x: 1230, y: 220
   },
   {
     id: 'lib-postgres', layer: 'service', icon: '🗃', name: 'postgres.ts',
     badge: 'lib', path: 'src/lib/postgres.ts',
-    desc: 'pg Pool wrapper — pgQuery<T>() typed query helper used across all API routes.',
-    tech: ['pg','Pool'],
-    x: 1240, y: 320
+    desc: 'pg Pool singleton + pgQuery<T>() typed query helper used across all API routes.',
+    tech: ['pg','Pool','env'],
+    x: 1230, y: 350
   },
   {
     id: 'lib-api-keys', layer: 'service', icon: '🔑', name: 'api-keys.ts',
     badge: 'lib', path: 'src/lib/api-keys.ts',
-    desc: 'Generate/validate API keys stored in the api_keys table.',
+    desc: 'sha256, createApiKey, revokeApiKey, listApiKeys, getUserFromApiKey.',
     tech: ['crypto','PostgreSQL'],
-    x: 1240, y: 440
+    x: 1230, y: 480
   },
   {
     id: 'lib-auth-provider', layer: 'service', icon: '⚙️', name: 'AuthProvider',
     badge: 'lib', path: 'src/lib/auth-provider.tsx',
-    desc: 'React context: useAuth() hook delivering user session, login, logout to client components.',
-    tech: ['React Context','JWT'],
-    x: 1240, y: 560
+    desc: 'React context — useAuthClient() exposes user session, login/logout, JWT refresh logic.',
+    tech: ['React Context','JWT','fetch'],
+    x: 1230, y: 610
   },
   {
     id: 'util-smtp', layer: 'service', icon: '📡', name: 'smtp.ts',
     badge: 'util', path: 'src/utils/smtp.ts',
-    desc: 'Nodemailer transporter factory. Reads SMTP_HOST/PORT/USER/PASS from env.',
+    desc: 'getTransport() Nodemailer factory. sendSmtpEmail() + getEnvSmtpConfig() reads env vars.',
     tech: ['nodemailer','env'],
-    x: 1240, y: 670
+    x: 1440, y: 90
   },
   {
     id: 'util-dns', layer: 'service', icon: '🔍', name: 'dns-check.ts',
     badge: 'util', path: 'src/utils/dns-check.ts',
-    desc: 'DNS record lookup helpers: checkMX, checkSPF, checkDKIM, checkDMARC.',
+    desc: 'runDnsChecks() — verifies MX, SPF, DKIM, DMARC records. getDnsCheckConfigFromEnv().',
     tech: ['dns/promises'],
-    x: 1440, y: 80
+    x: 1440, y: 230
   },
   {
     id: 'util-replitmail', layer: 'service', icon: '📬', name: 'replitmail.ts',
     badge: 'util', path: 'src/utils/replitmail.ts',
-    desc: 'Replit-specific transporter shim for dev environment email delivery.',
-    tech: ['nodemailer'],
-    x: 1440, y: 200
+    desc: 'Replit-specific email transporter shim. getAuthToken() + sendEmail() for dev environments.',
+    tech: ['zod','fetch'],
+    x: 1440, y: 360
   },
   {
     id: 'lib-types', layer: 'service', icon: '📄', name: 'types.ts',
     badge: 'lib', path: 'src/lib/types.ts',
-    desc: 'Shared TypeScript types: User, EmailMessage, EmailAccount, Domain, JWTPayload.',
+    desc: 'Shared TypeScript interfaces: User, EmailMessage, EmailAccount, Domain, JWTPayload.',
     tech: ['TypeScript'],
-    x: 1440, y: 320
+    x: 1440, y: 490
   },
   {
     id: 'ai-genkit', layer: 'service', icon: '🤖', name: 'Genkit AI',
     badge: 'ai', path: 'src/ai/genkit.ts',
-    desc: 'Firebase Genkit setup with Google GenAI plugin. AI-powered email features.',
+    desc: 'Firebase Genkit + Google GenAI plugin initialisation for AI-powered email features.',
     tech: ['genkit','@genkit-ai/google-genai'],
-    x: 1440, y: 440
+    x: 1440, y: 620
+  },
+  {
+    id: 'lib-utils', layer: 'service', icon: '🔧', name: 'utils.ts',
+    badge: 'lib', path: 'src/lib/utils.ts',
+    desc: 'cn() — clsx + tailwind-merge class name util used across all UI components.',
+    tech: ['clsx','tailwind-merge'],
+    x: 1230, y: 760
   },
 
-  // ── INFRA LAYER (Docker Services) ──
+  // ── INFRA LAYER ───────────────────────────────────────────────────────
   {
     id: 'infra-app', layer: 'infra', icon: '🟢', name: 'Next.js App',
     badge: ':5000', path: 'Dockerfile / docker-compose.yml',
-    desc: 'Main app container. Runs `node server.js` after pg_isready and init-admin.js.',
-    tech: ['Docker','Node.js','Next.js'],
-    x: 1660, y: 80
+    desc: 'Main app container. Runs node server.js after pg_isready + init-admin. 512MB memory limit.',
+    tech: ['Docker','Node.js 20','Next.js 15'],
+    x: 1660, y: 90
   },
   {
     id: 'infra-smtp-sender', layer: 'infra', icon: '📮', name: 'SMTP Sender',
     badge: ':587', path: 'docker-compose.yml (smtp-sender)',
-    desc: 'boky/postfix container. Relays outbound email. OpenDKIM in verify-only mode.',
+    desc: 'boky/postfix container relaying outbound email. OpenDKIM verify-only mode.',
     tech: ['Postfix','OpenDKIM'],
-    x: 1660, y: 220
+    x: 1660, y: 240
   },
   {
     id: 'infra-smtp-receiver', layer: 'infra', icon: '📥', name: 'SMTP Receiver',
     badge: ':25', path: 'smtp/index.js',
-    desc: 'Custom Node smtp-server (port 25). Parses inbound email, stores to maildata & PostgreSQL.',
+    desc: 'Custom Node.js smtp-server (port 25). Parses inbound mail, stores to Maildir + PostgreSQL.',
     tech: ['smtp-server','mailparser','pg'],
-    x: 1660, y: 360
+    x: 1660, y: 385
   },
   {
     id: 'infra-dovecot', layer: 'infra', icon: '🦅', name: 'Dovecot',
     badge: ':143/:993', path: 'docker-compose.yml (dovecot)',
-    desc: 'IMAP/POP3 server. Auth via PostgreSQL (dovecot-sql). Delivers mail from maildata Maildir.',
-    tech: ['IMAP','POP3','TLS'],
-    x: 1660, y: 500
+    desc: 'IMAP/POP3 server. Auth via PostgreSQL (dovecot-sql). Delivers mail from Maildir volume.',
+    tech: ['IMAP','POP3','TLS','dovecot-sql'],
+    x: 1660, y: 530
+  },
+  {
+    id: 'infra-nginx', layer: 'infra', icon: '🌐', name: 'nginx-proxy',
+    badge: ':80/:443', path: 'VIRTUAL_HOST env',
+    desc: 'Reverse proxy: routes mails.domain → nubmail-app:5000. Automated TLS via LetsEncrypt.',
+    tech: ['nginx','LetsEncrypt','jwilder/nginx-proxy'],
+    x: 1660, y: 660
   },
 
-  // ── DATA LAYER ──
+  // ── DATA LAYER ────────────────────────────────────────────────────────
   {
     id: 'data-postgres', layer: 'data', icon: '🐘', name: 'PostgreSQL',
-    badge: ':5432', path: 'docs/postgres-schema.sql',
-    desc: 'Primary database. Tables: users, email_accounts, email_messages, email_reads, domains, domain_dkim, api_keys.',
+    badge: ':5432', path: 'docker-compose.yml (postgres)',
+    desc: 'Primary DB. Tables: users, email_accounts, email_messages, email_reads, domains, domain_dkim, api_keys.',
     tech: ['PostgreSQL 16','pg_isready'],
     x: 1900, y: 200
   },
   {
-    id: 'data-maildir', layer: 'data', icon: '📁', name: 'Maildir',
+    id: 'data-maildir', layer: 'data', icon: '📁', name: 'Maildir Volume',
     badge: 'volume', path: './maildata/',
-    desc: 'Persistent Maildir volume mounted into smtp-receiver, Dovecot, and Next.js app containers.',
+    desc: 'Persistent Maildir volume mounted into smtp-receiver, Dovecot, and Next.js app.',
     tech: ['Maildir','Docker Volume'],
-    x: 1900, y: 420
+    x: 1900, y: 400
   },
   {
     id: 'data-pgvol', layer: 'data', icon: '💾', name: 'pg_data Volume',
     badge: 'volume', path: 'pg_data (docker volume)',
     desc: 'Named Docker volume for PostgreSQL data persistence.',
     tech: ['Docker Volume'],
-    x: 1900, y: 560
+    x: 1900, y: 580
   },
 
-  // ── EXTERNAL ──
+  // ── EXTERNAL ────────────────────────────────────────────────────────
   {
     id: 'ext-google-genai', layer: 'external', icon: '🧠', name: 'Google GenAI',
-    badge: 'external', path: 'GEMINI_API_KEY',
-    desc: 'Google Gemini API via Genkit. Powers AI email features (summarisation, reply suggestions).',
-    tech: ['REST API'],
-    x: 1440, y: 580
-  },
-  {
-    id: 'ext-nginx', layer: 'external', icon: '🌐', name: 'nginx-proxy',
-    badge: 'external', path: 'VIRTUAL_HOST env',
-    desc: 'Reverse proxy routing mails.localhost → nubmail-app:5000. Handles TLS via LetsEncrypt.',
-    tech: ['nginx','LetsEncrypt'],
-    x: 1660, y: 640
+    badge: 'external', path: 'GEMINI_API_KEY env',
+    desc: 'Google Gemini API via Firebase Genkit. Powers AI email features (summarisation, reply suggestions).',
+    tech: ['REST API','Gemini'],
+    x: 1440, y: 760
   },
 ];
 
 const EDGES = [
-  // Client → API
-  { from: 'page-login',     to: 'api-auth',         label: 'POST /login' },
-  { from: 'page-register',  to: 'api-auth',         label: 'POST /register' },
-  { from: 'page-forgot',    to: 'api-auth',         label: 'POST /forgot-password' },
-  { from: 'page-verify',    to: 'api-auth',         label: 'GET /verify' },
+  // Auth pages → Auth API
+  { from: 'page-login',     to: 'api-auth',     label: 'POST /login' },
+  { from: 'page-register',  to: 'api-auth',     label: 'POST /register' },
+  { from: 'page-forgot',    to: 'api-auth',     label: 'POST /forgot-password' },
+  { from: 'page-verify',    to: 'api-auth',     label: 'GET+POST /verify' },
+
+  // Dashboard → Layout
+  { from: 'dash-home',      to: 'dash-layout',  label: 'nested' },
+  { from: 'dash-inbox',     to: 'dash-layout',  label: 'nested' },
+  { from: 'dash-sent',      to: 'dash-layout',  label: 'nested' },
+  { from: 'dash-compose',   to: 'dash-layout',  label: 'nested' },
+  { from: 'dash-domains',   to: 'dash-layout',  label: 'nested' },
+  { from: 'dash-developer', to: 'dash-layout',  label: 'nested' },
+
+  // Layout → Components
+  { from: 'dash-layout',    to: 'comp-mainnav', label: 'renders' },
+  { from: 'dash-layout',    to: 'comp-usernav', label: 'renders' },
   { from: 'dash-layout',    to: 'lib-auth-provider', label: 'AuthProvider' },
-  { from: 'dash-inbox',     to: 'api-emails',       label: 'GET ?folder=inbox' },
-  { from: 'dash-sent',      to: 'api-emails',       label: 'GET ?folder=sent' },
-  { from: 'dash-compose',   to: 'api-send',         label: 'POST /send' },
-  { from: 'dash-drafts',    to: 'api-emails',       label: 'GET drafts' },
-  { from: 'dash-accounts',  to: 'api-accounts',     label: 'CRUD' },
-  { from: 'dash-domains',   to: 'api-domains',      label: 'CRUD + DNS verify' },
-  { from: 'dash-developer', to: 'api-accounts',     label: 'IMAP password' },
-  { from: 'dash-developer', to: 'lib-api-keys',     label: 'manage keys' },
-  { from: 'dash-admin',     to: 'api-admin',        label: 'admin ops' },
-  { from: 'dash-home',      to: 'api-stats',        label: 'GET stats' },
-  { from: 'comp-mainnav',   to: 'dash-layout',      label: 'sidebar' },
-  { from: 'comp-usernav',   to: 'lib-auth-provider', label: 'useAuth' },
 
-  // API → Lib/Service
-  { from: 'api-auth',      to: 'lib-admin',         label: 'getUserFromToken' },
-  { from: 'api-auth',      to: 'lib-jwt',           label: 'sign/verify' },
-  { from: 'api-auth',      to: 'lib-postgres',      label: 'pgQuery' },
-  { from: 'api-auth',      to: 'util-smtp',         label: 'send verify/reset email' },
-  { from: 'api-emails',    to: 'lib-admin',         label: 'getUserFromToken' },
-  { from: 'api-emails',    to: 'lib-postgres',      label: 'pgQuery' },
-  { from: 'api-send',      to: 'util-smtp',         label: 'transporter' },
-  { from: 'api-send',      to: 'lib-admin',         label: 'auth' },
-  { from: 'api-send',      to: 'lib-postgres',      label: 'store message' },
-  { from: 'api-send-api',  to: 'lib-api-keys',      label: 'validate key' },
-  { from: 'api-send-api',  to: 'util-smtp',         label: 'transporter' },
-  { from: 'api-accounts',  to: 'lib-postgres',      label: 'pgQuery' },
-  { from: 'api-accounts',  to: 'lib-admin',         label: 'auth' },
-  { from: 'api-domains',   to: 'lib-postgres',      label: 'pgQuery' },
-  { from: 'api-domains',   to: 'util-dns',          label: 'DNS check' },
-  { from: 'api-admin',     to: 'lib-postgres',      label: 'pgQuery' },
-  { from: 'api-admin',     to: 'lib-admin',         label: 'verify admin' },
-  { from: 'api-stats',     to: 'lib-postgres',      label: 'pgQuery' },
+  // Dashboard → API calls
+  { from: 'dash-inbox',     to: 'api-emails',   label: 'GET ?folder=inbox' },
+  { from: 'dash-sent',      to: 'api-emails',   label: 'GET ?folder=sent' },
+  { from: 'dash-compose',   to: 'api-send',     label: 'POST /send' },
+  { from: 'dash-accounts',  to: 'api-accounts', label: 'GET/POST/DELETE' },
+  { from: 'dash-domains',   to: 'api-domains',  label: 'CRUD + DNS verify' },
+  { from: 'dash-developer', to: 'api-auth',     label: 'GET /api-keys' },
+  { from: 'dash-home',      to: 'api-stats',    label: 'GET /stats' },
+  { from: 'dash-admin',     to: 'api-admin',    label: 'admin ops' },
 
-  // Service → Data
+  // Components → Services
+  { from: 'comp-mainnav',   to: 'lib-auth-provider', label: 'useAuthClient' },
+  { from: 'comp-usernav',   to: 'lib-auth-provider', label: 'useAuthClient' },
+
+  // API → lib (auth/db)
+  { from: 'api-auth',       to: 'lib-admin',    label: 'getUserFromToken' },
+  { from: 'api-auth',       to: 'lib-postgres', label: 'pgQuery' },
+  { from: 'api-auth',       to: 'util-smtp',    label: 'send verify email' },
+  { from: 'api-auth',       to: 'lib-api-keys', label: 'CRUD api keys' },
+  { from: 'api-emails',     to: 'lib-admin',    label: 'getUserFromToken' },
+  { from: 'api-emails',     to: 'lib-postgres', label: 'pgQuery' },
+  { from: 'api-send',       to: 'util-smtp',    label: 'getTransport' },
+  { from: 'api-send',       to: 'lib-admin',    label: 'getUserFromToken' },
+  { from: 'api-send',       to: 'lib-postgres', label: 'store sent' },
+  { from: 'api-send-api',   to: 'lib-api-keys', label: 'getUserFromApiKey' },
+  { from: 'api-send-api',   to: 'util-smtp',    label: 'getTransport' },
+  { from: 'api-send-api',   to: 'lib-postgres', label: 'store sent' },
+  { from: 'api-accounts',   to: 'lib-admin',    label: 'getUserFromToken' },
+  { from: 'api-accounts',   to: 'lib-postgres', label: 'pgQuery' },
+  { from: 'api-domains',    to: 'lib-admin',    label: 'getUserFromToken' },
+  { from: 'api-domains',    to: 'lib-postgres', label: 'pgQuery' },
+  { from: 'api-domains',    to: 'util-dns',     label: 'runDnsChecks' },
+  { from: 'api-admin',      to: 'lib-admin',    label: 'getAdminFromToken' },
+  { from: 'api-admin',      to: 'lib-postgres', label: 'pgQuery' },
+  { from: 'api-admin',      to: 'util-dns',     label: 'server DNS check' },
+  { from: 'api-stats',      to: 'lib-admin',    label: 'getUserFromToken' },
+  { from: 'api-stats',      to: 'lib-postgres', label: 'pgQuery' },
+  { from: 'api-health',     to: 'lib-postgres', label: 'ping DB' },
+
+  // Services → Data / External
   { from: 'lib-postgres',       to: 'data-postgres',      label: 'TCP :5432' },
   { from: 'util-smtp',          to: 'infra-smtp-sender',  label: 'relay :587' },
-  { from: 'util-replitmail',    to: 'ext-google-genai',   label: 'dev fallback' },
   { from: 'ai-genkit',          to: 'ext-google-genai',   label: 'Gemini API' },
+  { from: 'util-replitmail',    to: 'ext-google-genai',   label: 'dev fallback' },
+  { from: 'lib-auth-provider',  to: 'lib-jwt',            label: 'parseJwt / isExpired' },
 
   // Infra → Data
   { from: 'infra-smtp-receiver', to: 'data-postgres',  label: 'store message' },
   { from: 'infra-smtp-receiver', to: 'data-maildir',   label: 'write Maildir' },
-  { from: 'infra-dovecot',       to: 'data-postgres',  label: 'auth SQL' },
+  { from: 'infra-dovecot',       to: 'data-postgres',  label: 'dovecot-sql auth' },
   { from: 'infra-dovecot',       to: 'data-maildir',   label: 'read Maildir' },
   { from: 'infra-app',           to: 'data-maildir',   label: 'read/write' },
   { from: 'infra-app',           to: 'infra-smtp-sender', label: 'relay outbound' },
-  { from: 'data-postgres',       to: 'data-pgvol',     label: 'persistence' },
   { from: 'infra-app',           to: 'data-postgres',  label: 'depends_on' },
-  { from: 'infra-smtp-receiver', to: 'data-postgres',  label: 'depends_on' },
-  { from: 'infra-dovecot',       to: 'data-postgres',  label: 'depends_on' },
-
-  // External
-  { from: 'ext-nginx', to: 'infra-app', label: 'proxy :5000' },
+  { from: 'data-postgres',       to: 'data-pgvol',     label: 'persistence' },
+  { from: 'infra-nginx',         to: 'infra-app',      label: 'proxy :5000' },
 ];
 
 // ══════════════════════════════════════════════
@@ -744,26 +836,43 @@ const LAYER_COLOR = {
 const nodeMap = {};
 NODES.forEach(n => { nodeMap[n.id] = n; });
 
-// Build adjacency
 const edgesFrom = {}, edgesTo = {};
 NODES.forEach(n => { edgesFrom[n.id] = []; edgesTo[n.id] = []; });
 EDGES.forEach(e => {
   if (edgesFrom[e.from]) edgesFrom[e.from].push(e);
-  if (edgesTo[e.to]) edgesTo[e.to].push(e);
+  if (edgesTo[e.to])   edgesTo[e.to].push(e);
 });
+
+// Stats
+const layerCounts = {};
+NODES.forEach(n => { layerCounts[n.layer] = (layerCounts[n.layer]||0)+1; });
+const statsBar = document.getElementById('stats-bar');
+Object.entries(layerCounts).forEach(([layer, count]) => {
+  const chip = document.createElement('div');
+  chip.className = 'stat-chip';
+  chip.innerHTML = `<span class="stat-dot" style="background:${LAYER_COLOR[layer]}"></span>${count}`;
+  chip.title = `${layer} (${count} nodes)`;
+  statsBar.appendChild(chip);
+});
+const totalChip = document.createElement('div');
+totalChip.className = 'stat-chip';
+totalChip.style.borderColor = 'rgba(255,255,255,0.1)';
+totalChip.innerHTML = `<span style="color:#6b7280">${NODES.length}N</span>&nbsp;<span style="color:#374151">|</span>&nbsp;<span style="color:#6b7280">${EDGES.length}E</span>`;
+statsBar.appendChild(totalChip);
 
 // ── State ──
 let scale = 0.72, tx = 60, ty = 60;
 let dragging = false, dragStart = null, dragOrigin = null;
+let nodeDragging = false, nodeDragEl = null, nodeDragNode = null, nodeDragOrigin = null;
 let selectedId = null;
 let hiddenLayers = new Set();
 let searchQuery = '';
 
-// ── DOM refs ──
 const canvasWrap = document.getElementById('canvas-wrap');
-const canvas = document.getElementById('canvas');
-const svg = document.getElementById('svg-layer');
-const infoPanel = document.getElementById('info-panel');
+const canvas     = document.getElementById('canvas');
+const svg        = document.getElementById('svg-layer');
+const infoPanel  = document.getElementById('info-panel');
+const edgeTip    = document.getElementById('edge-tip');
 
 // ── Create node DOM ──
 const nodeEls = {};
@@ -781,7 +890,23 @@ NODES.forEach(n => {
     </div>
     <div class="node-sub">${n.path.split('/').pop()}</div>
   `;
-  el.addEventListener('click', () => selectNode(n.id));
+
+  // Node dragging
+  el.addEventListener('mousedown', e => {
+    e.stopPropagation();
+    nodeDragging = true;
+    nodeDragEl = el;
+    nodeDragNode = n;
+    nodeDragOrigin = { x: e.clientX, y: e.clientY, nx: n.x, ny: n.y };
+    el.classList.add('dragging-node');
+  });
+
+  el.addEventListener('click', e => {
+    if (Math.abs(e.clientX - (nodeDragOrigin?.x||0)) < 4 && Math.abs(e.clientY - (nodeDragOrigin?.y||0)) < 4) {
+      selectNode(n.id);
+    }
+  });
+
   canvas.appendChild(el);
   nodeEls[n.id] = el;
   n._el = el;
@@ -789,15 +914,13 @@ NODES.forEach(n => {
 
 // ── Create edges ──
 const svgNS = 'http://www.w3.org/2000/svg';
-svg.appendChild(Object.assign(document.createElementNS(svgNS,'defs'), {
-  innerHTML: `
-    ${Object.entries(LAYER_COLOR).map(([k,c]) => `
-      <marker id="arr-${k}" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L0,6 L7,3 z" fill="${c}" opacity="0.7"/>
-      </marker>
-    `).join('')}
-  `
-}));
+const defs = document.createElementNS(svgNS, 'defs');
+defs.innerHTML = Object.entries(LAYER_COLOR).map(([k,c]) => `
+  <marker id="arr-${k}" markerWidth="8" markerHeight="8" refX="6.5" refY="3.5" orient="auto">
+    <path d="M0,0 L0,7 L8,3.5 z" fill="${c}" opacity="0.75"/>
+  </marker>
+`).join('');
+svg.appendChild(defs);
 
 const edgeEls = EDGES.map((e, i) => {
   const fromNode = nodeMap[e.from], toNode = nodeMap[e.to];
@@ -806,20 +929,30 @@ const edgeEls = EDGES.map((e, i) => {
   const line = document.createElementNS(svgNS, 'path');
   line.setAttribute('class', 'edge');
   line.setAttribute('stroke', LAYER_COLOR[layer]);
-  line.setAttribute('opacity', '0.45');
+  line.setAttribute('opacity', '0.42');
   line.setAttribute('marker-end', `url(#arr-${layer})`);
   line.dataset.from = e.from;
-  line.dataset.to = e.to;
-  line.dataset.idx = i;
+  line.dataset.to   = e.to;
+  line.dataset.label = e.label || '';
+  line.style.pointerEvents = 'stroke';
+
+  // Edge tooltip
+  line.addEventListener('mousemove', ev => {
+    edgeTip.textContent = e.label || `${e.from} → ${e.to}`;
+    edgeTip.style.left = (ev.clientX + 14) + 'px';
+    edgeTip.style.top  = (ev.clientY - 10) + 'px';
+    edgeTip.classList.add('show');
+  });
+  line.addEventListener('mouseleave', () => edgeTip.classList.remove('show'));
+
   svg.appendChild(line);
   return { line, from: e.from, to: e.to, label: e.label, layer };
 }).filter(Boolean);
 
 function getNodeCenter(n) {
   const el = n._el;
-  const w = el.offsetWidth || 155;
-  const h = el.offsetHeight || 70;
-  return { x: n.x + w / 2, y: n.y + h / 2 };
+  const w = el.offsetWidth || 155, h = el.offsetHeight || 65;
+  return { x: n.x + w/2, y: n.y + h/2 };
 }
 
 function updateEdges() {
@@ -828,10 +961,11 @@ function updateEdges() {
     if (!fn || !tn) return;
     const fc = getNodeCenter(fn), tc = getNodeCenter(tn);
     const dx = tc.x - fc.x, dy = tc.y - fc.y;
-    const cx1 = fc.x + dx * 0.5;
-    const cy1 = fc.y;
-    const cx2 = tc.x - dx * 0.5;
-    const cy2 = tc.y;
+    // Offset parallel edges slightly
+    const cx1 = fc.x + dx*0.45 - dy*0.05;
+    const cy1 = fc.y + dy*0.45 + dx*0.05;
+    const cx2 = tc.x - dx*0.45 - dy*0.05;
+    const cy2 = tc.y - dy*0.45 + dx*0.05;
     line.setAttribute('d', `M${fc.x},${fc.y} C${cx1},${cy1} ${cx2},${cy2} ${tc.x},${tc.y}`);
   });
 }
@@ -844,23 +978,20 @@ function applyTransform() {
 
 function fitAll() {
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  NODES.forEach(n => {
-    const w = (n._el?.offsetWidth||155), h = (n._el?.offsetHeight||70);
+  NODES.filter(n=>!hiddenLayers.has(n.layer)).forEach(n => {
+    const w = (n._el?.offsetWidth||155), h = (n._el?.offsetHeight||65);
     minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
     maxX = Math.max(maxX, n.x+w); maxY = Math.max(maxY, n.y+h);
   });
   const vw = canvasWrap.offsetWidth, vh = canvasWrap.offsetHeight;
-  const pad = 60;
-  const sw = (vw - pad*2) / (maxX - minX);
-  const sh = (vh - pad*2) / (maxY - minY);
-  scale = Math.min(sw, sh, 1.2);
-  tx = (vw - (maxX-minX)*scale) / 2 - minX*scale;
-  ty = (vh - (maxY-minY)*scale) / 2 - minY*scale;
-  applyTransform();
-  updateMinimap();
+  const pad = 70;
+  scale = Math.min((vw-pad*2)/(maxX-minX), (vh-pad*2)/(maxY-minY), 1.4);
+  tx = (vw - (maxX-minX)*scale)/2 - minX*scale;
+  ty = (vh - (maxY-minY)*scale)/2 - minY*scale;
+  applyTransform(); updateMinimap();
 }
 
-// ── Drag / Pan ──
+// ── Pan ──
 canvasWrap.addEventListener('mousedown', e => {
   if (e.target.closest('.node')) return;
   dragging = true;
@@ -868,16 +999,31 @@ canvasWrap.addEventListener('mousedown', e => {
   dragOrigin = { tx, ty };
   canvasWrap.classList.add('grabbing');
 });
+
 window.addEventListener('mousemove', e => {
+  if (nodeDragging && nodeDragNode) {
+    const dx = (e.clientX - nodeDragOrigin.x) / scale;
+    const dy = (e.clientY - nodeDragOrigin.y) / scale;
+    nodeDragNode.x = nodeDragOrigin.nx + dx;
+    nodeDragNode.y = nodeDragOrigin.ny + dy;
+    nodeDragEl.style.left = nodeDragNode.x + 'px';
+    nodeDragEl.style.top  = nodeDragNode.y + 'px';
+    updateEdges(); updateMinimap();
+    return;
+  }
   if (!dragging) return;
   tx = dragOrigin.tx + e.clientX - dragStart.x;
   ty = dragOrigin.ty + e.clientY - dragStart.y;
-  applyTransform();
-  updateMinimap();
+  applyTransform(); updateMinimap();
 });
+
 window.addEventListener('mouseup', () => {
   dragging = false;
   canvasWrap.classList.remove('grabbing');
+  if (nodeDragging && nodeDragEl) {
+    nodeDragEl.classList.remove('dragging-node');
+    nodeDragging = false; nodeDragEl = null; nodeDragNode = null;
+  }
 });
 
 // ── Zoom ──
@@ -886,23 +1032,22 @@ canvasWrap.addEventListener('wheel', e => {
   const rect = canvasWrap.getBoundingClientRect();
   const mx = e.clientX - rect.left, my = e.clientY - rect.top;
   const factor = e.deltaY < 0 ? 1.1 : 0.91;
-  const newScale = Math.min(Math.max(scale * factor, 0.18), 2.5);
-  tx = mx - (mx - tx) * (newScale / scale);
-  ty = my - (my - ty) * (newScale / scale);
-  scale = newScale;
-  applyTransform();
-  updateMinimap();
+  const ns = Math.min(Math.max(scale * factor, 0.15), 2.8);
+  tx = mx - (mx - tx) * (ns/scale);
+  ty = my - (my - ty) * (ns/scale);
+  scale = ns;
+  applyTransform(); updateMinimap();
 }, { passive: false });
 
-document.getElementById('btn-zoom-in').onclick  = () => zoom(1.15);
-document.getElementById('btn-zoom-out').onclick = () => zoom(0.87);
+document.getElementById('btn-zoom-in').onclick  = () => zoom(1.18);
+document.getElementById('btn-zoom-out').onclick = () => zoom(0.85);
 document.getElementById('btn-fit').onclick      = fitAll;
+
 function zoom(f) {
   const cx = canvasWrap.offsetWidth/2, cy = canvasWrap.offsetHeight/2;
-  scale = Math.min(Math.max(scale*f, 0.18), 2.5);
-  tx = cx - (cx-tx)*(scale/(scale/f));
-  ty = cy - (cy-ty)*(scale/(scale/f));
-  applyTransform(); updateMinimap();
+  const ns = Math.min(Math.max(scale*f, 0.15), 2.8);
+  tx = cx - (cx-tx)*(ns/scale); ty = cy - (cy-ty)*(ns/scale);
+  scale = ns; applyTransform(); updateMinimap();
 }
 
 // ── Select ──
@@ -911,23 +1056,19 @@ function selectNode(id) {
   const node = nodeMap[id];
   const col = LAYER_COLOR[node.layer];
 
-  // dim/highlight nodes
   NODES.forEach(n => {
-    const el = n._el;
-    el.classList.remove('highlighted','dimmed');
-    const isConn = edgesFrom[id].some(e=>e.to===n.id) ||
-                   edgesTo[id].some(e=>e.from===n.id) || n.id===id;
-    el.classList.add(isConn ? 'highlighted' : 'dimmed');
+    n._el.classList.remove('highlighted','dimmed');
+    const connected = edgesFrom[id].some(e=>e.to===n.id) || edgesTo[id].some(e=>e.from===n.id) || n.id===id;
+    n._el.classList.add(connected ? 'highlighted' : 'dimmed');
   });
 
-  // dim/highlight edges
   edgeEls.forEach(({ line, from, to }) => {
     const connected = from===id || to===id;
     line.classList.toggle('dimmed', !connected);
     line.classList.toggle('highlighted', connected);
+    line.setAttribute('opacity', connected ? '0.9' : '0.05');
   });
 
-  // Panel
   document.getElementById('panel-type').textContent  = node.layer.toUpperCase();
   document.getElementById('panel-type').style.color  = col;
   document.getElementById('panel-name').textContent  = `${node.icon} ${node.name}`;
@@ -935,7 +1076,6 @@ function selectNode(id) {
   document.getElementById('panel-path').textContent  = node.path;
   document.getElementById('panel-desc').textContent  = node.desc;
 
-  // Connections in
   const inEl = document.getElementById('panel-conns-in');
   inEl.innerHTML = '';
   edgesTo[id].forEach(e => {
@@ -948,7 +1088,6 @@ function selectNode(id) {
   });
   if (!edgesTo[id].length) inEl.innerHTML = '<div style="font-size:11px;color:#374151">None</div>';
 
-  // Connections out
   const outEl = document.getElementById('panel-conns-out');
   outEl.innerHTML = '';
   edgesFrom[id].forEach(e => {
@@ -961,7 +1100,6 @@ function selectNode(id) {
   });
   if (!edgesFrom[id].length) outEl.innerHTML = '<div style="font-size:11px;color:#374151">None</div>';
 
-  // Tech pills
   const techEl = document.getElementById('panel-tech');
   techEl.innerHTML = (node.tech||[]).map(t=>`<span class="tech-pill">${t}</span>`).join('');
 
@@ -971,7 +1109,10 @@ function selectNode(id) {
 function clearSelection() {
   selectedId = null;
   NODES.forEach(n => n._el.classList.remove('highlighted','dimmed'));
-  edgeEls.forEach(({line}) => { line.classList.remove('dimmed','highlighted'); });
+  edgeEls.forEach(({line}) => {
+    line.classList.remove('dimmed','highlighted');
+    line.setAttribute('opacity','0.42');
+  });
   infoPanel.classList.remove('open');
 }
 
@@ -984,105 +1125,173 @@ canvasWrap.addEventListener('click', e => {
 document.querySelectorAll('.leg-item').forEach(el => {
   el.addEventListener('click', () => {
     const layer = el.dataset.layer;
-    if (hiddenLayers.has(layer)) {
-      hiddenLayers.delete(layer);
-      el.classList.add('active');
-    } else {
-      hiddenLayers.add(layer);
-      el.classList.remove('active');
-    }
+    hiddenLayers.has(layer) ? hiddenLayers.delete(layer) : hiddenLayers.add(layer);
+    el.classList.toggle('active', !hiddenLayers.has(layer));
     applyLayerFilter();
   });
 });
 
 function applyLayerFilter() {
-  NODES.forEach(n => {
-    const hidden = hiddenLayers.has(n.layer);
-    n._el.style.display = hidden ? 'none' : '';
-  });
+  NODES.forEach(n => { n._el.style.display = hiddenLayers.has(n.layer) ? 'none' : ''; });
   edgeEls.forEach(({line, from, to}) => {
     const fh = hiddenLayers.has(nodeMap[from]?.layer);
     const th = hiddenLayers.has(nodeMap[to]?.layer);
-    line.style.display = (fh || th) ? 'none' : '';
+    line.style.display = (fh||th) ? 'none' : '';
   });
+  updateMinimap();
 }
 
 // ── Search ──
 document.getElementById('search').addEventListener('input', e => {
   searchQuery = e.target.value.toLowerCase().trim();
-  if (!searchQuery) { NODES.forEach(n => n._el.classList.remove('highlighted','dimmed')); return; }
+  if (!searchQuery) {
+    NODES.forEach(n => { n._el.classList.remove('highlighted','dimmed','search-match'); });
+    edgeEls.forEach(({line}) => { line.classList.remove('dimmed'); line.setAttribute('opacity','0.42'); });
+    return;
+  }
   NODES.forEach(n => {
     const match = n.name.toLowerCase().includes(searchQuery) ||
                   n.path.toLowerCase().includes(searchQuery) ||
                   n.badge.toLowerCase().includes(searchQuery) ||
+                  n.desc.toLowerCase().includes(searchQuery) ||
                   (n.tech||[]).some(t=>t.toLowerCase().includes(searchQuery));
     n._el.classList.toggle('highlighted', match);
+    n._el.classList.toggle('search-match', match);
     n._el.classList.toggle('dimmed', !match);
   });
-  edgeEls.forEach(({line}) => line.classList.add('dimmed'));
+  edgeEls.forEach(({line}) => { line.classList.add('dimmed'); line.setAttribute('opacity','0.05'); });
+});
+
+// ── Export PNG ──
+document.getElementById('btn-export').addEventListener('click', () => {
+  const w = canvasWrap.offsetWidth, h = canvasWrap.offsetHeight;
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = w * window.devicePixelRatio;
+  exportCanvas.height = h * window.devicePixelRatio;
+  const ctx = exportCanvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.fillStyle = '#07080f';
+  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '14px Inter, sans-serif';
+  ctx.fillText('nubmail · Architecture Graph', 20, 30);
+  ctx.fillText(`${NODES.length} nodes · ${EDGES.length} edges`, 20, 50);
+
+  const a = document.createElement('a');
+  a.download = 'nubmail-architecture.png';
+  a.href = exportCanvas.toDataURL('image/png');
+  a.click();
+  showToast('📸 PNG exported!');
 });
 
 // ── Minimap ──
 const mmCanvas = document.getElementById('mm-canvas');
-const mmCtx = mmCanvas.getContext('2d');
-const mmVp = document.getElementById('minimap-vp');
-mmCanvas.width = 320; mmCanvas.height = 200;
+const mmCtx    = mmCanvas.getContext('2d');
+const mmVp     = document.getElementById('minimap-vp');
+mmCanvas.width = 336; mmCanvas.height = 216;
 
 function updateMinimap() {
-  mmCtx.clearRect(0, 0, 320, 200);
+  mmCtx.clearRect(0,0,336,216);
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  NODES.forEach(n => {
+  NODES.filter(n=>!hiddenLayers.has(n.layer)).forEach(n => {
     minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
     maxX=Math.max(maxX,n.x+160); maxY=Math.max(maxY,n.y+80);
   });
-  const scx = 310/(maxX-minX), scy = 190/(maxY-minY);
-  const mmScale = Math.min(scx,scy);
+  const mmScale = Math.min(326/(maxX-minX), 206/(maxY-minY));
 
+  // Draw edges
+  mmCtx.lineWidth = 0.5;
+  edgeEls.forEach(({from,to,layer}) => {
+    if (hiddenLayers.has(nodeMap[from]?.layer)||hiddenLayers.has(nodeMap[to]?.layer)) return;
+    const fn = nodeMap[from], tn = nodeMap[to];
+    const fc = getNodeCenter(fn), tc = getNodeCenter(tn);
+    mmCtx.strokeStyle = LAYER_COLOR[layer]+'40';
+    mmCtx.beginPath();
+    mmCtx.moveTo((fc.x-minX)*mmScale+5, (fc.y-minY)*mmScale+5);
+    mmCtx.lineTo((tc.x-minX)*mmScale+5, (tc.y-minY)*mmScale+5);
+    mmCtx.stroke();
+  });
+
+  // Draw nodes
   NODES.forEach(n => {
     if (hiddenLayers.has(n.layer)) return;
     const x = (n.x-minX)*mmScale+5, y = (n.y-minY)*mmScale+5;
-    mmCtx.fillStyle = LAYER_COLOR[n.layer]+'60';
+    mmCtx.fillStyle = LAYER_COLOR[n.layer]+(n.id===selectedId?'cc':'55');
     mmCtx.beginPath();
-    mmCtx.roundRect(x, y, 18, 10, 2);
+    if (mmCtx.roundRect) mmCtx.roundRect(x, y, 20, 11, 2);
+    else mmCtx.rect(x, y, 20, 11);
     mmCtx.fill();
   });
 
-  // viewport box
+  // Viewport indicator
   const vpW = canvasWrap.offsetWidth, vpH = canvasWrap.offsetHeight;
   const vx = (-tx/scale - minX)*mmScale+5;
   const vy = (-ty/scale - minY)*mmScale+5;
   const vw2 = (vpW/scale)*mmScale;
   const vh2 = (vpH/scale)*mmScale;
-  mmVp.style.left = (vx/320*160)+'px';
-  mmVp.style.top  = (vy/200*100)+'px';
-  mmVp.style.width = (vw2/320*160)+'px';
-  mmVp.style.height = (vh2/200*100)+'px';
+  mmVp.style.left   = (vx/336*168)+'px';
+  mmVp.style.top    = (vy/216*108)+'px';
+  mmVp.style.width  = (vw2/336*168)+'px';
+  mmVp.style.height = (vh2/216*108)+'px';
 }
+
+// Minimap click to navigate
+document.getElementById('minimap').addEventListener('click', e => {
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  NODES.forEach(n => { minX=Math.min(minX,n.x); minY=Math.min(minY,n.y); maxX=Math.max(maxX,n.x+160); maxY=Math.max(maxY,n.y+80); });
+  const mmScale = Math.min(326/(maxX-minX), 206/(maxY-minY));
+  const rect = document.getElementById('minimap').getBoundingClientRect();
+  const px = (e.clientX - rect.left) / 168 * 336;
+  const py = (e.clientY - rect.top)  / 108 * 216;
+  const worldX = (px-5)/mmScale + minX;
+  const worldY = (py-5)/mmScale + minY;
+  tx = canvasWrap.offsetWidth/2  - worldX*scale;
+  ty = canvasWrap.offsetHeight/2 - worldY*scale;
+  applyTransform(); updateMinimap();
+});
+
+// ── Keyboard help ──
+const kbdModal = document.getElementById('kbd-modal');
+document.getElementById('btn-help').onclick = () => kbdModal.classList.add('show');
+document.getElementById('kbd-close-btn').onclick = () => kbdModal.classList.remove('show');
+kbdModal.addEventListener('click', e => { if (e.target===kbdModal) kbdModal.classList.remove('show'); });
+
+// ── Toast ──
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Keyboard shortcuts ──
+window.addEventListener('keydown', e => {
+  if (document.activeElement === document.getElementById('search')) return;
+  if (e.key==='Escape') { clearSelection(); kbdModal.classList.remove('show'); }
+  if (e.key==='f'||e.key==='F') fitAll();
+  if (e.key==='+'||e.key==='=') zoom(1.18);
+  if (e.key==='-') zoom(0.85);
+  if (e.key==='/') { e.preventDefault(); document.getElementById('search').focus(); }
+  if (e.key==='?') kbdModal.classList.toggle('show');
+});
 
 // ── Init ──
 setTimeout(() => {
   updateEdges();
   fitAll();
   updateMinimap();
-  // Animated entrance
+
+  // Staggered entrance animation
   NODES.forEach((n, i) => {
     n._el.style.opacity = '0';
-    n._el.style.transition = `opacity .4s ease ${i*12}ms, transform .4s ease ${i*12}ms`;
-    n._el.style.transform = 'translateY(8px)';
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        n._el.style.opacity = '';
-        n._el.style.transform = '';
-      }, i * 12);
-    });
+    n._el.style.transform = 'translateY(10px) scale(0.96)';
+    n._el.style.transition = `opacity .45s ease ${i*8}ms, transform .45s ease ${i*8}ms`;
+    setTimeout(() => {
+      n._el.style.opacity = '';
+      n._el.style.transform = '';
+    }, 80 + i * 8);
   });
-}, 80);
-
-// Keyboard shortcuts
-window.addEventListener('keydown', e => {
-  if (e.key === 'Escape') clearSelection();
-  if ((e.key==='f'||e.key==='F') && !e.ctrlKey) fitAll();
-});
+}, 60);
 </script>
 </body>
 </html>
