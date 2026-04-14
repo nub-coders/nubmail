@@ -115,12 +115,14 @@ services:
       - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
       - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
+      - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
       - ./maildata:/app/maildata
     environment:
       - POSTGRES_DB=nubmail
       - POSTGRES_USER=nubmail
       - POSTGRES_PASSWORD=nubmail
       - POSTGRES_HOST=postgres
+      - USER_PASSWORD=${DOVECOT_USER_PASSWORD:-air8858@}
     depends_on:
       - postgres
     networks:
