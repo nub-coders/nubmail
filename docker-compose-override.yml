@@ -1,0 +1,6 @@
+services:
+  dovecot:
+    volumes:
+      - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
+      - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
+      - ./dovecot/ssl:/etc/dovecot/ssl:ro

@@ -116,6 +116,8 @@ services:
       - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
       - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
+      - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
+      - ./dovecot/ssl:/etc/dovecot/ssl:ro
       - ./maildata:/app/maildata
     environment:
       - POSTGRES_DB=nubmail
