@@ -10,6 +10,13 @@ const path = require('path');
 const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 25; // container port
 const POSTGRES_URL = process.env.POSTGRES_URL || 'postgres://nubmail:nubmail@postgres:5432/nubmail';
 const MAILDIR_BASE = process.env.MAILDIR_BASE || '/app/maildata';
+const SMTP_BANNER_HOST = process.env.SMTP_BANNER_HOST || 'mails.nubcoder.com';
+const INBOUND_ALLOWED_DOMAINS = new Set(
+  String(process.env.INBOUND_ALLOWED_DOMAINS || 'nubcoder.com,nubcoder.dev')
+    .split(',')
+    .map((v) => v.trim().toLowerCase())
+    .filter(Boolean)
+);
 
 let pgPool;
 function getPgPool() {
@@ -61,9 +68,41 @@ async function writeToMaildir(emailAddress, subject, body, sentAt, sender, recip
 }
 
 const server = new SMTPServer({
+  name: SMTP_BANNER_HOST,
+  banner: `${SMTP_BANNER_HOST} ESMTP`,
   // We accept unauthenticated inbound from the internet (MX). Do not enable auth here.
   disabledCommands: ['AUTH'],
   logger: false,
+  onRcptTo(address, session, callback) {
+    (async () => {
+      try {
+        const rcpt = (address && address.address ? String(address.address) : '').toLowerCase().trim();
+        if (!rcpt || !rcpt.includes('@')) {
+          return callback(new Error('550 5.1.3 Bad recipient address syntax'));
+        }
+
+        const domain = rcpt.split('@')[1];
+        if (!INBOUND_ALLOWED_DOMAINS.has(domain)) {
+          return callback(new Error('550 5.7.1 Relaying denied'));
+        }
+
+        const pool = getPgPool();
+        const { rowCount } = await pool.query(
+          'SELECT 1 FROM email_accounts WHERE lower(email_address) = $1 LIMIT 1',
+          [rcpt]
+        );
+
+        if (!rowCount) {
+          return callback(new Error('550 5.1.1 Recipient address rejected: User unknown in local recipient table'));
+        }
+
+        return callback();
+      } catch (err) {
+        console.error('SMTP onRcptTo error:', err);
+        return callback(new Error('451 4.3.0 Temporary lookup failure'));
+      }
+    })();
+  },
   onConnect(session, callback) {
     // Optionally restrict by IPs or use a blocklist here.
     return callback();

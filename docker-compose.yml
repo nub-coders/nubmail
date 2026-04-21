@@ -59,15 +59,16 @@ services:
     container_name: nubmail-smtp-sender
     restart: unless-stopped
     environment:
-      - POSTFIX_myhostname=${HOST:-mail.nubcoder.com}
+      - POSTFIX_myhostname=${SMTP_HOSTNAME:-mails.nubcoder.com}
+      - POSTFIX_smtpd_banner=${SMTP_HOSTNAME:-mails.nubcoder.com} ESMTP
       - ALLOWED_SENDER_DOMAINS=*
       - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
       - POSTFIX_smtpd_tls_security_level=may
       - POSTFIX_smtp_tls_security_level=may
       - POSTFIX_inet_protocols=ipv4
       # Allow relay for authenticated users and local networks
-      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks
-      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,reject_unauth_destination
+      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks,reject_unauth_destination
+      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,reject_unauth_destination,reject_unknown_recipient_domain
       # DKIM disabled here; app signs per user domain using Nodemailer
   # - DKIM_AUTOGENERATE=0
   # - DKIM_SELECTOR=default
@@ -89,6 +90,8 @@ services:
     restart: always
     environment:
       SMTP_PORT: 25
+      SMTP_BANNER_HOST: ${SMTP_HOSTNAME:-mails.nubcoder.com}
+      INBOUND_ALLOWED_DOMAINS: ${INBOUND_ALLOWED_DOMAINS:-nubcoder.com,nubcoder.dev}
       POSTGRES_URL: ${POSTGRES_URL:-postgres://nubmail:nubmail@postgres:5432/nubmail}
       MAILDIR_BASE: /app/maildata
     volumes:
@@ -112,8 +115,9 @@ services:
       - "110:110"    # POP3
       - "995:995"    # POP3S
     volumes:
+      - ./dovecot/10-protocols.conf:/etc/dovecot/conf.d/10-protocols.conf:ro
+      - ./dovecot/10-sql.conf:/etc/dovecot/conf.d/10-sql.conf:ro
       - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
-      - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
       - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
       - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
