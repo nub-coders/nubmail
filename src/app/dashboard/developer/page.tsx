@@ -456,19 +456,27 @@ export default function DeveloperPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">IMAP Server</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">{apiHost.replace(/^https?:\/\//, '')}</code>
+                    <code className="block bg-muted p-3 rounded text-sm">imap.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">IMAP Ports</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">143 (STARTTLS), 993 (SSL/TLS)</code>
+                    <code className="block bg-muted p-3 rounded text-sm">993 (SSL/TLS)</code>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">POP3 Server</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">{apiHost.replace(/^https?:\/\//, '')}</code>
+                    <code className="block bg-muted p-3 rounded text-sm">pop3.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">POP3 Ports</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">110 (STARTTLS), 995 (SSL/TLS)</code>
+                    <code className="block bg-muted p-3 rounded text-sm">995 (SSL/TLS)</code>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">SMTP Server</Label>
+                    <code className="block bg-muted p-3 rounded text-sm">smtp.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">SMTP Ports</Label>
+                    <code className="block bg-muted p-3 rounded text-sm">587 (STARTTLS)</code>
                   </div>
                 </div>
               </div>
@@ -544,9 +552,10 @@ export default function DeveloperPage() {
                 <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                   <li>Open Gmail app → Profile → Add another account → Other</li>
                   <li>Enter your email address (e.g., support@yourdomain.com)</li>
-                  <li>Select IMAP or POP3</li>
-                  <li>Enter incoming server: {apiHost.replace(/^https?:\/\//, '')}, Port: 143</li>
-                  <li>Enter your email account password</li>
+                  <li>Select IMAP</li>
+                  <li>Enter incoming server: <strong>imap.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</strong>, Port: <strong>993</strong>, Security: <strong>SSL/TLS</strong></li>
+                  <li>Enter outgoing server: <strong>smtp.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</strong>, Port: <strong>587</strong>, Security: <strong>STARTTLS</strong></li>
+                  <li>Enter your email account password for both incoming and outgoing</li>
                   <li>Complete setup</li>
                 </ol>
               </div>
