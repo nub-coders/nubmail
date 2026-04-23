@@ -25,7 +25,12 @@ function getMailHost(primaryDomain: string): string {
   if (virtualHost) {
     return normalizeDomain(virtualHost);
   }
-  return `mail.${primaryDomain}`;
+  const domainEnv = process.env.DOMAIN?.trim();
+  const baseDomain = domainEnv ? normalizeDomain(domainEnv) : primaryDomain;
+  if (baseDomain.startsWith('mail.') || baseDomain.startsWith('mails.')) {
+    return baseDomain;
+  }
+  return `mails.${baseDomain}`;
 }
 
 export async function isServerDnsVerified(): Promise<boolean> {

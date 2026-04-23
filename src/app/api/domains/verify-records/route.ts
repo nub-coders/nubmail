@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
       },
       { key: 'mx1', type: 'MX', name: '@', value: mailHost, priority: 10 },
       { key: 'spf', type: 'TXT', name: '@', value: `v=spf1 include:${mailHost} ~all` },
-      { key: 'dmarc', type: 'TXT', name: '_dmarc', value: 'v=DMARC1' },
+      { key: 'dmarc', type: 'TXT', name: '_dmarc', value: `v=DMARC1; p=quarantine; rua=mailto:dmarc@${normalizedDomain}` },
       { key: 'autodiscover', type: 'CNAME', name: 'autodiscover', value: mailHost },
       { key: 'autoconfig', type: 'CNAME', name: 'autoconfig', value: mailHost },
       { key: 'webmail', type: 'CNAME', name: 'webmail', value: mailHost },

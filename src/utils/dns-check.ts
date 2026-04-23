@@ -46,9 +46,13 @@ export async function runDnsChecks({ rootDomain, mailHostname, dkimSelector, ser
     }, (ptrs) => Array.isArray(ptrs) ? ptrs.join(', ') : String(ptrs));
   }
 
-  // MX is optional for "sending only". We still show if it points to our host (informational)
-  await safe(`MX ${rootDomain} (info)`, async () => {
+  // MX should point the root domain to our mail host when handling inbound mail.
+  await safe(`MX ${rootDomain}`, async () => {
     const mx = await dns.resolveMx(rootDomain);
+    if (!mx.some((m) => m.exchange.toLowerCase().replace(/\.$/, '') === mailHostname.toLowerCase().replace(/\.$/, ''))) {
+      const values = mx.map((m) => `${m.exchange}:${m.priority}`).join(', ');
+      throw new Error(`No MX points to ${mailHostname}. Found [${values}]`);
+    }
     return mx.map((m) => `${m.exchange}:${m.priority}`).join(', ');
   }, (mxs) => String(mxs));
 
