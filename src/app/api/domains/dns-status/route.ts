@@ -188,7 +188,7 @@ export async function GET(req: NextRequest) {
     });
 
     // SPF record
-    const spfExpected = `v=spf1 include:${mailHost} ~all`;
+    const spfExpected = `v=spf1 include:${mailHost} -all`;
     const hasSPF = spfLookup.values.some((txt) => {
       const normalized = normalizeTxtMatch(txt);
       return normalized.startsWith('v=spf1') && normalized.includes(`include:${normalizeDomain(mailHost)}`);

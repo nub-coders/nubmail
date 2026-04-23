@@ -40,8 +40,8 @@ export default function AdminServerPage() {
   const dkimSelector = config?.dkimSelector || 'mail';
   const hasServerIp = Boolean(config?.serverPublicIp);
   const spfValue = hasServerIp
-    ? `v=spf1 a:${domain} mx ip4:${config.serverPublicIp} ~all`
-    : `v=spf1 a:${domain} mx ~all`;
+    ? `v=spf1 a:${domain} mx ip4:${config.serverPublicIp} -all`
+    : `v=spf1 a:${domain} mx -all`;
 
   // Suggested records for our own server only
   const suggested: Array<{ name: string; type: string; value: string; note?: string }> = [
