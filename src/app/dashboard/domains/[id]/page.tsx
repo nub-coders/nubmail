@@ -284,7 +284,7 @@ export default function DomainDnsPage() {
         <CardHeader>
           <CardTitle>Required DNS records</CardTitle>
           <CardDescription>
-            Add these DNS records to your domain's DNS settings at your domain registrar.
+            Add these records at your DNS provider. Use @ for apex/root and keep values exact.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -380,6 +380,9 @@ export default function DomainDnsPage() {
                 <p className="text-sm text-amber-700 dark:text-amber-300">
                   DNS changes can take anywhere from a few minutes to 48 hours to propagate globally. 
                   If verification fails, please wait and try again later.
+                </p>
+                <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                  For full inbox deliverability, also ensure your server DNS is configured by your admin in Dashboard → Admin → Server.
                 </p>
               </div>
             </div>

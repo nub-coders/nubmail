@@ -37,31 +37,54 @@ export default function AdminServerPage() {
 
   const domain = config?.mailHostname || '';
   const apex = config?.rootDomain || '';
+  const dkimSelector = config?.dkimSelector || 'mail';
+  const hasServerIp = Boolean(config?.serverPublicIp);
+  const spfValue = hasServerIp
+    ? `v=spf1 a:${domain} mx ip4:${config.serverPublicIp} ~all`
+    : `v=spf1 a:${domain} mx ~all`;
 
   // Suggested records for our own server only
-  const suggested = [
+  const suggested: Array<{ name: string; type: string; value: string; note?: string }> = [
     { name: domain, type: 'A', value: config?.serverPublicIp || '<your-server-ip>' },
-    { name: apex, type: 'TXT', value: `v=spf1 a:${domain} mx ~all` },
-    { name: `mail._domainkey.${apex}`, type: 'TXT', value: 'DKIM public key (selector: mail)' },
-    { name: `_dmarc.${apex}`, type: 'TXT', value: 'v=DMARC1; p=none; rua=mailto:postmaster@' + apex },
+    { name: apex, type: 'MX', value: `10 ${domain}` },
+    { name: apex, type: 'TXT', value: spfValue },
+    { name: `${dkimSelector}._domainkey.${apex}`, type: 'TXT', value: `DKIM public key (selector: ${dkimSelector})` },
+    { name: `_dmarc.${apex}`, type: 'TXT', value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@' + apex },
   ];
+
+  if (hasServerIp) {
+    suggested.push({
+      name: config.serverPublicIp,
+      type: 'PTR',
+      value: domain,
+      note: 'Set this in your VPS/cloud provider reverse DNS settings',
+    });
+  }
 
   function isSuggestedVerified(rec: { name: string; type: string }) {
     if (!results || results.length === 0) return false;
     const checks = {
       A: `A ${domain}`,
+      MX: `MX ${apex}`,
       SPF: `SPF ${apex}`,
-      DKIM: `DKIM mail._domainkey.${apex}`,
+      DKIM: `DKIM ${dkimSelector}._domainkey.${apex}`,
       DMARC: `DMARC _dmarc.${apex}`,
+      PTR: hasServerIp ? `PTR ${config.serverPublicIp}` : '',
     };
     if (rec.type === 'A') {
       return !!results.find((r) => r.check === checks.A && r.ok);
+    }
+    if (rec.type === 'MX') {
+      return !!results.find((r) => r.check === checks.MX && r.ok);
+    }
+    if (rec.type === 'PTR' && checks.PTR) {
+      return !!results.find((r) => r.check === checks.PTR && r.ok);
     }
     // Heuristic based on check label prefixes
     if (rec.name === apex && rec.type === 'TXT') {
       return !!results.find((r) => r.check === checks.SPF && r.ok);
     }
-    if (rec.name.startsWith('mail._domainkey') && rec.type === 'TXT') {
+    if (rec.name.startsWith(`${dkimSelector}._domainkey`) && rec.type === 'TXT') {
       return !!results.find((r) => r.check === checks.DKIM && r.ok);
     }
     if (rec.name.startsWith('_dmarc.') && rec.type === 'TXT') {
@@ -75,12 +98,12 @@ export default function AdminServerPage() {
       <Card>
         <CardHeader>
           <CardTitle>Server Configuration</CardTitle>
-          <CardDescription>DNS verification for this server only. Add the records below, then re-run checks.</CardDescription>
+          <CardDescription>DNS verification for this server only. Add the records below exactly, then re-run checks.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Root domain: <span className="font-medium">{config?.rootDomain}</span> · Mail host: <span className="font-medium">{config?.mailHostname}</span> · DKIM selector: <span className="font-medium">{config?.dkimSelector}</span>
+              Root domain: <span className="font-medium">{config?.rootDomain}</span> · Mail host: <span className="font-medium">{config?.mailHostname}</span> · DKIM selector: <span className="font-medium">{dkimSelector}</span>
             </div>
             <Button size="sm" onClick={load} disabled={loading}>{loading ? 'Checking…' : 'Re-run checks'}</Button>
           </div>
@@ -93,6 +116,7 @@ export default function AdminServerPage() {
                   <TableHead>Host</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Value</TableHead>
+                  <TableHead>Notes</TableHead>
                   <TableHead>Verified</TableHead>
                 </TableRow>
               </TableHeader>
@@ -104,6 +128,7 @@ export default function AdminServerPage() {
                       <TableCell className="font-medium">{rec.name}</TableCell>
                       <TableCell>{rec.type}</TableCell>
                       <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{rec.value}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{rec.note || '-'}</TableCell>
                       <TableCell>{ok ? <Badge variant="default">OK</Badge> : <Badge variant="destructive">Missing</Badge>}</TableCell>
                     </TableRow>
                   );
