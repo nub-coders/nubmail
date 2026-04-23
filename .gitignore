@@ -52,3 +52,12 @@ graphify-out/
 
 # agent
 .agent/
+# mail data
+maildata/
+
+# certificates
+dovecot/ssl/
+smtp-certs/
+
+# temporary files
+scratch_doveconf.txt

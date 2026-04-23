@@ -44,7 +44,7 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       VIRTUAL_HOST: ${HOST:-mails.nubcoder.com}
       VIRTUAL_PORT: 5000
-      LETSENCRYPT_HOST: ${HOST:-mails.nubcoder.com}
+      LETSENCRYPT_HOST: mails.nubcoder.com
       LETSENCRYPT_EMAIL: dev@nubcoder.com
     depends_on:
       - postgres
@@ -58,17 +58,27 @@ services:
     image: boky/postfix
     container_name: nubmail-smtp-sender
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "postfix status >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     environment:
       - POSTFIX_myhostname=${SMTP_HOSTNAME:-mails.nubcoder.com}
       - POSTFIX_smtpd_banner=${SMTP_HOSTNAME:-mails.nubcoder.com} ESMTP
       - ALLOWED_SENDER_DOMAINS=*
       - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
-      - POSTFIX_smtpd_tls_security_level=may
       - POSTFIX_smtp_tls_security_level=may
       - POSTFIX_inet_protocols=ipv4
       # Allow relay for authenticated users and local networks
-      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks,reject_unauth_destination
-      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,reject_unauth_destination,reject_unknown_recipient_domain
+      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination
+      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination,reject_unknown_recipient_domain
+      # SASL Authentication via Dovecot
+      - POSTFIX_smtpd_sasl_type=dovecot
+      - POSTFIX_smtpd_sasl_path=private/dovecot-sasl/auth
+      - POSTFIX_smtpd_sasl_auth_enable=yes
+      - POSTFIX_smtpd_sasl_security_options=noanonymous
       # DKIM disabled here; app signs per user domain using Nodemailer
   # - DKIM_AUTOGENERATE=0
   # - DKIM_SELECTOR=default
@@ -78,26 +88,33 @@ services:
   # Additional headers for better reputation
       - POSTFIX_smtpd_helo_required=yes
       - POSTFIX_disable_vrfy_command=yes
+      # Wildcard SSL cert
+      - POSTFIX_smtpd_tls_cert_file=/etc/ssl/mail/tls.crt
+      - POSTFIX_smtpd_tls_key_file=/etc/ssl/mail/tls.key
+      - POSTFIX_smtpd_tls_security_level=may
+    volumes:
+      - ./dovecot/ssl:/etc/ssl/mail:ro
+      - dovecot-sasl:/var/spool/postfix/private/dovecot-sasl
     networks:
       - web
     ports:
       - "587:587"
 
   smtp-receiver:
-    image: node:alpine
+    image: nubmail-app
     container_name: nubmail-smtp-receiver
     working_dir: /app
+    user: "1000:1000"
     restart: always
     environment:
       SMTP_PORT: 25
       SMTP_BANNER_HOST: ${SMTP_HOSTNAME:-mails.nubcoder.com}
-      INBOUND_ALLOWED_DOMAINS: ${INBOUND_ALLOWED_DOMAINS:-nubcoder.com,nubcoder.dev}
+      INBOUND_ALLOWED_DOMAINS: ${INBOUND_ALLOWED_DOMAINS:-}
       POSTGRES_URL: ${POSTGRES_URL:-postgres://nubmail:nubmail@postgres:5432/nubmail}
       MAILDIR_BASE: /app/maildata
     volumes:
-      - .:/app
       - ./maildata:/app/maildata
-    command: sh -c "npm install smtp-server mailparser pg && node smtp/index.js"
+    command: node smtp/index.js
     depends_on:
       - postgres
     networks:
@@ -116,13 +133,16 @@ services:
       - "995:995"    # POP3S
     volumes:
       - ./dovecot/10-protocols.conf:/etc/dovecot/conf.d/10-protocols.conf:ro
+      - ./dovecot/10-mail.conf:/etc/dovecot/conf.d/10-mail.conf:ro
       - ./dovecot/10-sql.conf:/etc/dovecot/conf.d/10-sql.conf:ro
       - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
       - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
       - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
+      - ./dovecot/10-sasl.conf:/etc/dovecot/conf.d/10-sasl.conf:ro
       - ./dovecot/ssl:/etc/dovecot/ssl:ro
       - ./maildata:/app/maildata
+      - dovecot-sasl:/var/run/dovecot-sasl
     environment:
       - POSTGRES_DB=nubmail
       - POSTGRES_USER=nubmail
@@ -134,10 +154,22 @@ services:
     networks:
       - web
 
+  # Dummy container to maintain the wildcard certificate for Dovecot and Postfix
+  wildcard-cert-keeper:
+    image: alpine
+    container_name: nubmail-wildcard-cert-keeper
+    command: tail -f /dev/null
+    restart: unless-stopped
+    environment:
+      - LETSENCRYPT_HOST=*.nubcoder.com
+      - LETSENCRYPT_EMAIL=dev@nubcoder.com
+    networks:
+      - web
 
 networks:
   web:
     external: true
 
 volumes:
+  dovecot-sasl:
   pg_data:

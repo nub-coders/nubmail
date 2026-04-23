@@ -97,29 +97,62 @@ ADMIN_EMAIL=
 
 ## Docker Configuration
 
-The application includes a Docker setup for PostgreSQL and the app:
+The application includes a Docker Compose setup with the following services:
 
 - **PostgreSQL**: Persistent database with initialization from `docs/postgres-schema.sql`
 - **App (Production)**: Optimized Next.js build running on port 5000
-- **App-Dev (Development)**: Hot-reload development environment
-- **nginx-proxy Integration**: Automatic SSL with Let's Encrypt
+- **SMTP Sender**: Outbound SMTP relay (boky/postfix) on ports 465/587
+- **SMTP Receiver**: Inbound SMTP server (Node.js) on port 25
+- **Dovecot**: IMAP/POP3 server with wildcard SSL
 
 ### Docker Services
 
-- `postgres`: PostgreSQL 16 with persistent volumes
-- `app-dev`: Development mode with hot reload
-- `smtp-sender`: Outbound SMTP relay
-- `smtp-receiver`: Inbound SMTP receiver (stores into Postgres)
+| Service | Container | Ports | Description |
+|---------|-----------|-------|-------------|
+| `postgres` | nubmail-postgres-1 | 5432 | PostgreSQL 16 with persistent volumes |
+| `app` | nubmail-app | 5000 (internal) | Production Next.js app |
+| `smtp-sender` | nubmail-smtp-sender | 587 | Outbound SMTP relay |
+| `smtp-receiver` | nubmail-smtp-receiver | 25 | Inbound SMTP receiver (stores into Postgres) |
+| `dovecot` | nubmail-dovecot | 143, 993, 110, 995 | IMAP/POP3 server with SSL |
 
-### nginx-proxy Configuration
+### nginx-proxy Integration
 
-The production app is configured to work with nginx-proxy:
+The production app is configured to work with [jwilder/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy):
 - Virtual Host: `mails.nubcoder.com`
 - Virtual Port: `5000`
-- Let's Encrypt Host: `mails.nubcoder.com`
+- Let's Encrypt Host: `*.nubcoder.com` (wildcard via DNS-01 challenge)
 - Let's Encrypt Email: `dev@nubcoder.com`
 
-Make sure nginx-proxy and letsencrypt-companion are running on the `web` network.
+Make sure nginx-proxy and acme-companion are running on the `web` network.
+
+### Wildcard SSL (*.nubcoder.com)
+
+A wildcard SSL certificate is issued via `nginxproxy/acme-companion` using Cloudflare DNS-01 challenge. The acme-companion container requires:
+
+```yaml
+environment:
+  - ACME_CHALLENGE=DNS-01
+  - ACMESH_DNS_API_CONFIG={"DNS_API":"dns_cf","CF_Key":"...","CF_Email":"..."}
+```
+
+The wildcard cert is stored at `/root/nginx-proxy/nginx/certs/wildcard_nubcoder.com/` and is copied into `./dovecot/ssl/` as `tls.crt` and `tls.key` for dovecot to use.
+
+A cron job runs daily at 3 AM to sync renewed certs:
+```bash
+# Installed in crontab
+0 3 * * * /root/nubmail/scripts/renew-dovecot-cert.sh
+```
+
+The script (`scripts/renew-dovecot-cert.sh`) diffs the cert, copies only if changed, and restarts dovecot automatically.
+
+### Email Client Settings
+
+| Protocol | Hostname | Port | Security |
+|----------|----------|------|----------|
+| IMAP | `imap.nubcoder.com` | 993 | SSL/TLS |
+| SMTP | `smtp.nubcoder.com` | 587 | STARTTLS |
+| POP3 | `pop3.nubcoder.com` | 995 | SSL/TLS |
+| Webmail | `mails.nubcoder.com` | 443 | HTTPS |
 
 ## Project Structure
 

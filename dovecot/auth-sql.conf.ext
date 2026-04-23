@@ -1,13 +1,10 @@
-passdb {
-  driver = sql
+passdb sql {
   args = /etc/dovecot/dovecot-sql.conf.ext
 }
 
-userdb {
-  driver = prefetch
+userdb prefetch {
 }
 
-userdb {
-  driver = sql
+userdb sql {
   args = /etc/dovecot/dovecot-sql.conf.ext
 }

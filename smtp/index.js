@@ -12,11 +12,17 @@ const POSTGRES_URL = process.env.POSTGRES_URL || 'postgres://nubmail:nubmail@pos
 const MAILDIR_BASE = process.env.MAILDIR_BASE || '/app/maildata';
 const SMTP_BANNER_HOST = process.env.SMTP_BANNER_HOST || 'mails.nubcoder.com';
 const INBOUND_ALLOWED_DOMAINS = new Set(
-  String(process.env.INBOUND_ALLOWED_DOMAINS || 'nubcoder.com,nubcoder.dev')
+  String(process.env.INBOUND_ALLOWED_DOMAINS || '')
     .split(',')
     .map((v) => v.trim().toLowerCase())
     .filter(Boolean)
 );
+
+function isInboundDomainAllowed(domain) {
+  // If no allowlist is configured, rely on verified-domain account checks.
+  if (INBOUND_ALLOWED_DOMAINS.size === 0) return true;
+  return INBOUND_ALLOWED_DOMAINS.has(domain);
+}
 
 let pgPool;
 function getPgPool() {
@@ -33,11 +39,11 @@ function extractAddresses(addressObject) {
     .filter(Boolean);
 }
 
-// Write email to Maildir format
-async function writeToMaildir(emailAddress, subject, body, sentAt, sender, recipients, messageId) {
+// Write email to Maildir. Prefer raw RFC822 source so IMAP clients render correctly.
+async function writeToMaildir(emailAddress, rawMessage, subject, body, sentAt, sender, recipients, messageId) {
   try {
-    // Use full email address with @ replaced by _at_ to avoid conflicts
-    const safeEmailName = emailAddress.replace('@', '_at_');
+    // Use the raw email address so IMAP and SMTP agree on the mailbox path.
+    const safeEmailName = emailAddress.toLowerCase();
     const maildirPath = path.join(MAILDIR_BASE, safeEmailName, 'Maildir', 'new');
     
     // Create Maildir structure if it doesn't exist
@@ -47,18 +53,19 @@ async function writeToMaildir(emailAddress, subject, body, sentAt, sender, recip
     const timestamp = Date.now();
     const filename = path.join(maildirPath, `${messageId || timestamp}-${timestamp}`);
     
-    // Format email message in RFC 5322 format
-    const emailContent = [
+    const fallbackContent = [
       `From: ${sender}`,
       `To: ${recipients.join(', ')}`,
       `Subject: ${subject}`,
       `Date: ${sentAt.toUTCString()}`,
       `Message-ID: <${messageId || timestamp}@nubmail>`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/plain; charset=UTF-8',
       '',
       body
-    ].join('\n');
-    
-    fs.writeFileSync(filename, emailContent);
+    ].join('\r\n');
+
+    fs.writeFileSync(filename, rawMessage && rawMessage.length ? rawMessage : fallbackContent);
     console.log(`Wrote email to Maildir: ${filename}`);
     return true;
   } catch (err) {
@@ -82,14 +89,20 @@ const server = new SMTPServer({
         }
 
         const domain = rcpt.split('@')[1];
-        if (!INBOUND_ALLOWED_DOMAINS.has(domain)) {
+        if (!isInboundDomainAllowed(domain)) {
           return callback(new Error('550 5.7.1 Relaying denied'));
         }
 
         const pool = getPgPool();
         const { rowCount } = await pool.query(
-          'SELECT 1 FROM email_accounts WHERE lower(email_address) = $1 LIMIT 1',
-          [rcpt]
+          `SELECT 1
+             FROM email_accounts ea
+             JOIN domains d ON d.id = ea.domain_id
+            WHERE lower(ea.email_address) = $1
+              AND lower(d.domain_name) = $2
+              AND d.verification_status = 'verified'
+            LIMIT 1`,
+          [rcpt, domain]
         );
 
         if (!rowCount) {
@@ -110,7 +123,12 @@ const server = new SMTPServer({
   onData(stream, session, callback) {
     (async () => {
       try {
-        const parsed = await simpleParser(stream);
+        const rawChunks = [];
+        for await (const chunk of stream) {
+          rawChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const rawMessage = Buffer.concat(rawChunks);
+        const parsed = await simpleParser(rawMessage);
 
         const fromAddresses = extractAddresses(parsed.from);
         const toAddresses = extractAddresses(parsed.to).concat(extractAddresses(parsed.cc)).concat(extractAddresses(parsed.bcc));
@@ -146,7 +164,7 @@ const server = new SMTPServer({
               
               // Write to Maildir for IMAP/POP3 access
               const messageId = result.rows[0]?.id || null;
-              await writeToMaildir(rcpt, subject, body, sentAt, sender, [rcpt], messageId);
+              await writeToMaildir(rcpt, rawMessage, subject, body, sentAt, sender, [rcpt], messageId);
             }
           }
         }
