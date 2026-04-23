@@ -272,20 +272,20 @@ export async function GET(req: NextRequest) {
     const baseDomain = domain ? domain.split(':')[0] : primaryDomain;
     
     // Use the main domain for SPF, not the mail subdomain
-    const spfExpected = `v=spf1 a mx ~all`;
+    const spfExpected = `v=spf1 a mx -all`;
     const spfStatus = spfLookup.values.some((txt) => {
-      const normalized = normalizeTxtMatch(txt); // This removes spaces: "v=spf1amx~all"
+      const normalized = normalizeTxtMatch(txt); // This removes spaces: "v=spf1amx-all"
       if (normalized.startsWith('v=spf1')) {
         // Check for 'a' and 'mx' mechanisms (without spaces since normalized removes them)
         if (normalized.includes('a') && normalized.includes('mx')) {
           return true;
         }
         // Also check if it contains 'a' mechanism alone
-        if (normalized.match(/v=spf1.*a.*~all/)) {
+        if (normalized.match(/v=spf1.*a.*-all/)) {
           return true;
         }
         // Also check if it contains 'mx' mechanism alone  
-        if (normalized.match(/v=spf1.*mx.*~all/)) {
+        if (normalized.match(/v=spf1.*mx.*-all/)) {
           return true;
         }
       }
