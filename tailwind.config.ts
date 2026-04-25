@@ -14,6 +14,14 @@ export default {
         headline: ['Inter', 'sans-serif'],
         code: ['monospace'],
       },
+      transitionTimingFunction: {
+        smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
+      boxShadow: {
+        card: '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+        'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+        elevated: '0 8px 25px -5px rgb(0 0 0 / 0.06), 0 4px 10px -3px rgb(0 0 0 / 0.03)',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

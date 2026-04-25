@@ -269,8 +269,7 @@ function ComposeForm() {
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <Send className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight">
               {mode === 'reply' ? 'Reply' : mode === 'forward' ? 'Forward' : draftId ? 'Edit Draft' : 'Compose Email'}
             </h1>
           </div>
@@ -281,7 +280,7 @@ function ComposeForm() {
       </div>
 
       {/* Compose Form */}
-      <Card className="flex-1 border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+      <Card className="flex-1 border border-border/40 shadow-card bg-card">
         <CardContent className="p-0">
           <form className="flex flex-col h-full" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             {/* Email Header Fields */}
@@ -403,7 +402,7 @@ function ComposeForm() {
                 <Button
                   type="submit"
                   disabled={sending || !from || !to || !subject || !body}
-                  className="min-w-[100px]"
+                  className="min-w-[100px] gradient-primary hover:opacity-90 text-white"
                 >
                   {sending ? (
                     <>

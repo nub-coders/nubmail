@@ -40,16 +40,16 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-muted/50 transition-colors">
-          <Avatar className="h-9 w-9 ring-2 ring-border/20 hover:ring-primary/30 transition-all">
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full hover:bg-muted/50 transition-colors">
+          <Avatar className="h-8 w-8 ring-1 ring-border/30 hover:ring-border/60 transition-all duration-150">
             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
               {getInitial()}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 animate-scale-in" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal p-4 bg-muted/30">
+      <DropdownMenuContent className="w-60 animate-scale-in shadow-elevated" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal p-3 bg-muted/20">
           <div className="flex items-center space-x-3">
             <Avatar className="h-12 w-12">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">

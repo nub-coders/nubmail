@@ -205,10 +205,10 @@ export default function AccountsPage() {
   if (authLoading) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Email Accounts</h1>
+        <h1 className="text-2xl font-semibold mb-4">Email Accounts</h1>
         <div className="animate-pulse">
-          <div className="h-12 bg-gray-200 rounded mb-4"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-12 bg-muted rounded mb-4"></div>
+          <div className="h-32 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -222,7 +222,7 @@ export default function AccountsPage() {
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Email Accounts</h1>
+          <h1 className="text-2xl font-semibold">Email Accounts</h1>
           <p className="text-muted-foreground">Manage email accounts for your verified domains.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -397,7 +397,7 @@ export default function AccountsPage() {
           ) : (
             <div className="space-y-2">
               {accounts.map(account => (
-                <div key={account.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={account.id} className="flex items-center justify-between p-4 border border-border/40 rounded-xl hover:bg-muted/30 transition-colors duration-150">
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-muted-foreground" />
                     <div>

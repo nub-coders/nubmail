@@ -22,26 +22,26 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border/50">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Mail className="h-5 w-5" />
+          <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-white shadow-sm">
+              <Mail className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-sidebar-foreground">
+              <span className="text-sm font-semibold text-sidebar-foreground">
                 NubMail
               </span>
-              <span className="text-xs text-sidebar-foreground/60">
+              <span className="text-[11px] text-sidebar-foreground/50">
                 Professional Email
               </span>
             </div>
           </div>
         </SidebarHeader>
         <SidebarContent className="px-2">
-           <div className="p-4">
-            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+           <div className="p-3">
+            <Button asChild className="w-full gradient-primary hover:opacity-90 text-white shadow-sm rounded-lg">
               <Link href="/dashboard/compose">
                 <Edit className="mr-2 h-4 w-4" />
-                Compose Email
+                Compose
               </Link>
             </Button>
           </div>
@@ -49,13 +49,13 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur-md px-4 sm:px-6 shadow-sm">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border/40 bg-background/80 backdrop-blur-xl px-4 sm:px-6">
           <SidebarTrigger className="md:hidden hover:bg-muted/50 transition-colors" />
           <div className="ml-auto flex items-center gap-4">
             <UserNav />
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6 animate-fade-in">{children}</main>
+        <main className="flex-1 overflow-auto p-6 lg:p-8 animate-fade-in">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

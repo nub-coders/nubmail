@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Key, Plus, Trash2, Copy, Eye, EyeOff, CheckCircle, Mail, Server } from 'lucide-react';
+import { Key, Plus, Trash2, Copy, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -306,10 +306,7 @@ export default function DeveloperPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <Server className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Developer</h1>
-          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Developer</h1>
           <p className="text-sm text-muted-foreground">
             API keys and IMAP/POP3 configuration for your email accounts
           </p>
@@ -539,8 +536,8 @@ export default function DeveloperPage() {
                   <p className="text-sm text-muted-foreground">
                     Use your <strong>email account address</strong> as the username and the password set for that specific email account (not your portal login password).
                   </p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 mt-3">
+                    <p className="text-sm text-foreground/80">
                       <strong>Note:</strong> Each email account you create can have its own IMAP/POP3 password. Set the password for your email account above, then use those credentials in your mail client.
                     </p>
                   </div>
@@ -666,8 +663,8 @@ export default function DeveloperPage() {
                 </Button>
               </div>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-sm text-amber-800">
+            <div className="bg-amber-500/5 border border-amber-500/10 rounded-lg p-3">
+              <p className="text-sm text-foreground/80">
                 <strong>Important:</strong> Store this key securely. You won't be able to view it again.
               </p>
             </div>
@@ -756,8 +753,8 @@ export default function DeveloperPage() {
                 placeholder="Confirm password"
               />
             </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">
+            <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
+              <p className="text-sm text-foreground/80">
                 This password will be used to authenticate IMAP/POP3 access in your mail client (like Gmail app, Outlook, Thunderbird, etc.). It's separate from your portal login password.
               </p>
             </div>

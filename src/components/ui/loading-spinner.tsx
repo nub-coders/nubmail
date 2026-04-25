@@ -16,12 +16,12 @@ export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerP
   return (
     <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
       <div className={cn(
-        "animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary",
+        "animate-spin rounded-full border-2 border-muted/80 border-t-primary",
         sizeClasses[size]
       )} />
       {text && (
         <p className={cn(
-          "text-muted-foreground animate-pulse",
+          "text-muted-foreground",
           size === "sm" ? "text-xs" : size === "md" ? "text-sm" : "text-base"
         )}>
           {text}
@@ -34,15 +34,15 @@ export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerP
 export function LoadingDots({ className }: { className?: string }) {
   return (
     <div className={cn("flex space-x-1", className)}>
-      <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-      <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-      <div className="h-2 w-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+      <div className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+      <div className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
     </div>
   )
 }
 
 export function LoadingSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("animate-pulse bg-muted rounded-md", className)} />
+    <div className={cn("animate-pulse bg-muted/60 rounded-lg", className)} />
   )
 }

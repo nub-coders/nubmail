@@ -145,8 +145,8 @@ function ResetPasswordForm() {
 
   if (verifying) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="mx-auto w-full max-w-sm">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -160,12 +160,12 @@ function ResetPasswordForm() {
 
   if (!validToken) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="mx-auto w-full max-w-sm">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
           <CardHeader className="text-center">
             <div className="mb-2 flex items-center justify-center gap-2">
               <Mail className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">NubMail</h1>
+              <h1 className="text-2xl font-bold text-foreground">NubMail</h1>
             </div>
             <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
             <CardDescription>
@@ -190,12 +190,12 @@ function ResetPasswordForm() {
 
   if (resetSuccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="mx-auto w-full max-w-sm">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
           <CardHeader className="text-center">
             <div className="mb-2 flex items-center justify-center gap-2">
               <Mail className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">NubMail</h1>
+              <h1 className="text-2xl font-bold text-foreground">NubMail</h1>
             </div>
             <CardTitle className="text-2xl">Password Reset Complete</CardTitle>
             <CardDescription>
@@ -203,8 +203,8 @@ function ResetPasswordForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-              <p className="text-sm text-green-800 text-center">
+            <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4">
+              <p className="text-sm text-foreground/80 text-center">
                 Redirecting to login...
               </p>
             </div>
@@ -301,8 +301,8 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="mx-auto w-full max-w-sm">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

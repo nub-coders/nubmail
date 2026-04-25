@@ -124,12 +124,12 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="mx-auto w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+      <Card className="mx-auto w-full max-w-md shadow-elevated border-border/50">
         <CardHeader className="text-center">
           <div className="mb-2 flex items-center justify-center gap-2">
             <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Verify your email</h1>
+            <h1 className="text-2xl font-bold text-foreground">Verify your email</h1>
           </div>
           <CardTitle className="text-lg">Email verification required</CardTitle>
           <CardDescription>

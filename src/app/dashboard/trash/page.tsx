@@ -161,8 +161,7 @@ export default function TrashPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <Trash2 className="h-8 w-8 text-muted-foreground" />
-            <h1 className="text-3xl font-bold tracking-tight">Trash</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Trash</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             {isLoading ? 'Loading...' : `${emails.length} deleted emails`}
@@ -207,11 +206,11 @@ export default function TrashPage() {
         ]}
       />
 
-      <Card className="flex-1 border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+      <Card className="flex-1 border border-border/40 shadow-card bg-card">
         <CardContent className="p-0">
           <div className="flex flex-col">
             {!isLoading && emails.length > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 border-b border-border/50 bg-muted/20">
+              <div className="flex items-center gap-3 px-4 py-2 border-b border-border/30 bg-muted/20">
                 <Checkbox
                   checked={selection.isAllSelected}
                   onCheckedChange={() => selection.isAllSelected ? selection.clearSelection() : selection.selectAll()}
@@ -238,7 +237,7 @@ export default function TrashPage() {
               <div
                 key={email.id}
                 className={cn(
-                  'group relative border-b border-border/50 last:border-b-0 transition-all',
+                  'group relative border-b border-border/30 last:border-b-0 transition-colors duration-150',
                   'hover:bg-muted/40',
                   selection.isSelected(email.id) && 'bg-primary/10'
                 )}
