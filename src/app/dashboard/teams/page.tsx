@@ -219,10 +219,7 @@ export default function TeamsPage() {
     <div className="flex flex-col gap-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <Users className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Teams</h1>
-          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Teams</h1>
           <p className="text-sm text-muted-foreground">
             {teams.length === 0 ? 'Create a team to collaborate' : `${teams.length} team${teams.length !== 1 ? 's' : ''}`}
           </p>

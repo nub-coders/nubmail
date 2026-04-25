@@ -223,7 +223,7 @@ export default function DomainDnsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Domain DNS Setup</h1>
+            <h1 className="text-2xl font-semibold">Domain DNS Setup</h1>
             <p className="text-muted-foreground">
               Configure DNS records for {data?.domainName || 'your domain'}
             </p>

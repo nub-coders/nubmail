@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { User, Shield, Calendar, Save, Lock } from 'lucide-react';
+import { Shield, Calendar, Save, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -117,10 +117,7 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <User className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
         <p className="text-sm text-muted-foreground">Manage your account information</p>
       </div>
 

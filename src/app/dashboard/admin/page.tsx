@@ -100,7 +100,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
         <p className="text-muted-foreground">System overview and management</p>
       </div>
 
@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
         <CardContent className="grid gap-4 md:grid-cols-2">
           <button
             onClick={() => router.push('/dashboard/admin/users')}
-            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-accent transition-colors"
+            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
           >
             <Users className="h-5 w-5" />
             <div className="text-left">
@@ -136,7 +136,7 @@ export default function AdminDashboardPage() {
           </button>
           <button
             onClick={() => router.push('/dashboard/admin/domains')}
-            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-accent transition-colors"
+            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
           >
             <Globe className="h-5 w-5" />
             <div className="text-left">

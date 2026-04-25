@@ -60,12 +60,12 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="mx-auto w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+      <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
         <CardHeader className="text-center">
           <div className="mb-2 flex items-center justify-center gap-2">
             <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">NubMail</h1>
+            <h1 className="text-2xl font-bold text-foreground">NubMail</h1>
           </div>
           <CardTitle className="text-2xl">Forgot Password</CardTitle>
           <CardDescription>
@@ -98,8 +98,8 @@ export default function ForgotPasswordPage() {
             </form>
           ) : (
             <div className="space-y-4">
-              <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-                <p className="text-sm text-green-800">
+              <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4">
+                <p className="text-sm text-foreground/80">
                   If an account exists with <strong>{email}</strong>, you will receive a password reset link shortly.
                 </p>
               </div>

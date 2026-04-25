@@ -41,7 +41,7 @@ export function MainNav({ className }: { className?: string }) {
       {/* Management Section */}
       <div>
         <div className="px-3 mb-3">
-          <h4 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+          <h4 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
             Management
           </h4>
         </div>
@@ -51,10 +51,10 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard')}
               tooltip="Dashboard"
-              className="group hover:bg-sidebar-accent/80 transition-colors"
+              className="hover:bg-sidebar-accent transition-colors duration-150"
             >
               <Link href="/dashboard">
-                <LayoutDashboard className="group-hover:scale-110 transition-transform" />
+                <LayoutDashboard />
                 <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
@@ -64,10 +64,10 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/domains')}
               tooltip="Domains"
-              className="group hover:bg-sidebar-accent/80 transition-colors"
+              className="hover:bg-sidebar-accent transition-colors duration-150"
             >
               <Link href="/dashboard/domains">
-                <Globe className="group-hover:scale-110 transition-transform" />
+                <Globe />
                 <span>Domains</span>
               </Link>
             </SidebarMenuButton>
@@ -77,10 +77,10 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/accounts')}
               tooltip="Accounts"
-              className="group hover:bg-sidebar-accent/80 transition-colors"
+              className="hover:bg-sidebar-accent transition-colors duration-150"
             >
               <Link href="/dashboard/accounts">
-                <Users className="group-hover:scale-110 transition-transform" />
+                <Users />
                 <span>Accounts</span>
               </Link>
             </SidebarMenuButton>
@@ -90,10 +90,10 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/developer')}
               tooltip="Developer"
-              className="group hover:bg-sidebar-accent/80 transition-colors"
+              className="hover:bg-sidebar-accent transition-colors duration-150"
             >
               <Link href="/dashboard/developer">
-                <Key className="group-hover:scale-110 transition-transform" />
+                <Key />
                 <span>Developer</span>
               </Link>
             </SidebarMenuButton>
@@ -104,7 +104,7 @@ export function MainNav({ className }: { className?: string }) {
       {/* Mail Section */}
       <div>
         <div className="px-3 mb-3">
-          <h4 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+          <h4 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
             Mail
           </h4>
         </div>
@@ -114,10 +114,10 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/inbox')}
               tooltip="Inbox"
-              className="group hover:bg-sidebar-accent/80 transition-colors"
+              className="hover:bg-sidebar-accent transition-colors duration-150"
             >
               <Link href="/dashboard/inbox">
-                <Inbox className="group-hover:scale-110 transition-transform" />
+                <Inbox />
                 <span>Inbox</span>
               </Link>
             </SidebarMenuButton>
@@ -127,10 +127,10 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/sent')}
               tooltip="Sent"
-              className="group hover:bg-sidebar-accent/80 transition-colors"
+              className="hover:bg-sidebar-accent transition-colors duration-150"
             >
               <Link href="/dashboard/sent">
-                <Send className="group-hover:scale-110 transition-transform" />
+                <Send />
               <span>Sent</span>
             </Link>
           </SidebarMenuButton>
@@ -140,10 +140,10 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/drafts')}
             tooltip="Drafts"
-            className="group hover:bg-sidebar-accent/80 transition-colors"
+            className="hover:bg-sidebar-accent transition-colors duration-150"
           >
             <Link href="/dashboard/drafts">
-              <FileText className="group-hover:scale-110 transition-transform" />
+              <FileText />
               <span>Drafts</span>
             </Link>
           </SidebarMenuButton>
@@ -153,10 +153,10 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/archive')}
             tooltip="Archive"
-            className="group hover:bg-sidebar-accent/80 transition-colors"
+            className="hover:bg-sidebar-accent transition-colors duration-150"
           >
             <Link href="/dashboard/archive">
-              <Archive className="group-hover:scale-110 transition-transform" />
+              <Archive />
               <span>Archive</span>
             </Link>
           </SidebarMenuButton>
@@ -166,10 +166,10 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/spam')}
             tooltip="Spam"
-            className="group hover:bg-sidebar-accent/80 transition-colors"
+            className="hover:bg-sidebar-accent transition-colors duration-150"
           >
             <Link href="/dashboard/spam">
-              <Shield className="group-hover:scale-110 transition-transform" />
+              <Shield />
               <span>Spam</span>
             </Link>
           </SidebarMenuButton>
@@ -179,10 +179,10 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/trash')}
             tooltip="Trash"
-            className="group hover:bg-sidebar-accent/80 transition-colors"
+            className="hover:bg-sidebar-accent transition-colors duration-150"
           >
             <Link href="/dashboard/trash">
-              <Trash2 className="group-hover:scale-110 transition-transform" />
+              <Trash2 />
               <span>Trash</span>
             </Link>
           </SidebarMenuButton>
@@ -194,7 +194,7 @@ export function MainNav({ className }: { className?: string }) {
       {isAdmin && (
         <div>
           <div className="px-3 mb-3">
-            <h4 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+            <h4 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
               Administration
             </h4>
           </div>
@@ -204,10 +204,10 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin')}
                 tooltip="Admin Dashboard"
-                className="group hover:bg-sidebar-accent/80 transition-colors"
+                className="hover:bg-sidebar-accent transition-colors duration-150"
               >
                 <Link href="/dashboard/admin">
-                  <ShieldCheck className="group-hover:scale-110 transition-transform" />
+                  <ShieldCheck />
                   <span>Admin</span>
                 </Link>
               </SidebarMenuButton>
@@ -217,10 +217,10 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin/users')}
                 tooltip="Manage Users"
-                className="group hover:bg-sidebar-accent/80 transition-colors"
+                className="hover:bg-sidebar-accent transition-colors duration-150"
               >
                 <Link href="/dashboard/admin/users">
-                  <UserCog className="group-hover:scale-110 transition-transform" />
+                  <UserCog />
                   <span>Manage Users</span>
                 </Link>
               </SidebarMenuButton>
@@ -230,10 +230,10 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin/domains')}
                 tooltip="Manage Domains"
-                className="group hover:bg-sidebar-accent/80 transition-colors"
+                className="hover:bg-sidebar-accent transition-colors duration-150"
               >
                 <Link href="/dashboard/admin/domains">
-                  <Globe className="group-hover:scale-110 transition-transform" />
+                  <Globe />
                   <span>Manage Domains</span>
                 </Link>
               </SidebarMenuButton>
@@ -243,10 +243,10 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin/server-dns')}
                 tooltip="Server DNS"
-                className="group hover:bg-sidebar-accent/80 transition-colors"
+                className="hover:bg-sidebar-accent transition-colors duration-150"
               >
                 <Link href="/dashboard/admin/server-dns">
-                  <Server className="group-hover:scale-110 transition-transform" />
+                  <Server />
                   <span>Server DNS</span>
                 </Link>
               </SidebarMenuButton>

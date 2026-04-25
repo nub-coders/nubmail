@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CreditCard, Globe, Users, Mail, HardDrive, CheckCircle, ArrowUpCircle } from 'lucide-react';
+import { Globe, Users, Mail, HardDrive, CheckCircle, ArrowUpCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,10 +70,7 @@ export default function BillingPage() {
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <CreditCard className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
-        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
         <p className="text-sm text-muted-foreground">Manage your plan and view usage</p>
       </div>
 

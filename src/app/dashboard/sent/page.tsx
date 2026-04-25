@@ -90,7 +90,7 @@ export default function SentPage() {
     <div className="flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Sent</h1>
+          <h1 className="text-2xl font-semibold">Sent</h1>
           <p className="text-muted-foreground">
             {isLoading ? 'Loading...' : `${emails.length} sent messages`}
           </p>
@@ -154,7 +154,7 @@ export default function SentPage() {
                 <div
                   key={email.id}
                   className={cn(
-                    'flex items-start border-b transition-all hover:bg-secondary',
+                    'flex items-start border-b border-border/30 transition-colors duration-150 hover:bg-muted/50',
                     selection.isSelected(email.id) && 'bg-primary/10'
                   )}
                 >

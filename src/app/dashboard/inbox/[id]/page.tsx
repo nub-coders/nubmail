@@ -202,7 +202,7 @@ export default function EmailViewPage() {
       <div className="px-6 py-4 border-b bg-background rounded-lg">
         <div className="space-y-4">
           <div>
-            <h1 className="text-2xl font-bold leading-tight mb-2">
+            <h1 className="text-2xl font-semibold leading-tight mb-2">
               {email.subject || '(No Subject)'}
             </h1>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">

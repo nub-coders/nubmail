@@ -165,7 +165,7 @@ export default function DomainsPage() {
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Domain Management</h1>
+          <h1 className="text-2xl font-semibold">Domain Management</h1>
           <p className="text-muted-foreground">Add and manage your custom domains.</p>
         </div>
         <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>

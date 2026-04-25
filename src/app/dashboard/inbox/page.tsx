@@ -209,8 +209,7 @@ export default function InboxPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Inbox</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
           </div>
           <div className="flex items-center gap-4">
             <p className="text-sm text-muted-foreground">
@@ -254,7 +253,7 @@ export default function InboxPage() {
             <Input
               type="search"
               placeholder="Search emails..."
-              className="pl-10 bg-background/60 backdrop-blur-sm border-border/50 focus:bg-background"
+              className="pl-10 bg-muted/40 border-transparent focus:bg-background focus:border-border/60 placeholder:text-muted-foreground/50"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -281,7 +280,7 @@ export default function InboxPage() {
       />
 
       {/* Email List */}
-      <Card className="flex-1 border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+      <Card className="flex-1 border border-border/40 shadow-card bg-card">
         <CardContent className="p-0">
           <div className="flex flex-col">
             {/* Select All Header */}
@@ -325,12 +324,11 @@ export default function InboxPage() {
               <div
                 key={email.id}
                 className={cn(
-                  'group relative border-b border-border/50 last:border-b-0 transition-all-300 animate-slide-up hover-lift',
-                  'hover:bg-muted/40 hover:border-border',
-                  !email.read && 'bg-primary/8 border-l-4 border-l-primary shadow-sm',
+                  'group relative border-b border-border/30 last:border-b-0 transition-colors duration-150',
+                  'hover:bg-muted/50',
+                  !email.read && 'bg-primary/[0.03] border-l-2 border-l-primary',
                   selection.isSelected(email.id) && 'bg-primary/10'
                 )}
-                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-start gap-0">
                   <div className="flex items-center px-3 pt-5" onClick={(e) => e.stopPropagation()}>
@@ -349,7 +347,7 @@ export default function InboxPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
                           {!email.read && (
-                            <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 animate-pulse" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                           )}
                           <div className="flex items-center gap-2 min-w-0">
                             <span className={cn(
