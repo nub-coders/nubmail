@@ -1,16 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Mail, MailOpen, Clock, Archive, Trash2, RefreshCw } from 'lucide-react';
+import { Search, Mail, MailOpen, Clock, Archive, Trash2, RefreshCw, Star, Shield, BookOpen, BookX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuthClient } from '@/lib/auth-provider';
+import { useToast } from '@/hooks/use-toast';
+import { useEmailSelection } from '@/hooks/use-email-selection';
+import { BulkActionBar } from '@/components/bulk-action-bar';
+import { bulkPatchEmails } from '@/lib/bulk-email-actions';
 import {
   Select,
   SelectContent,
@@ -40,13 +45,30 @@ interface EmailAccount {
 export default function InboxPage() {
   const router = useRouter();
   const { user } = useAuthClient();
+  const { toast } = useToast();
   const [emails, setEmails] = useState<Email[]>([]);
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
 
+  // Filter by selected account
+  const accountFilteredEmails = selectedAccount === 'all'
+    ? emails
+    : emails.filter(email => email.recipients.includes(selectedAccount));
+
+  // Filter by search query
+  const filteredEmails = accountFilteredEmails.filter(email =>
+    searchQuery === '' ||
+    email.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    email.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    email.body.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredIds = useMemo(() => filteredEmails.map(e => e.id), [filteredEmails]);
+  const selection = useEmailSelection(filteredIds);
 
   const fetchEmailAccounts = async () => {
     if (!user) return;
@@ -90,6 +112,7 @@ export default function InboxPage() {
       const data = await res.json();
       if (res.ok) {
         setEmails(data.emails || []);
+        selection.clearSelection();
       }
     } catch (error) {
     } finally {
@@ -108,6 +131,70 @@ export default function InboxPage() {
     router.push(`/dashboard/inbox/${email.id}`);
   };
 
+  const handleQuickAction = async (e: React.MouseEvent, emailId: string, action: 'archive' | 'delete') => {
+    e.stopPropagation();
+    try {
+      const fields = action === 'archive' ? { archived: true } : { deleted: true };
+      const res = await fetch('/api/emails', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ emailId, ...fields })
+      });
+      if (!res.ok) throw new Error();
+      setEmails(prev => prev.filter(e => e.id !== emailId));
+      selection.removeIds([emailId]);
+      toast({
+        title: action === 'archive' ? 'Archived' : 'Deleted',
+        description: action === 'archive' ? 'Email moved to archive' : 'Email moved to trash'
+      });
+    } catch {
+      toast({ title: 'Error', description: `Failed to ${action} email`, variant: 'destructive' });
+    }
+  };
+
+  const handleBulkAction = async (fields: Record<string, unknown>, label: string) => {
+    setBulkLoading(true);
+    try {
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields);
+      if (success > 0) {
+        setEmails(prev => prev.filter(e => !selection.isSelected(e.id)));
+        selection.clearSelection();
+      }
+      toast({
+        title: label,
+        description: failed > 0 ? `${success} succeeded, ${failed} failed` : `${success} emails updated`
+      });
+    } catch {
+      toast({ title: 'Error', description: `Failed to ${label.toLowerCase()}`, variant: 'destructive' });
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleBulkReadState = async (read: boolean) => {
+    setBulkLoading(true);
+    try {
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, { read });
+      if (success > 0) {
+        setEmails(prev => prev.map(e =>
+          selection.isSelected(e.id) ? { ...e, read } : e
+        ));
+        selection.clearSelection();
+      }
+      toast({
+        title: read ? 'Marked as read' : 'Marked as unread',
+        description: failed > 0 ? `${success} succeeded, ${failed} failed` : `${success} emails updated`
+      });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update emails', variant: 'destructive' });
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="py-8 text-center">You must be signed in to view your inbox.</div>
@@ -115,21 +202,6 @@ export default function InboxPage() {
   }
 
   const unreadCount = emails.filter(e => !e.read).length;
-  
-  // Filter by selected account
-  const accountFilteredEmails = selectedAccount === 'all' 
-    ? emails 
-    : emails.filter(email => 
-        email.recipients.includes(selectedAccount)
-      );
-  
-  // Filter by search query
-  const filteredEmails = accountFilteredEmails.filter(email => 
-    searchQuery === '' || 
-    email.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    email.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    email.body.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -152,7 +224,7 @@ export default function InboxPage() {
             )}
           </div>
         </div>
-        
+
         {/* Search and Actions */}
         <div className="flex items-center gap-3">
           <Select value={selectedAccount} onValueChange={setSelectedAccount}>
@@ -161,9 +233,6 @@ export default function InboxPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All inboxes</SelectItem>
-              {user?.email && (
-                <SelectItem value={user.email}>{user.email}</SelectItem>
-              )}
               {emailAccounts.map((account) => (
                 <SelectItem key={account.id} value={account.emailAddress}>
                   {account.emailAddress}
@@ -171,8 +240,8 @@ export default function InboxPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="icon"
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -193,10 +262,41 @@ export default function InboxPage() {
         </div>
       </div>
 
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selection.selectedCount}
+        totalCount={filteredEmails.length}
+        isAllSelected={selection.isAllSelected}
+        onSelectAll={selection.selectAll}
+        onClearSelection={selection.clearSelection}
+        loading={bulkLoading}
+        actions={[
+          { label: 'Archive', icon: <Archive className="h-4 w-4" />, onClick: () => handleBulkAction({ archived: true }, 'Archived') },
+          { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onClick: () => handleBulkAction({ deleted: true }, 'Deleted'), variant: 'destructive' },
+          { label: 'Read', icon: <BookOpen className="h-4 w-4" />, onClick: () => handleBulkReadState(true) },
+          { label: 'Unread', icon: <BookX className="h-4 w-4" />, onClick: () => handleBulkReadState(false) },
+          { label: 'Spam', icon: <Shield className="h-4 w-4" />, onClick: () => handleBulkAction({ spam: true }, 'Marked as spam') },
+          { label: 'Star', icon: <Star className="h-4 w-4" />, onClick: () => handleBulkAction({ starred: true }, 'Starred') },
+        ]}
+      />
+
       {/* Email List */}
       <Card className="flex-1 border-0 shadow-sm bg-card/50 backdrop-blur-sm">
         <CardContent className="p-0">
           <div className="flex flex-col">
+            {/* Select All Header */}
+            {!isLoading && filteredEmails.length > 0 && (
+              <div className="flex items-center gap-3 px-4 py-2 border-b border-border/50 bg-muted/20">
+                <Checkbox
+                  checked={selection.isAllSelected}
+                  onCheckedChange={() => selection.isAllSelected ? selection.clearSelection() : selection.selectAll()}
+                  aria-label="Select all"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {selection.selectedCount > 0 ? `${selection.selectedCount} selected` : 'Select all'}
+                </span>
+              </div>
+            )}
             {isLoading && (
               <div className="py-12">
                 <LoadingSpinner size="md" text="Loading your emails..." />
@@ -207,12 +307,12 @@ export default function InboxPage() {
                 icon={<Mail className="h-16 w-16" />}
                 title={searchQuery ? 'No matching emails' : 'Your inbox is empty'}
                 description={
-                  searchQuery 
+                  searchQuery
                     ? 'Try adjusting your search terms to find what you\'re looking for.'
                     : 'New emails will appear here when they arrive. Check back later or compose a new message to get started.'
                 }
                 action={
-                  !searchQuery 
+                  !searchQuery
                     ? {
                         label: 'Compose Email',
                         onClick: () => window.location.href = '/dashboard/compose'
@@ -227,88 +327,92 @@ export default function InboxPage() {
                 className={cn(
                   'group relative border-b border-border/50 last:border-b-0 transition-all-300 animate-slide-up hover-lift',
                   'hover:bg-muted/40 hover:border-border',
-                  !email.read && 'bg-primary/8 border-l-4 border-l-primary shadow-sm'
+                  !email.read && 'bg-primary/8 border-l-4 border-l-primary shadow-sm',
+                  selection.isSelected(email.id) && 'bg-primary/10'
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <button
-                  onClick={() => handleEmailClick(email)}
-                  className="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-inset"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Left side - Email content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        {!email.read && (
-                          <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 animate-pulse" />
-                        )}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={cn(
-                            'font-medium text-sm truncate',
-                            !email.read ? 'font-semibold text-foreground' : 'text-foreground/80'
+                <div className="flex items-start gap-0">
+                  <div className="flex items-center px-3 pt-5" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selection.isSelected(email.id)}
+                      onCheckedChange={() => selection.toggleSelect(email.id)}
+                      aria-label={`Select email from ${email.sender}`}
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleEmailClick(email)}
+                    className="flex-1 p-4 pl-1 text-left focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-inset"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      {/* Left side - Email content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          {!email.read && (
+                            <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 animate-pulse" />
+                          )}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={cn(
+                              'font-medium text-sm truncate',
+                              !email.read ? 'font-semibold text-foreground' : 'text-foreground/80'
+                            )}>
+                              {email.sender}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className={cn(
+                            'text-sm line-clamp-1',
+                            !email.read ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'
                           )}>
-                            {email.sender}
-                          </span>
+                            {email.subject || '(No Subject)'}
+                          </h4>
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {email.body.replace(/<[^>]*>?/gm, '').trim() || 'No content preview available'}
+                          </p>
                         </div>
                       </div>
-                      
-                      <div className="space-y-1">
-                        <h4 className={cn(
-                          'text-sm line-clamp-1',
-                          !email.read ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'
-                        )}>
-                          {email.subject || '(No Subject)'}
-                        </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                          {email.body.replace(/<[^>]*>?/gm, '').trim() || 'No content preview available'}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Right side - Meta info */}
-                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                      <div className="flex items-center gap-2">
-                        <span className={cn(
-                          'text-xs font-medium',
-                          !email.read ? 'text-foreground' : 'text-muted-foreground'
-                        )}>
-                          {new Date(email.sentAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: new Date(email.sentAt).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-                          })}
-                        </span>
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                      </div>
-                      
-                      {/* Quick actions - visible on hover */}
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-primary/20"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // TODO: Add archive functionality
-                          }}
-                        >
-                          <Archive className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-destructive/20"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // TODO: Add delete functionality
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                      {/* Right side - Meta info */}
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            'text-xs font-medium',
+                            !email.read ? 'text-foreground' : 'text-muted-foreground'
+                          )}>
+                            {new Date(email.sentAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: new Date(email.sentAt).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+                            })}
+                          </span>
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                        </div>
+
+                        {/* Quick actions - visible on hover */}
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 hover:bg-primary/20"
+                            onClick={(e) => handleQuickAction(e, email.id, 'archive')}
+                          >
+                            <Archive className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 hover:bg-destructive/20"
+                            onClick={(e) => handleQuickAction(e, email.id, 'delete')}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
               </div>
             ))}
           </div>

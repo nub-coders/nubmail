@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Mail, Clock, Star, Archive, Trash2 } from 'lucide-react';
+import { ArrowLeft, Mail, Clock, Star, Archive, Trash2, Reply, Forward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuthClient } from '@/lib/auth-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface Email {
   id: string;
@@ -16,32 +17,34 @@ interface Email {
   body: string;
   sentAt: string;
   read: boolean;
+  starred: boolean;
 }
 
 export default function EmailViewPage() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuthClient();
+  const { toast } = useToast();
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEmail = async () => {
       if (!user || !params.id) return;
-      
+
       setIsLoading(true);
       try {
         const res = await fetch('/api/emails?folder=inbox', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await res.json();
-        
+
         if (res.ok) {
           const foundEmail = data.emails?.find((e: Email) => e.id === params.id);
           if (foundEmail) {
             setEmail(foundEmail);
-            
-            // Mark as read if not already
+
             if (!foundEmail.read) {
               await fetch('/api/emails', {
                 method: 'PATCH',
@@ -63,6 +66,72 @@ export default function EmailViewPage() {
 
     fetchEmail();
   }, [user, params.id]);
+
+  const patchEmail = async (fields: Record<string, unknown>, actionName: string) => {
+    if (!email) return;
+    setActionLoading(actionName);
+    try {
+      const res = await fetch('/api/emails', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ emailId: email.id, ...fields })
+      });
+      if (!res.ok) throw new Error('Failed to update email');
+      return true;
+    } catch {
+      toast({ title: 'Error', description: `Failed to ${actionName} email`, variant: 'destructive' });
+      return false;
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleStar = async () => {
+    if (!email) return;
+    const newStarred = !email.starred;
+    if (await patchEmail({ starred: newStarred }, 'star')) {
+      setEmail({ ...email, starred: newStarred });
+      toast({ title: newStarred ? 'Starred' : 'Unstarred', description: `Email ${newStarred ? 'starred' : 'unstarred'}` });
+    }
+  };
+
+  const handleArchive = async () => {
+    if (await patchEmail({ archived: true }, 'archive')) {
+      toast({ title: 'Archived', description: 'Email moved to archive' });
+      router.push('/dashboard/inbox');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (await patchEmail({ deleted: true }, 'delete')) {
+      toast({ title: 'Deleted', description: 'Email moved to trash' });
+      router.push('/dashboard/inbox');
+    }
+  };
+
+  const handleReply = () => {
+    if (!email) return;
+    const params = new URLSearchParams({
+      mode: 'reply',
+      to: email.sender,
+      subject: email.subject?.startsWith('Re: ') ? email.subject : `Re: ${email.subject || ''}`,
+      emailId: email.id,
+    });
+    router.push(`/dashboard/compose?${params.toString()}`);
+  };
+
+  const handleForward = () => {
+    if (!email) return;
+    const params = new URLSearchParams({
+      mode: 'forward',
+      subject: email.subject?.startsWith('Fwd: ') ? email.subject : `Fwd: ${email.subject || ''}`,
+      emailId: email.id,
+    });
+    router.push(`/dashboard/compose?${params.toString()}`);
+  };
 
   if (!user) {
     return (
@@ -98,7 +167,7 @@ export default function EmailViewPage() {
       <div className="flex items-center justify-between p-6 border-b bg-muted/30 rounded-lg">
         <div className="flex items-center gap-3">
           <Button
-            variant="ghost" 
+            variant="ghost"
             size="sm"
             onClick={() => router.push('/dashboard/inbox')}
             className="hover:bg-background/80"
@@ -111,18 +180,18 @@ export default function EmailViewPage() {
             {email.read ? "Read" : "Unread"}
           </Badge>
         </div>
-        
+
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Star className="h-4 w-4 mr-2" />
-            Star
+          <Button variant="outline" size="sm" onClick={handleStar} disabled={actionLoading === 'star'}>
+            <Star className={`h-4 w-4 mr-2 ${email.starred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+            {email.starred ? 'Unstar' : 'Star'}
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleArchive} disabled={actionLoading === 'archive'}>
             <Archive className="h-4 w-4 mr-2" />
             Archive
           </Button>
-          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={handleDelete} disabled={actionLoading === 'delete'}>
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
@@ -150,7 +219,7 @@ export default function EmailViewPage() {
               </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/20 rounded-lg">
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">From</label>
@@ -163,7 +232,7 @@ export default function EmailViewPage() {
                 <span className="font-medium">{email.sender}</span>
               </div>
             </div>
-            
+
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">To</label>
               <div className="mt-1">
@@ -179,11 +248,11 @@ export default function EmailViewPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Email Content */}
       <div className="flex-1 overflow-auto px-6 py-6 bg-background rounded-lg">
         <div className="max-w-none">
-          <div 
+          <div
             className="prose prose-sm dark:prose-invert max-w-none
                        prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed
                        prose-strong:text-foreground prose-em:text-foreground
@@ -191,13 +260,13 @@ export default function EmailViewPage() {
                        prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
                        prose-pre:bg-muted prose-pre:border
                        prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
-            dangerouslySetInnerHTML={{ 
+            dangerouslySetInnerHTML={{
               __html: email.body || email.body?.replace(/\n/g, '<br>') || '<p class="text-muted-foreground italic">No content available</p>'
             }}
           />
         </div>
       </div>
-      
+
       {/* Footer Actions */}
       <div className="px-6 py-4 border-t bg-muted/20 rounded-lg">
         <div className="flex items-center justify-between">
@@ -206,10 +275,12 @@ export default function EmailViewPage() {
             <span>Reply to continue the conversation</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleReply}>
+              <Reply className="h-4 w-4 mr-2" />
               Reply
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleForward}>
+              <Forward className="h-4 w-4 mr-2" />
               Forward
             </Button>
           </div>

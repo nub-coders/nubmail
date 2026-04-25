@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { to, subject, text, html, from } = body;
+    const { to, subject, text, html, from, attachments } = body;
     
     if (!to || !subject || (!text && !html)) {
       return NextResponse.json({ error: 'Missing required fields: to, subject, and message body' }, { status: 400 });
@@ -134,12 +134,22 @@ export async function POST(req: NextRequest) {
       to
     });
 
+    const validAttachments = Array.isArray(attachments)
+      ? attachments.filter((a: any) => a.filename && a.content).map((a: any) => ({
+          filename: String(a.filename),
+          content: String(a.content),
+          contentType: a.contentType ? String(a.contentType) : undefined,
+          encoding: 'base64' as const,
+        }))
+      : undefined;
+
     const result = await sendSmtpEmail({
       from,
       to,
       subject,
       text: text || html?.replace(/<[^>]*>/g, ''),
       html: html || text?.replace(/\n/g, '<br>'),
+      attachments: validAttachments,
       smtpConfig,
       dkim: dkimConfig
     });
