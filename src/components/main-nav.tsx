@@ -15,6 +15,7 @@ import {
   UserCog,
   Server,
   Key,
+  Archive,
 } from 'lucide-react';
 
 import {
@@ -144,6 +145,19 @@ export function MainNav({ className }: { className?: string }) {
             <Link href="/dashboard/drafts">
               <FileText className="group-hover:scale-110 transition-transform" />
               <span>Drafts</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            asChild
+            isActive={isActive('/dashboard/archive')}
+            tooltip="Archive"
+            className="group hover:bg-sidebar-accent/80 transition-colors"
+          >
+            <Link href="/dashboard/archive">
+              <Archive className="group-hover:scale-110 transition-transform" />
+              <span>Archive</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

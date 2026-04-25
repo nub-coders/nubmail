@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { Shield, Inbox, Trash2, Clock } from 'lucide-react';
+import { Archive, Inbox, Trash2, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,7 +23,7 @@ interface Email {
   sentAt: string;
 }
 
-export default function SpamPage() {
+export default function ArchivePage() {
   const { user } = useAuthClient();
   const { toast } = useToast();
   const [emails, setEmails] = useState<Email[]>([]);
@@ -34,11 +34,11 @@ export default function SpamPage() {
   const emailIds = useMemo(() => emails.map(e => e.id), [emails]);
   const selection = useEmailSelection(emailIds);
 
-  const fetchSpam = async () => {
+  const fetchArchive = async () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/emails?folder=spam', {
+      const res = await fetch('/api/emails?folder=archive', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
@@ -49,23 +49,23 @@ export default function SpamPage() {
   };
 
   useEffect(() => {
-    if (user) fetchSpam();
+    if (user) fetchArchive();
   }, [user]);
 
-  const handleNotSpam = async (emailId: string) => {
+  const handleUnarchive = async (emailId: string) => {
     setActionLoading(emailId);
     try {
       const res = await fetch('/api/emails', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify({ emailId, spam: false })
+        body: JSON.stringify({ emailId, archived: false })
       });
       if (!res.ok) throw new Error();
       setEmails(prev => prev.filter(e => e.id !== emailId));
       selection.removeIds([emailId]);
-      toast({ title: 'Moved to Inbox', description: 'Email marked as not spam' });
+      toast({ title: 'Unarchived', description: 'Email moved back to inbox' });
     } catch {
-      toast({ title: 'Error', description: 'Failed to update email', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to unarchive email', variant: 'destructive' });
     } finally {
       setActionLoading(null);
     }
@@ -107,7 +107,7 @@ export default function SpamPage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view spam.</div>;
+    return <div className="py-8 text-center">You must be signed in to view archive.</div>;
   }
 
   return (
@@ -115,11 +115,11 @@ export default function SpamPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8 text-muted-foreground" />
-            <h1 className="text-3xl font-bold tracking-tight">Spam</h1>
+            <Archive className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Archive</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${emails.length} emails marked as spam`}
+            {isLoading ? 'Loading...' : `${emails.length} archived emails`}
           </p>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function SpamPage() {
         onClearSelection={selection.clearSelection}
         loading={bulkLoading}
         actions={[
-          { label: 'Not Spam', icon: <Inbox className="h-4 w-4" />, onClick: () => handleBulkAction({ spam: false }, 'Moved to Inbox') },
+          { label: 'Unarchive', icon: <Inbox className="h-4 w-4" />, onClick: () => handleBulkAction({ archived: false }, 'Unarchived') },
           { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onClick: () => handleBulkAction({ deleted: true }, 'Deleted'), variant: 'destructive' },
         ]}
       />
@@ -154,14 +154,14 @@ export default function SpamPage() {
             )}
             {isLoading && (
               <div className="py-12">
-                <LoadingSpinner size="md" text="Loading spam..." />
+                <LoadingSpinner size="md" text="Loading archive..." />
               </div>
             )}
             {!isLoading && emails.length === 0 && (
               <EmptyState
-                icon={<Shield className="h-16 w-16" />}
-                title="Spam Folder is Empty"
-                description="Emails identified as spam will be moved here."
+                icon={<Archive className="h-16 w-16" />}
+                title="Archive is Empty"
+                description="Emails you archive will appear here."
               />
             )}
             {emails.map((email) => (
@@ -198,22 +198,11 @@ export default function SpamPage() {
                         <Clock className="h-3 w-3" />
                         {new Date(email.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleNotSpam(email.id)}
-                        disabled={actionLoading === email.id}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => handleUnarchive(email.id)} disabled={actionLoading === email.id}>
                         <Inbox className="h-3 w-3 mr-1" />
-                        Not Spam
+                        Unarchive
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="hover:bg-destructive/20"
-                        onClick={() => handleDelete(email.id)}
-                        disabled={actionLoading === email.id}
-                      >
+                      <Button size="sm" variant="ghost" className="hover:bg-destructive/20" onClick={() => handleDelete(email.id)} disabled={actionLoading === email.id}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>

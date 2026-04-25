@@ -54,15 +54,32 @@ CREATE TABLE IF NOT EXISTS email_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_email_messages_user_sent ON email_messages(user_id, sent_at DESC);
 
--- Track per-user read/unread state for emails
+-- Track per-user read/unread state and email actions for emails
 CREATE TABLE IF NOT EXISTS email_reads (
   id SERIAL PRIMARY KEY,
   email_id UUID NOT NULL REFERENCES email_messages(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   read BOOLEAN NOT NULL DEFAULT FALSE,
-  read_at TIMESTAMP WITH TIME ZONE
+  read_at TIMESTAMP WITH TIME ZONE,
+  starred BOOLEAN DEFAULT FALSE,
+  archived BOOLEAN DEFAULT FALSE,
+  deleted_at TIMESTAMPTZ,
+  is_spam BOOLEAN DEFAULT FALSE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS email_reads_email_user_idx ON email_reads(email_id, user_id);
+
+-- Email drafts
+CREATE TABLE IF NOT EXISTS email_drafts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  from_address TEXT NOT NULL DEFAULT '',
+  to_address TEXT NOT NULL DEFAULT '',
+  subject TEXT NOT NULL DEFAULT '',
+  body TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_email_drafts_user ON email_drafts(user_id, updated_at DESC);
 
 
 
@@ -88,3 +105,24 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id);
 CREATE INDEX IF NOT EXISTS idx_api_keys_last_used ON api_keys(last_used DESC);
+
+-- Teams
+CREATE TABLE IF NOT EXISTS teams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_teams_owner ON teams(owner_id);
+
+-- Team members
+CREATE TABLE IF NOT EXISTS team_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member',
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(team_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_team_members_team ON team_members(team_id);
+CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);

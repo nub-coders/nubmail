@@ -1,12 +1,20 @@
 // @ts-nocheck
 import nodemailer from 'nodemailer';
 
+type Attachment = {
+  filename: string;
+  content: string;
+  contentType?: string;
+  encoding?: string;
+};
+
 type SendInput = {
   from?: string;
   to: string | string[];
   subject: string;
   text?: string;
   html?: string;
+  attachments?: Attachment[];
   smtpConfig?: {
     host: string;
     port: number;
@@ -57,9 +65,16 @@ function getTransport(
   return nodemailer.createTransport(transportConfig);
 }
 
-export async function sendSmtpEmail({ from, to, subject, text, html, smtpConfig, dkim }: SendInput) {
+export async function sendSmtpEmail({ from, to, subject, text, html, attachments, smtpConfig, dkim }: SendInput) {
   const transporter = getTransport(smtpConfig, dkim);
   const envelopeFrom = from || smtpConfig?.user || process.env.SMTP_FROM || process.env.ADMIN_EMAIL || '';
+
+  const mailAttachments = attachments?.map(a => ({
+    filename: a.filename,
+    content: a.content,
+    contentType: a.contentType,
+    encoding: (a.encoding || 'base64') as string,
+  }));
 
   const info = await transporter.sendMail({
     from: envelopeFrom,
@@ -67,6 +82,7 @@ export async function sendSmtpEmail({ from, to, subject, text, html, smtpConfig,
     subject,
     text,
     html,
+    ...(mailAttachments?.length ? { attachments: mailAttachments } : {}),
   });
 
   return {
