@@ -67,7 +67,8 @@ function getTransport(
 
 export async function sendSmtpEmail({ from, to, subject, text, html, attachments, smtpConfig, dkim }: SendInput) {
   const transporter = getTransport(smtpConfig, dkim);
-  const envelopeFrom = from || smtpConfig?.user || process.env.SMTP_FROM || process.env.ADMIN_EMAIL || '';
+  if (!from) throw new Error('sendSmtpEmail: "from" address is required');
+  const envelopeFrom = from;
 
   const mailAttachments = attachments?.map(a => ({
     filename: a.filename,
@@ -93,13 +94,8 @@ export async function sendSmtpEmail({ from, to, subject, text, html, attachments
   };
 }
 
-export function getEnvSmtpConfig() {
-  const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
-  const user = process.env.SMTP_USER || '';
-  const pass = process.env.SMTP_PASS || '';
-  if (!host || !port) {
-    throw new Error('Verification SMTP not configured: set SMTP_HOST and SMTP_PORT');
-  }
-  return { host, port, user, pass };
+export function getInternalSmtpConfig() {
+  const host = process.env.INTERNAL_SMTP_HOST || 'smtp-sender';
+  const port = Number(process.env.INTERNAL_SMTP_PORT || 587);
+  return { host, port, user: '', pass: '' };
 }

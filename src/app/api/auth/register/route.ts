@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
+import { AUTH_COOKIE_NAME, buildAuthCookieOptions } from '@/lib/auth-token';
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,7 +35,9 @@ export async function POST(req: NextRequest) {
     const payload = { sub: String(inserted.rows[0].id), email };
     const token = sign(payload, secret, { expiresIn: '7d' });
 
-    return NextResponse.json({ token, user: { id: String(inserted.rows[0].id), email, fullName } });
+    const response = NextResponse.json({ token, user: { id: String(inserted.rows[0].id), email, fullName } });
+    response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());
+    return response;
   } catch (err) {
     console.error('Register error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

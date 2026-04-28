@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken, getAdminFromToken, isServerDnsVerified } from '@/lib/admin';
+import { canPerformImportantAction, getUserFromToken, getAdminFromToken, isServerDnsVerified } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
+
+const MAX_ACCOUNTS_PER_USER = Number(process.env.MAX_ACCOUNTS_PER_USER || 100);
+const MAX_ACCOUNTS_PER_DOMAIN_PER_USER = Number(process.env.MAX_ACCOUNTS_PER_DOMAIN_PER_USER || 25);
+const CREATE_WINDOW_MS = Number(process.env.ACCOUNT_CREATE_WINDOW_MS || 15 * 60 * 1000);
+const CREATE_LIMIT_PER_WINDOW = Number(process.env.ACCOUNT_CREATE_LIMIT_PER_WINDOW || 20);
+
+const accountCreateWindow = new Map<string, { count: number; resetAt: number }>();
+
+function checkCreateRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const existing = accountCreateWindow.get(userId);
+  if (!existing || now >= existing.resetAt) {
+    accountCreateWindow.set(userId, { count: 1, resetAt: now + CREATE_WINDOW_MS });
+    return true;
+  }
+  if (existing.count >= CREATE_LIMIT_PER_WINDOW) {
+    return false;
+  }
+  existing.count += 1;
+  accountCreateWindow.set(userId, existing);
+  return true;
+}
 
 function getPrimaryDomain(): string | null {
   const domain = process.env.DOMAIN?.trim() || process.env.VIRTUAL_HOST?.trim() || null;
@@ -30,6 +52,15 @@ export async function POST(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
+
+    if (!checkCreateRateLimit(payload.sub)) {
+      return NextResponse.json({
+        error: 'Too many account creation requests. Please try again later.'
+      }, { status: 429 });
+    }
 
     const body = await req.json();
     const { emailAddress, domainId, smtpHost, smtpPort, smtpUser, smtpPass, useServerDomain } = body;
@@ -90,6 +121,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email account already exists' }, { status: 409 });
     }
 
+    const { rows: userCountRows } = await pgQuery<{ count: string }>(
+      'SELECT COUNT(*)::text AS count FROM email_accounts WHERE user_id = $1',
+      [payload.sub]
+    );
+    const totalForUser = Number(userCountRows[0]?.count || 0);
+    if (totalForUser >= MAX_ACCOUNTS_PER_USER) {
+      return NextResponse.json({
+        error: `Account limit reached (${MAX_ACCOUNTS_PER_USER} max per user)`
+      }, { status: 400 });
+    }
+
+    const { rows: perDomainRows } = await pgQuery<{ count: string }>(
+      'SELECT COUNT(*)::text AS count FROM email_accounts WHERE user_id = $1 AND domain_id = $2',
+      [payload.sub, actualDomainId]
+    );
+    const totalForDomain = Number(perDomainRows[0]?.count || 0);
+    if (totalForDomain >= MAX_ACCOUNTS_PER_DOMAIN_PER_USER) {
+      return NextResponse.json({
+        error: `Domain account limit reached (${MAX_ACCOUNTS_PER_DOMAIN_PER_USER} max for this domain)`
+      }, { status: 400 });
+    }
+
     const now = new Date();
     const emailLower = emailAddress.toLowerCase();
     const defaultQuota = 1024;
@@ -126,6 +179,9 @@ export async function DELETE(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
 
     const url = new URL(req.url);
     const accountId = url.searchParams.get('id');

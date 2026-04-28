@@ -1,4 +1,4 @@
-import { Mail, Edit } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import Link from 'next/link';
 
 import { MainNav } from '@/components/main-nav';
@@ -22,10 +22,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-white shadow-sm">
-              <Mail className="h-4 w-4" />
-            </div>
+          <div className="flex h-16 items-center px-4 border-b border-sidebar-border">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-sidebar-foreground">
                 NubMail

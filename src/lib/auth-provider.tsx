@@ -46,30 +46,32 @@ export default function AuthClientProvider({ children }: { children: React.React
 
     if (!t) {
       setTokenState(null);
-      localStorage.removeItem('token');
       setUser(null);
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch {
+      }
       return;
     }
 
     // If token immediately appears expired, remove it
     if (isTokenExpired(t)) {
       setTokenState(null);
-      localStorage.removeItem('token');
       setUser(null);
       return;
     }
 
-    // Persist and set state
+    // Keep token in memory only; server-side auth is cookie-based.
     setTokenState(t);
-    localStorage.setItem('token', t);
 
     // Optimistically set user from JWT payload (reduces perceived login delay)
     const payload = parseJwt(t);
     if (payload && payload.sub && payload.email) {
+      const fullName = typeof payload.fullName === 'string' ? payload.fullName : null;
       setUser({
         id: String(payload.sub),
         email: String(payload.email),
-        fullName: payload.fullName ?? null,
+        fullName,
         emailVerified: typeof payload.emailVerified === 'boolean' ? payload.emailVerified : undefined,
         isAdmin: typeof payload.isAdmin === 'boolean' ? payload.isAdmin : undefined,
       });
@@ -85,50 +87,27 @@ export default function AuthClientProvider({ children }: { children: React.React
     }
   };
 
-  // Initialize token from localStorage (client-side only)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('token');
-      if (storedToken) {
-        // Use internal setter to validate and schedule expiry
-        setTokenInternal(storedToken);
-      } else {
-        setLoading(false);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // When token changes, fetch current user data
+  // Fetch current user data from cookie-based session, with optional Bearer fallback.
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
-      if (!tokenState) {
-        setUser(null);
-        setLoading(false);
-        
-        // If trying to access protected route without token, redirect to login
-        const protectedPrefix = '/dashboard';
-        const publicPaths = ['/', '/register', '/verify-email'];
-        if (pathname && pathname.startsWith(protectedPrefix) && !publicPaths.includes(pathname)) {
-          router.push('/');
-        }
-        return;
-      }
 
       try {
+        const headers: HeadersInit = {};
+        if (tokenState) {
+          headers.Authorization = `Bearer ${tokenState}`;
+        }
         const res = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${tokenState}` },
+          headers,
           cache: 'no-store'
         });
 
         if (!res.ok) {
-          // Token invalid on server; clear locally
-          await setTokenInternal(null);
+          // Session invalid; clear in-memory token and user state.
+          if (!cancelled) setTokenState(null);
           setUser(null);
-          setLoading(false);
-          
+
           // Redirect to login if trying to access protected route
           const protectedPrefix = '/dashboard';
           const publicPaths = ['/', '/register', '/verify-email'];
@@ -142,10 +121,8 @@ export default function AuthClientProvider({ children }: { children: React.React
         if (!cancelled) {
           setUser(data.user);
 
-          // If user exists but email not verified, and trying to access dashboard or protected routes, redirect to verification page
-          const protectedPrefix = '/dashboard';
-          if (data.user && data.user.emailVerified === false && pathname && pathname.startsWith(protectedPrefix)) {
-            router.push('/verify-email');
+          if (data.user && data.user.emailVerified && pathname === '/verify-email') {
+            router.push('/dashboard');
           }
         }
       } catch (err) {

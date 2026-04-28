@@ -1,7 +1,8 @@
 "use client";
 
-import { MoreHorizontal, PlusCircle, Globe } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { PlusCircle, Globe } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,13 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -65,6 +59,7 @@ export default function DomainsPage() {
   const { user } = useAuthClient();
   const [isAddDomainOpen, setAddDomainOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,24 +69,25 @@ export default function DomainsPage() {
   const [domains, setDomains] = useState<Domain[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      if (!user) return;
-      setIsLoading(true);
-      try {
-        const res = await fetch('/api/domains', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-        const data = await res.json();
-        if (res.ok) setDomains(data.domains || []);
-        else setDomains([]);
-      } catch (e) {
-        console.error('Load domains failed', e);
-        setDomains([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
+  const loadDomains = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/domains', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const data = await res.json();
+      if (res.ok) setDomains(data.domains || []);
+      else setDomains([]);
+    } catch (e) {
+      console.error('Load domains failed', e);
+      setDomains([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadDomains();
+  }, [loadDomains]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
@@ -113,29 +109,7 @@ export default function DomainsPage() {
     }
   };
 
-  const handleDeleteDomain = async (domainId: string, domainName: string) => {
-    if (!confirm(`Are you sure you want to delete ${domainName}?`)) {
-      return;
-    }
 
-    try {
-      const res = await fetch(`/api/domains?id=${domainId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to delete domain');
-
-      setDomains(prev => prev?.filter(d => d.id !== domainId) || null);
-      toast({ title: 'Domain deleted', description: `${domainName} has been removed.` });
-    } catch (error: any) {
-      console.error('Delete error:', error);
-      toast({ title: 'Delete failed', description: error.message || 'Could not delete domain', variant: 'destructive' });
-    }
-  };
 
   if (!user) {
     return (
@@ -220,15 +194,17 @@ export default function DomainsPage() {
                   <TableHead>Domain</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created At</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {domains && domains.length > 0 ? (
                   domains.map((item: any) => (
-                    <TableRow key={item.id}>
+                    <TableRow 
+                      key={item.id}
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => router.push(`/dashboard/domains/${item.id}`)}
+                    >
                       <TableCell className="font-medium flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         {item.domainName}
@@ -242,28 +218,6 @@ export default function DomainsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <Link href={`/dashboard/domains/${item.id}`}>
-                              <DropdownMenuItem>View DNS Setup</DropdownMenuItem>
-                            </Link>
-                            <DropdownMenuItem 
-                              className="text-destructive" 
-                              onClick={() => handleDeleteDomain(item.id, item.domainName)}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
                     </TableRow>
                   ))
                 ) : (

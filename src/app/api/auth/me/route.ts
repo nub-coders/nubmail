@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verify } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
+import { getTokenFromRequest } from '@/lib/auth-token';
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = req.headers.get('authorization') || '';
-    const token = auth.replace(/^Bearer\s+/i, '') || null;
+    const token = getTokenFromRequest(req);
     if (!token) return NextResponse.json({ error: 'No token provided' }, { status: 401 });
 
     const secret = process.env.JWT_SECRET;

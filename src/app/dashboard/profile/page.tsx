@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Shield, Calendar, Save, Lock } from 'lucide-react';
+import { Shield, Calendar, Save, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -102,6 +103,23 @@ export default function ProfilePage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setSendingVerification(true);
+    try {
+      const res = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send verification email');
+      toast({ title: 'Verification sent', description: 'Please check your email inbox for the verification link.' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to send verification email', variant: 'destructive' });
+    } finally {
+      setSendingVerification(false);
+    }
+  };
+
   if (!user) {
     return <div className="py-8 text-center">You must be signed in to view your profile.</div>;
   }
@@ -143,7 +161,33 @@ export default function ProfilePage() {
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">{profile?.email}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">{profile?.email}</p>
+                {!profile?.emailVerified && (
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs"
+                    onClick={handleResendVerification}
+                    disabled={sendingVerification}
+                  >
+                    {sendingVerification ? 'Sending...' : 'Resend'}
+                  </Button>
+                )}
+              </div>
+              <div className="pt-1">
+                {profile?.emailVerified ? (
+                  <Badge variant="secondary" className="bg-green-500/10 text-green-700 border-green-500/30">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Email verified
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 border-amber-500/30">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Email not verified
+                  </Badge>
+                )}
+              </div>
               {profile?.createdAt && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />

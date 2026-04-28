@@ -236,7 +236,7 @@ export default function AccountsPage() {
             <DialogHeader>
               <DialogTitle>Create Email Account</DialogTitle>
               <DialogDescription>
-                Create a new email account. SMTP settings are optional - leave them empty to use NubMail's built-in SMTP server.
+                Create a new email account. SMTP settings are optional - leave them empty to use NubMail&apos;s built-in SMTP server.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
@@ -319,7 +319,7 @@ export default function AccountsPage() {
                       Use custom SMTP settings
                     </Label>
                     <p className="text-sm text-muted-foreground">
-                      Leave disabled to use NubMail's built-in SMTP server. Enable to provide your own SMTP credentials.
+                      Leave disabled to use NubMail&apos;s built-in SMTP server. Enable to provide your own SMTP credentials.
                     </p>
                   </div>
                 </div>

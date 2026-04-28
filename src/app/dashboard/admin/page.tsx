@@ -125,23 +125,23 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <button
-            onClick={() => router.push('/dashboard/admin/users')}
-            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-          >
-            <Users className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Manage Users</div>
-              <div className="text-sm text-muted-foreground">View and manage all users</div>
-            </div>
-          </button>
-          <button
             onClick={() => router.push('/dashboard/admin/domains')}
             className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
           >
             <Globe className="h-5 w-5" />
             <div className="text-left">
               <div className="font-medium">Manage Domains</div>
-              <div className="text-sm text-muted-foreground">View and manage all domains</div>
+              <div className="text-sm text-muted-foreground">View users, domains, and DNS records</div>
+            </div>
+          </button>
+          <button
+            onClick={() => router.push('/dashboard/admin/server-dns')}
+            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+          >
+            <Shield className="h-5 w-5" />
+            <div className="text-left">
+              <div className="font-medium">Server DNS</div>
+              <div className="text-sm text-muted-foreground">Check mail server DNS configuration</div>
             </div>
           </button>
         </CardContent>

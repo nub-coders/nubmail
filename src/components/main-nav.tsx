@@ -12,7 +12,6 @@ import {
   Trash2,
   Users,
   ShieldCheck,
-  UserCog,
   Server,
   Key,
   Archive,
@@ -215,26 +214,13 @@ export function MainNav({ className }: { className?: string }) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/dashboard/admin/users')}
-                tooltip="Manage Users"
-                className="hover:bg-sidebar-accent transition-colors duration-150"
-              >
-                <Link href="/dashboard/admin/users">
-                  <UserCog />
-                  <span>Manage Users</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
                 isActive={isActive('/dashboard/admin/domains')}
-                tooltip="Manage Domains"
+                tooltip="Domains"
                 className="hover:bg-sidebar-accent transition-colors duration-150"
               >
                 <Link href="/dashboard/admin/domains">
                   <Globe />
-                  <span>Manage Domains</span>
+                  <span>Domains</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

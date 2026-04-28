@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken } from '@/lib/admin';
+import { getAdminFromToken, getUserFromToken } from '@/lib/admin';
 import dns from 'dns/promises';
 import { pgQuery } from '@/lib/postgres';
 
@@ -113,7 +113,8 @@ function normalizeTxtMatch(value: string): string {
 
 export async function GET(req: NextRequest) {
   try {
-    const payload = await getUserFromToken(req);
+    const admin = await getAdminFromToken(req);
+    const payload = admin ?? await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
@@ -123,10 +124,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
     }
 
-    const { rows } = await pgQuery<{ domainName: string; verificationToken: string | null; verificationStatus: string }>(
-      `SELECT domain_name AS "domainName", verification_token AS "verificationToken", verification_status AS "verificationStatus"
-       FROM domains WHERE id = $1 AND user_id = $2`,
-      [domainId, payload.sub]
+    const { rows } = await pgQuery<{
+      domainName: string;
+      verificationToken: string | null;
+      verificationStatus: string;
+      userId: string;
+      userEmail: string | null;
+      userFullName: string | null;
+    }>(
+      `SELECT d.domain_name AS "domainName",
+              d.verification_token AS "verificationToken",
+              d.verification_status AS "verificationStatus",
+              d.user_id AS "userId",
+              u.email AS "userEmail",
+              u.full_name AS "userFullName"
+       FROM domains d
+       LEFT JOIN users u ON d.user_id = u.id
+       WHERE d.id = $1${admin ? '' : ' AND d.user_id = $2'}`,
+      admin ? [domainId] : [domainId, payload.sub]
     );
     
     const domain = rows[0];
@@ -318,6 +333,9 @@ export async function GET(req: NextRequest) {
       domainName: normalizedDomain,
       verificationStatus: domain.verificationStatus,
       verificationToken: domain.verificationToken,
+      userId: domain.userId,
+      userEmail: domain.userEmail,
+      userFullName: domain.userFullName,
       lastChecked: new Date().toISOString(),
       records,
     });

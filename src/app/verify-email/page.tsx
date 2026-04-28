@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -16,15 +14,20 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthClient } from '@/lib/auth-provider';
 
-export default function VerifyEmailPage() {
-  const [code, setCode] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
+function VerifyEmailContent() {
+  const [linkSent, setLinkSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { setToken } = useAuthClient();
+
+  useEffect(() => {
+    if (searchParams.get('verified') === '1') {
+      setVerified(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (verified) {
@@ -32,85 +35,36 @@ export default function VerifyEmailPage() {
     }
   }, [verified, router]);
 
-  const handleSendCode = async () => {
+  const handleSendLink = async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/auth/send-verification', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
       });
       const data = await res.json();
 
       if (!res.ok) {
         toast({
           title: 'Error',
-          description: data.error || 'Failed to send verification code',
+          description: data.error || 'Failed to send verification link',
           variant: 'destructive'
         });
         return;
       }
 
-      setCodeSent(true);
+      setLinkSent(true);
       toast({
-        title: 'Code sent',
-        description: 'Check your email for the verification code',
+        title: 'Verification email sent',
+        description: 'Check your inbox and click the verification link',
       });
     } catch (err) {
       toast({
         title: 'Error',
-        description: 'Failed to send verification code',
+        description: 'Failed to send verification link',
         variant: 'destructive'
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!code || code.length !== 6) {
-      toast({
-        title: 'Invalid code',
-        description: 'Please enter a 6-digit code',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setVerifying(true);
-    try {
-      const res = await fetch('/api/auth/verify-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`
-        },
-        body: JSON.stringify({ code })
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast({
-          title: 'Verification failed',
-          description: data.error || 'Invalid verification code',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      setVerified(true);
-      toast({
-        title: 'Success',
-        description: 'Email verified! Redirecting to dashboard...',
-      });
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: 'Failed to verify code',
-        variant: 'destructive'
-      });
-    } finally {
-      setVerifying(false);
     }
   };
 
@@ -133,52 +87,41 @@ export default function VerifyEmailPage() {
           </div>
           <CardTitle className="text-lg">Email verification required</CardTitle>
           <CardDescription>
-            {codeSent
-              ? 'Enter the 6-digit code sent to your email'
-              : 'We\'ll send a verification code to your email'}
+            {verified
+              ? 'Your email is verified. Redirecting...'
+              : linkSent
+              ? 'We sent a verification link to your email'
+              : 'We\'ll send a verification link to your email'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {verified ? (
             <div className="text-center text-sm text-green-600">Email verified! Redirecting to dashboard...</div>
-          ) : codeSent ? (
-            <form onSubmit={handleVerifyCode} className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="code">Verification Code</Label>
-                <Input
-                  id="code"
-                  type="text"
-                  placeholder="000000"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  maxLength={6}
-                  className="text-center text-2xl tracking-widest"
-                  autoFocus
-                />
-              </div>
-              <Button type="submit" disabled={verifying || code.length !== 6} className="w-full">
-                {verifying ? 'Verifying...' : 'Verify Code'}
-              </Button>
+          ) : linkSent ? (
+            <div className="grid gap-4">
+              <p className="text-sm text-muted-foreground">
+                Open the email and click the verification link. If you cannot find it, check your spam folder.
+              </p>
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleSendCode}
+                onClick={handleSendLink}
                 disabled={loading}
                 className="w-full"
               >
-                {loading ? 'Sending...' : 'Resend Code'}
+                {loading ? 'Sending...' : 'Resend Verification Email'}
               </Button>
               <Button type="button" variant="ghost" onClick={handleLogout} className="w-full mt-2">
                 Log out
               </Button>
-            </form>
+            </div>
           ) : (
             <div className="grid gap-4">
               <p className="text-sm text-muted-foreground">
-                Click the button below to receive a verification code. The code will be valid for 10 minutes.
+                Click below to receive a one-click verification link. The link will be valid for 30 minutes.
               </p>
-              <Button onClick={handleSendCode} disabled={loading} className="w-full">
-                {loading ? 'Sending...' : 'Send Verification Code'}
+              <Button onClick={handleSendLink} disabled={loading} className="w-full">
+                {loading ? 'Sending...' : 'Send Verification Email'}
               </Button>
               <Button type="button" variant="ghost" onClick={handleLogout} className="w-full mt-2">
                 Log out
@@ -188,5 +131,13 @@ export default function VerifyEmailPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center p-4">Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

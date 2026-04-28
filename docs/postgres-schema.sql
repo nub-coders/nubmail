@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS domains (
 );
 CREATE INDEX IF NOT EXISTS idx_domains_user_created ON domains(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_domains_verification_status ON domains(verification_status);
+CREATE UNIQUE INDEX IF NOT EXISTS domains_verified_domain_name_unique_idx
+  ON domains ((lower(domain_name)))
+  WHERE verification_status = 'verified';
 
 -- Email accounts
 CREATE TABLE IF NOT EXISTS email_accounts (

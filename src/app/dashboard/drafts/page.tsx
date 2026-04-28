@@ -177,7 +177,12 @@ export default function DraftsPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <Edit className="h-3 w-3 text-muted-foreground" />
+                          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-medium text-primary">
+                              {draft.toAddress ? draft.toAddress.charAt(0).toUpperCase() : '?'}
+                            </span>
+                          </div>
+                          <Edit className="h-3 w-3 text-muted-foreground ml-1" />
                           <span className="text-xs text-muted-foreground truncate">
                             {draft.toAddress ? `To: ${draft.toAddress}` : 'No recipient'}
                           </span>

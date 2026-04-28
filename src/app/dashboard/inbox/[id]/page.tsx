@@ -8,6 +8,26 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/hooks/use-toast';
+import DOMPurify from 'dompurify';
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getSafeEmailHtml(body: string | undefined): string {
+  if (!body || !body.trim()) {
+    return '<p class="text-muted-foreground italic">No content available</p>';
+  }
+
+  const looksLikeHtml = /<[a-z][\s\S]*>/i.test(body);
+  const htmlCandidate = looksLikeHtml ? body : escapeHtml(body).replace(/\n/g, '<br>');
+  return DOMPurify.sanitize(htmlCandidate, { USE_PROFILES: { html: true } });
+}
 
 interface Email {
   id: string;
@@ -28,6 +48,7 @@ export default function EmailViewPage() {
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const safeBodyHtml = getSafeEmailHtml(email?.body);
 
   useEffect(() => {
     const fetchEmail = async () => {
@@ -261,7 +282,7 @@ export default function EmailViewPage() {
                        prose-pre:bg-muted prose-pre:border
                        prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
             dangerouslySetInnerHTML={{
-              __html: email.body || email.body?.replace(/\n/g, '<br>') || '<p class="text-muted-foreground italic">No content available</p>'
+              __html: safeBodyHtml
             }}
           />
         </div>

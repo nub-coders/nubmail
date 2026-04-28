@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, downloadBindFile } from "@/lib/utils";
 import { useAuthClient } from "@/lib/auth-provider";
 
 interface ServerDnsRecord {
@@ -45,6 +45,36 @@ interface ServerDnsResponse {
   mailHostLabel: string;
   lastChecked: string;
   records: ServerDnsRecord[];
+}
+
+function CopyButton({ text }: { text: string }) {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast({
+        description: "Copied to clipboard",
+        duration: 2000,
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy value to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 shrink-0" onClick={handleCopy} title="Copy">
+      {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+      <span className="sr-only">Copy</span>
+    </Button>
+  );
 }
 
 function StatusBadge({ status }: { status: ServerDnsRecord["status"] }) {
@@ -188,7 +218,12 @@ export default function AdminServerDnsPage() {
             <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
             Refresh status
           </Button>
-          {/* DKIM generation button removed; handled automatically on the server */}
+          {data && (
+            <Button variant="outline" onClick={() => downloadBindFile(data.primaryDomain, data.records)}>
+              <Download className="mr-2 h-4 w-4" />
+              Download zone file
+            </Button>
+          )}
         </div>
       </div>
 
@@ -260,14 +295,20 @@ export default function AdminServerDnsPage() {
                     <TableCell>
                       <div className="flex flex-col">
                         <span>{record.name}</span>
-                        <span className="text-xs text-muted-foreground">{record.host}</span>
+                        <div className="flex items-center">
+                          <span className="text-xs text-muted-foreground">{record.host}</span>
+                          <CopyButton text={record.host} />
+                        </div>
                         {record.optional && (
                           <span className="text-xs text-muted-foreground">Optional</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <code className="break-all text-xs">{record.expectedValue}</code>
+                      <div className="flex items-center">
+                        <code className="break-all text-xs">{record.expectedValue}</code>
+                        <CopyButton text={record.expectedValue} />
+                      </div>
                       {typeof record.priority === "number" && (
                         <div className="text-xs text-muted-foreground">Priority {record.priority}</div>
                       )}

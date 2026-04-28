@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
-import { sendSmtpEmail, getEnvSmtpConfig } from '@/utils/smtp';
+import { sendSmtpEmail } from '@/utils/smtp';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -27,12 +27,13 @@ export async function POST(req: NextRequest) {
 
     // Generate a secure reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
 
-    // Store the reset token
+    // Store only a one-way hash of the reset token.
     await pgQuery(
       'UPDATE users SET verification_code = $1, verification_code_expiry = $2 WHERE id = $3',
-      [resetToken, expiresAt, user.id]
+      [resetTokenHash, expiresAt, user.id]
     );
 
     // Send password reset email
