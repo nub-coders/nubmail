@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, RefreshCw, ShieldAlert, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert, Sparkles, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { cn, downloadBindFile } from "@/lib/utils";
 import { useAuthClient } from "@/lib/auth-provider";
 
 interface DomainDnsRecord {
@@ -85,6 +96,8 @@ export default function DomainDnsPage() {
   const [data, setData] = useState<DomainDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   // DKIM generation is automatic; no UI button
 
   const dkimRecord = useMemo(
@@ -183,6 +196,30 @@ export default function DomainDnsPage() {
     }
   };
 
+  const handleDeleteDomain = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/domains?id=${domainId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to delete domain');
+
+      toast({ title: 'Domain deleted', description: `${data?.domainName || 'Domain'} has been removed.` });
+      router.push('/dashboard/domains');
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({ title: 'Delete failed', description: error.message || 'Could not delete domain', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   // DKIM generation is automatic
 
   const copyToClipboard = async (text: string) => {
@@ -234,11 +271,38 @@ export default function DomainDnsPage() {
             <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
             Refresh status
           </Button>
+          {data && (
+            <Button variant="outline" onClick={() => downloadBindFile(data.domainName, data.records)}>
+              <Download className="mr-2 h-4 w-4" />
+              Download zone file
+            </Button>
+          )}
           <Button onClick={verifyDnsRecords} disabled={verifying || loading}>
             <CheckCircle2 className={cn("mr-2 h-4 w-4", verifying && "animate-spin")} />
             {verifying ? "Verifying..." : "Verify Records"}
           </Button>
-          {/* DKIM generation button removed */}
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={loading || !data}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete the domain <strong>{data?.domainName}</strong> and all associated email accounts. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteDomain} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {deleting ? "Deleting..." : "Delete Domain"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

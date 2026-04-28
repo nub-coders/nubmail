@@ -171,6 +171,11 @@ export default function SentPage() {
                   >
                     <div className="flex w-full items-center">
                       <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-medium text-primary">
+                            {email.recipients[0]?.charAt(0).toUpperCase() || '?'}
+                          </span>
+                        </div>
                         <div className="font-semibold">
                           To: {email.recipients.join(', ')}
                         </div>

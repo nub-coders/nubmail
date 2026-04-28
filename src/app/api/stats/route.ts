@@ -1,20 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verify } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
-
-async function getUserFromToken(req: NextRequest) {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.replace(/^Bearer\s+/i, '') || null;
-  if (!token) return null;
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
-  try {
-    const payload = verify(token, secret) as any;
-    return payload;
-  } catch {
-    return null;
-  }
-}
+import { getUserFromToken } from '@/lib/admin';
 
 export async function GET(req: NextRequest) {
   try {

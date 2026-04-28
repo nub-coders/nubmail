@@ -51,36 +51,3 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
-  try {
-    const admin = await getAdminFromToken(req);
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const { domainId, verificationStatus } = body;
-
-    if (!domainId) {
-      return NextResponse.json({ error: 'domainId required' }, { status: 400 });
-    }
-
-    if (!verificationStatus || !['pending', 'verified', 'failed'].includes(verificationStatus)) {
-      return NextResponse.json({ error: 'Invalid verificationStatus' }, { status: 400 });
-    }
-
-    const { rowCount } = await pgQuery(
-      'UPDATE domains SET verification_status = $1 WHERE id = $2',
-      [verificationStatus, domainId]
-    );
-
-    if (rowCount === 0) {
-      return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: 'Domain updated successfully' });
-  } catch (err) {
-    console.error('Admin domains PATCH error', err);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
-  }
-}

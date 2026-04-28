@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,10 +20,13 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Check if token exists and is not expired
+    const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
+
+    // Check if token exists and is not expired.
+    // Support plaintext token rows for a short migration window.
     const { rows } = await pgQuery<{ id: string; verification_code_expiry: Date }>(
-      'SELECT id, verification_code_expiry FROM users WHERE verification_code = $1',
-      [token]
+      'SELECT id, verification_code_expiry FROM users WHERE verification_code = $1 OR verification_code = $2',
+      [hashedToken, String(token)]
     );
 
     if (rows.length === 0) {

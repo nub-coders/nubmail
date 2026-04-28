@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromApiKey } from '@/lib/api-keys';
 import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
+import { deliverLocal } from '@/utils/local-delivery';
 
 // API-key based send endpoint
 export async function POST(req: NextRequest) {
   try {
     const apiUser = await getUserFromApiKey(req);
     if (!apiUser) return NextResponse.json({ error: 'Unauthorized (API key required)' }, { status: 401 });
+
+    const { rows: ownerRows } = await pgQuery<{ email_verified: boolean | null; is_admin: boolean | null }>(
+      'SELECT email_verified, is_admin FROM users WHERE id = $1',
+      [apiUser.id]
+    );
+    const owner = ownerRows[0];
+    if (!owner) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!owner.is_admin && !owner.email_verified) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
 
     const body = await req.json();
     const { to, subject, text, html, from } = body;
@@ -45,14 +56,33 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    const result = await sendSmtpEmail({
-      from,
-      to,
+    const allRecipients = Array.isArray(to) ? to : [to];
+    const messageBody = html || text || '';
+
+    const { localRecipients, externalRecipients } = await deliverLocal({
+      recipients: allRecipients,
+      sender: String(from).toLowerCase(),
       subject,
-      text: text || html?.replace(/<[^>]*>/g, ''),
-      html: html || text?.replace(/\n/g, '<br>'),
-      smtpConfig,
+      body: messageBody,
     });
+
+    let result = { messageId: undefined as string | undefined, accepted: localRecipients as string[], rejected: [] as string[] };
+
+    if (externalRecipients.length > 0) {
+      const smtpResult = await sendSmtpEmail({
+        from,
+        to: externalRecipients,
+        subject,
+        text: text || html?.replace(/<[^>]*>/g, ''),
+        html: html || text?.replace(/\n/g, '<br>'),
+        smtpConfig,
+      });
+      result = {
+        messageId: smtpResult.messageId,
+        accepted: [...localRecipients, ...smtpResult.accepted],
+        rejected: smtpResult.rejected,
+      };
+    }
 
     const now = new Date();
     await pgQuery(
@@ -60,9 +90,9 @@ export async function POST(req: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         String(from).toLowerCase(),
-        Array.isArray(to) ? to : [to],
+        allRecipients,
         subject,
-        html || text,
+        messageBody,
         now,
         apiUser.id,
         false,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken } from '@/lib/admin';
+import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
 import bcrypt from 'bcryptjs';
 
@@ -9,6 +9,9 @@ export async function POST(request: NextRequest) {
     const payload = await getUserFromToken(request);
     if (!payload) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
     }
 
     const body = await request.json();

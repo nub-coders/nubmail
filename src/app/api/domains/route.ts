@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
-import { verify } from 'jsonwebtoken';
+import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { promises as dns } from 'dns';
 
-async function getUserFromToken(req: NextRequest) {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.replace(/^Bearer\s+/i, '') || null;
-  if (!token) return null;
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
-  try {
-    const payload = verify(token, secret) as any;
-    return payload;
-  } catch {
-    return null;
-  }
+function normalizeTxtRecord(record: unknown): string | null {
+  if (!Array.isArray(record)) return null;
+  if (!record.every((part) => typeof part === 'string')) return null;
+  return record.join('');
 }
 
 export async function GET(req: NextRequest) {
@@ -39,6 +31,9 @@ export async function POST(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
 
     const body = await req.json();
     const { domainName } = body;
@@ -67,6 +62,9 @@ export async function DELETE(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
 
     const url = new URL(req.url);
     const domainId = url.searchParams.get('id');
@@ -87,6 +85,9 @@ export async function PATCH(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
 
     const body = await req.json();
     const { domainId, action } = body;
@@ -153,7 +154,8 @@ export async function PATCH(req: NextRequest) {
       
       let txtRecordFound = false;
       for (const record of txtRecords) {
-        const recordValue = Array.isArray(record) ? record.join('') : record;
+        const recordValue = normalizeTxtRecord(record);
+        if (!recordValue) continue;
         console.log('Checking record:', recordValue);
         if (recordValue === expectedTxtRecord) {
           txtRecordFound = true;
@@ -171,10 +173,30 @@ export async function PATCH(req: NextRequest) {
         }, { status: 400 });
       }
       
-      await pgQuery(
-        'UPDATE domains SET verification_status = $1, verified_at = $2 WHERE id = $3',
-        ['verified', new Date(), domainId]
+      // Prevent two users from ending up with the same verified domain.
+      const updateResult = await pgQuery(
+        `UPDATE domains
+         SET verification_status = $1, verified_at = $2
+         WHERE id = $3
+           AND user_id = $4
+           AND NOT EXISTS (
+             SELECT 1
+             FROM domains d2
+             WHERE d2.id <> $3
+               AND LOWER(d2.domain_name) = LOWER($5)
+               AND d2.verification_status = 'verified'
+           )
+         RETURNING id`,
+        ['verified', new Date(), domainId, payload.sub, normalizedDomain]
       );
+
+      if (updateResult.rowCount === 0) {
+        return NextResponse.json({
+          error: 'Domain verification conflict',
+          message: 'This domain is already verified by another account.',
+          verificationStatus: 'pending'
+        }, { status: 409 });
+      }
       
       console.log('✓ Domain verified successfully');
       return NextResponse.json({ 

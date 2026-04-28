@@ -350,6 +350,11 @@ export default function InboxPage() {
                             <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                           )}
                           <div className="flex items-center gap-2 min-w-0">
+                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-medium text-primary">
+                                {email.sender.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
                             <span className={cn(
                               'font-medium text-sm truncate',
                               !email.read ? 'font-semibold text-foreground' : 'text-foreground/80'

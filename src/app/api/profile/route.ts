@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
+import { AUTH_COOKIE_NAME, buildAuthCookieOptions } from '@/lib/auth-token';
 
 export async function GET(req: NextRequest) {
   try {
@@ -71,7 +72,11 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ user: updated, token });
+    const response = NextResponse.json({ user: updated, token });
+    if (token) {
+      response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());
+    }
+    return response;
   } catch (err) {
     console.error('Profile PATCH error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -85,7 +90,15 @@ export async function DELETE(req: NextRequest) {
 
     await pgQuery('DELETE FROM users WHERE id = $1', [payload.sub]);
 
-    return NextResponse.json({ message: 'Account deleted' });
+    const response = NextResponse.json({ message: 'Account deleted' });
+    response.cookies.set(AUTH_COOKIE_NAME, '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
+    return response;
   } catch (err) {
     console.error('Profile DELETE error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

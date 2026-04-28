@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import {
+  AlertCircle,
   CreditCard,
   LogOut,
   Mail,
@@ -32,8 +33,8 @@ export function UserNav() {
     return 'N';
   };
 
-  const handleLogout = () => {
-    setToken(null);
+  const handleLogout = async () => {
+    await setToken(null);
     router.push('/');
   };
 
@@ -46,6 +47,12 @@ export function UserNav() {
               {getInitial()}
             </AvatarFallback>
           </Avatar>
+          {user && !user.emailVerified && (
+            <span
+              className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-background"
+              aria-label="Email verification pending"
+            />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-60 animate-scale-in shadow-elevated" align="end" forceMount>
@@ -69,6 +76,7 @@ export function UserNav() {
           <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
+            {user && !user.emailVerified && <AlertCircle className="ml-auto h-4 w-4 text-amber-500" />}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/dashboard/billing')}>
             <CreditCard className="mr-2 h-4 w-4" />

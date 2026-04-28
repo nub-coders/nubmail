@@ -1,12 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken } from '@/lib/admin';
+import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
+import { deliverLocal } from '@/utils/local-delivery';
+import sanitizeHtml from 'sanitize-html';
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function textToSafeHtml(input: string): string {
+  return escapeHtml(input).replace(/\n/g, '<br>');
+}
+
+function sanitizeEmailHtml(input: string): string {
+  return sanitizeHtml(input, {
+    allowedTags: [
+      ...sanitizeHtml.defaults.allowedTags,
+      'img',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'td',
+      'th',
+      'span',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'hr',
+    ],
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      a: ['href', 'name', 'target', 'rel'],
+      img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
+      '*': ['style'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    allowedSchemesByTag: {
+      img: ['http', 'https', 'data'],
+    },
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!canPerformImportantAction(payload)) {
+      return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
+    }
 
     const body = await req.json();
     const { to, subject, text, html, from, attachments } = body;
@@ -143,16 +194,41 @@ export async function POST(req: NextRequest) {
         }))
       : undefined;
 
-    const result = await sendSmtpEmail({
-      from,
-      to,
+    const allRecipients = Array.isArray(to) ? to : [to];
+    const textBody = typeof text === 'string' ? text : '';
+    const sanitizedHtml = typeof html === 'string' && html.trim().length > 0
+      ? sanitizeEmailHtml(html)
+      : '';
+    const safeHtmlBody = sanitizedHtml || textToSafeHtml(textBody);
+    const plainTextBody = textBody || safeHtmlBody.replace(/<[^>]*>/g, '');
+    const messageBody = safeHtmlBody;
+
+    const { localRecipients, externalRecipients } = await deliverLocal({
+      recipients: allRecipients,
+      sender: String(from).toLowerCase(),
       subject,
-      text: text || html?.replace(/<[^>]*>/g, ''),
-      html: html || text?.replace(/\n/g, '<br>'),
-      attachments: validAttachments,
-      smtpConfig,
-      dkim: dkimConfig
+      body: messageBody,
     });
+
+    let result = { messageId: undefined as string | undefined, accepted: localRecipients as string[], rejected: [] as string[] };
+
+    if (externalRecipients.length > 0) {
+      const smtpResult = await sendSmtpEmail({
+        from,
+        to: externalRecipients,
+        subject,
+        text: plainTextBody,
+        html: safeHtmlBody,
+        attachments: validAttachments,
+        smtpConfig,
+        dkim: dkimConfig
+      });
+      result = {
+        messageId: smtpResult.messageId,
+        accepted: [...localRecipients, ...smtpResult.accepted],
+        rejected: smtpResult.rejected,
+      };
+    }
 
     const now = new Date();
     await pgQuery(
@@ -160,16 +236,16 @@ export async function POST(req: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         String(from).toLowerCase(),
-        Array.isArray(to) ? to : [to],
+        allRecipients,
         subject,
-        html || text,
+        messageBody,
         now,
         payload.sub,
         false
       ]
     );
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'Email sent successfully',
       messageId: result.messageId,
       accepted: result.accepted,

@@ -30,6 +30,25 @@ function ComposeForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_EXTENSIONS = new Set(['pdf', 'txt', 'csv', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip']);
+  const ALLOWED_MIME_TYPES = new Set([
+    'application/pdf',
+    'text/plain',
+    'text/csv',
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'image/webp',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/zip',
+    'application/x-zip-compressed',
+    'application/octet-stream',
+  ]);
 
   const mode = searchParams.get('mode');
   const emailId = searchParams.get('emailId');
@@ -117,6 +136,18 @@ function ComposeForm() {
 
     const readers = newFiles.map(file => {
       return new Promise<{ name: string; size: number; type: string; data: string } | null>((resolve) => {
+        const extension = file.name.split('.').pop()?.toLowerCase() || '';
+        const mimeType = (file.type || '').toLowerCase();
+        if (!ALLOWED_EXTENSIONS.has(extension) || (mimeType && !ALLOWED_MIME_TYPES.has(mimeType))) {
+          toast({
+            title: 'Unsupported attachment',
+            description: `${file.name} is not an allowed file type.`,
+            variant: 'destructive'
+          });
+          resolve(null);
+          return;
+        }
+
         if (currentSize + addedSize + file.size > MAX_TOTAL_SIZE) {
           toast({ title: 'Too large', description: `Total attachments cannot exceed 10 MB`, variant: 'destructive' });
           resolve(null);

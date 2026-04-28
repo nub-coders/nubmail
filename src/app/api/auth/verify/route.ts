@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
-import { verify } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
+import { AUTH_COOKIE_NAME, buildAuthCookieOptions, getTokenFromRequest } from '@/lib/auth-token';
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,9 +29,33 @@ export async function GET(req: NextRequest) {
 
     await pgQuery('UPDATE users SET email_verified = true WHERE id = $1', [payload.sub]);
 
-    // After verification redirect to login page with success message (client can show toast)
-    const redirectUrl = '/?verified=true';
-    return NextResponse.redirect(redirectUrl);
+    const protocol = process.env.PROTOCOL || 'https';
+    const host = process.env.HOST || process.env.VIRTUAL_HOST || 'localhost:5000';
+    const response = NextResponse.redirect(new URL(`/verify-email?verified=1`, `${protocol}://${host}`));
+
+    const currentAuthToken = getTokenFromRequest(req);
+    if (currentAuthToken) {
+      try {
+        const currentPayload = verify(currentAuthToken, secret) as any;
+        if (String(currentPayload?.sub) === String(payload.sub)) {
+          const refreshedToken = sign(
+            {
+              sub: String(payload.sub),
+              email: currentPayload.email,
+              emailVerified: true,
+              isAdmin: !!currentPayload.isAdmin,
+              fullName: currentPayload.fullName,
+            },
+            secret,
+            { expiresIn: '7d' }
+          );
+          response.cookies.set(AUTH_COOKIE_NAME, refreshedToken, buildAuthCookieOptions());
+        }
+      } catch {
+      }
+    }
+
+    return response;
   } catch (err) {
     console.error('Verify error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

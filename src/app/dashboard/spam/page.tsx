@@ -183,6 +183,11 @@ export default function SpamPage() {
                   <div className="flex-1 flex items-start justify-between gap-4 p-4 pl-1">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-medium text-primary">
+                            {email.sender.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
                         <span className="font-medium text-sm truncate text-foreground/80">{email.sender}</span>
                       </div>
                       <h4 className="text-sm font-medium text-foreground/90 line-clamp-1">
