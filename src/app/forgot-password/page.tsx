@@ -76,12 +76,14 @@ export default function ForgotPasswordPage() {
         </CardHeader>
         <CardContent>
           {!sent ? (
-            <form onSubmit={handleSubmit} className="grid gap-4">
+            <form onSubmit={handleSubmit} className="grid gap-4" autoComplete="on">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email" 
-                  type="email" 
+                  type="email"
+                  name="email"
+                  autoComplete="email"
                   placeholder="m@example.com" 
                   required 
                   value={email} 

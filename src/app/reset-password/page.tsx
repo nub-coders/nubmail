@@ -228,13 +228,15 @@ function ResetPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4">
+          <form onSubmit={handleSubmit} className="grid gap-4" autoComplete="on">
             <div className="grid gap-2">
               <Label htmlFor="password">New Password</Label>
               <div className="relative">
                 <Input 
                   id="password" 
                   type={showPassword ? "text" : "password"}
+                  name="password"
+                  autoComplete="new-password"
                   required 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
@@ -264,6 +266,8 @@ function ResetPasswordForm() {
                 <Input 
                   id="confirmPassword" 
                   type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  autoComplete="new-password"
                   required 
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)}

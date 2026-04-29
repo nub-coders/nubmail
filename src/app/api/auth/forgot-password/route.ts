@@ -2,9 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
 import { sendSmtpEmail } from '@/utils/smtp';
 import crypto from 'crypto';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit password reset requests: 3 per IP per 30 minutes
+    const ip = getClientIP(req.headers);
+    const { limited, retryAfterMs } = rateLimit(`forgot-password:${ip}`, 3, 30 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: 'Too many password reset requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((retryAfterMs || 1800000) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
     const { email } = body;
 

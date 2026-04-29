@@ -3,9 +3,20 @@ import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
 import { AUTH_COOKIE_NAME, buildAuthCookieOptions } from '@/lib/auth-token';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit login attempts: 5 per IP per 15 minutes
+    const ip = getClientIP(req.headers);
+    const { limited, retryAfterMs } = rateLimit(`login:${ip}`, 5, 15 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((retryAfterMs || 900000) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
     const { email, password } = body;
     if (!email || !password) return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
