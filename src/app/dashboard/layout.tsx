@@ -2,6 +2,7 @@ import { Edit } from 'lucide-react';
 import Link from 'next/link';
 
 import { MainNav } from '@/components/main-nav';
+import { PushRegistration } from '@/components/push-registration';
 import { UserNav } from '@/components/user-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +21,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
+      <PushRegistration />
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="flex h-16 items-center px-4 border-b border-sidebar-border">

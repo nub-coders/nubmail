@@ -1,4 +1,5 @@
 import { pgQuery } from '@/lib/postgres';
+import { sendNewMessagePush } from '@/lib/push-notifications';
 
 type DeliverLocalInput = {
   recipients: string[];
@@ -48,11 +49,23 @@ export async function deliverLocal({
   const now = new Date();
   for (const rcpt of localRecipients) {
     const uid = localMap.get(rcpt)!;
-    await pgQuery(
+    const result = await pgQuery<{ id: string }>(
       `INSERT INTO email_messages (sender, recipients, subject, body, sent_at, user_id, read)
-       VALUES ($1, $2, $3, $4, $5, $6, false)`,
+       VALUES ($1, $2, $3, $4, $5, $6, false)
+       RETURNING id`,
       [sender.toLowerCase(), [rcpt], subject, body, now, uid]
     );
+
+    const emailId = result.rows[0]?.id;
+    if (emailId) {
+      await sendNewMessagePush({
+        userId: uid,
+        sender,
+        subject,
+        emailId,
+        recipient: rcpt,
+      });
+    }
   }
 
   return { localRecipients, externalRecipients };

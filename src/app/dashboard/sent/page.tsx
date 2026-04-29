@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEmailSelection } from '@/hooks/use-email-selection';
 import { BulkActionBar } from '@/components/bulk-action-bar';
 import { bulkPatchEmails } from '@/lib/bulk-email-actions';
+import { getEmailPreviewText, getSafeEmailHtml } from '@/lib/email-body';
 
 interface Email {
   id: string;
@@ -187,8 +188,8 @@ export default function SentPage() {
                     <div className="text-xs font-medium">
                       {email.subject || '(No Subject)'}
                     </div>
-                    <div className="line-clamp-2 text-xs text-muted-foreground">
-                      {email.body.replace(/<[^>]*>?/gm, '')}
+                    <div className="line-clamp-2 whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                      {getEmailPreviewText(email.body)}
                     </div>
                   </button>
                 </div>
@@ -222,7 +223,7 @@ export default function SentPage() {
                 <div
                   className="prose max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{
-                    __html: selectedEmail.body || selectedEmail.body?.replace(/\n/g, '<br>') || 'No content'
+                    __html: getSafeEmailHtml(selectedEmail.body)
                   }}
                 />
               </div>

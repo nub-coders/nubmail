@@ -4,6 +4,7 @@
 const { SMTPServer } = require('smtp-server');
 const { simpleParser } = require('mailparser');
 const { Pool } = require('pg');
+const webpush = require('web-push');
 const fs = require('fs');
 const path = require('path');
 
@@ -11,6 +12,9 @@ const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 25; //
 const POSTGRES_URL = process.env.POSTGRES_URL || 'postgres://nubmail:nubmail@postgres:5432/nubmail';
 const MAILDIR_BASE = process.env.MAILDIR_BASE || '/app/maildata';
 const SMTP_BANNER_HOST = process.env.SMTP_BANNER_HOST || 'mails.nubcoder.com';
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@localhost';
 const INBOUND_ALLOWED_DOMAINS = new Set(
   String(process.env.INBOUND_ALLOWED_DOMAINS || '')
     .split(',')
@@ -30,6 +34,83 @@ function getPgPool() {
     pgPool = new Pool({ connectionString: POSTGRES_URL, max: 10 });
   }
   return pgPool;
+}
+
+let pushConfigured = false;
+let pushChecked = false;
+
+function ensurePushConfigured() {
+  if (pushChecked) return pushConfigured;
+  pushChecked = true;
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    pushConfigured = false;
+    return pushConfigured;
+  }
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  pushConfigured = true;
+  return pushConfigured;
+}
+
+function truncate(input, max = 96) {
+  if (!input || input.length <= max) return input || '';
+  return `${input.slice(0, max - 1)}...`;
+}
+
+async function sendPushForMessage(pool, { userId, sender, subject, emailId, recipient }) {
+  if (!ensurePushConfigured()) return;
+
+  const { rows } = await pool.query(
+    `SELECT endpoint, p256dh, auth
+       FROM push_subscriptions
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  if (!rows || rows.length === 0) return;
+
+  const payload = JSON.stringify({
+    title: 'New email received',
+    body: `${truncate(sender, 48)}${subject ? `: ${truncate(subject, 88)}` : ''}`,
+    tag: `email-${emailId}`,
+    url: `/dashboard/inbox/${emailId}`,
+    data: {
+      emailId,
+      recipient,
+      sender,
+    },
+  });
+
+  const staleEndpoints = [];
+
+  await Promise.all(rows.map(async (sub) => {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: {
+            p256dh: sub.p256dh,
+            auth: sub.auth,
+          },
+        },
+        payload,
+        { TTL: 60 }
+      );
+    } catch (err) {
+      const code = err && err.statusCode;
+      if (code === 404 || code === 410) {
+        staleEndpoints.push(sub.endpoint);
+        return;
+      }
+      console.warn('SMTP push send failed', { userId, endpoint: sub.endpoint, code });
+    }
+  }));
+
+  if (staleEndpoints.length > 0) {
+    await pool.query(
+      'DELETE FROM push_subscriptions WHERE user_id = $1 AND endpoint = ANY($2::text[])',
+      [userId, staleEndpoints]
+    );
+  }
 }
 
 function extractAddresses(addressObject) {
@@ -161,9 +242,18 @@ const server = new SMTPServer({
                 [sender, [rcpt], subject, body, sentAt, uid, false]
               );
               inserted++;
+
+              const messageId = result.rows[0]?.id || null;
+
+              await sendPushForMessage(pool, {
+                userId: uid,
+                sender,
+                subject,
+                emailId: messageId,
+                recipient: rcpt,
+              });
               
               // Write to Maildir for IMAP/POP3 access
-              const messageId = result.rows[0]?.id || null;
               await writeToMaildir(rcpt, rawMessage, subject, body, sentAt, sender, [rcpt], messageId);
             }
           }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { PlusCircle, Mail, Trash } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ interface EmailAccount {
 }
 
 export default function AccountsPage() {
+  const router = useRouter();
   const { user, token, loading: authLoading } = useAuthClient();
   const { toast } = useToast();
   const [dataLoading, setDataLoading] = useState(false);
@@ -202,20 +204,20 @@ export default function AccountsPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-semibold mb-4">Email Accounts</h1>
-        <div className="animate-pulse">
-          <div className="h-12 bg-muted rounded mb-4"></div>
-          <div className="h-32 bg-muted rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
   if (!user || !token) {
-    return <div className="py-8 text-center">You must be signed in to manage accounts.</div>;
+    if (authLoading) {
+      return (
+        <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-semibold mb-4">Email Accounts</h1>
+          <div className="animate-pulse">
+            <div className="h-12 bg-muted rounded mb-4"></div>
+            <div className="h-32 bg-muted rounded"></div>
+          </div>
+        </div>
+      );
+    }
+    router.push('/');
+    return null;
   }
 
   return (
