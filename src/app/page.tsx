@@ -90,10 +90,10 @@ export default function LoginPage() {
             <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Enter your credentials to sign in</p>
           </div>
-          <form onSubmit={handleSubmit} className="grid gap-4">
+          <form onSubmit={handleSubmit} className="grid gap-4" autoComplete="on">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input id="email" type="email" name="email" autoComplete="username" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
@@ -101,7 +101,7 @@ export default function LoginPage() {
                 <Link href="/forgot-password" className="ml-auto inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">Forgot password?</Link>
               </div>
               <div className="relative">
-                <Input id="password" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
+                <Input id="password" type={showPassword ? "text" : "password"} name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
                 <Button
                   type="button"
                   variant="ghost"
