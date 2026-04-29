@@ -52,15 +52,19 @@ export async function sendNewMessagePush(params: {
 
   if (rows.length === 0) return;
 
+  const messageUrl = `/dashboard/inbox/${emailId}`;
+
   const payload = JSON.stringify({
     title: 'New email received',
     body: `${truncate(sender, 48)}${subject ? `: ${truncate(subject, 88)}` : ''}`,
     tag: `email-${emailId}`,
-    url: `/dashboard/inbox/${emailId}`,
+    // keep url at top-level for compatibility, but also include it inside `data`
+    url: messageUrl,
     data: {
       emailId,
       recipient,
       sender,
+      url: messageUrl,
     },
   });
 
