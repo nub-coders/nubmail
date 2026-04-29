@@ -46,13 +46,16 @@ services:
       VIRTUAL_PORT: 5000
       LETSENCRYPT_HOST: mails.nubcoder.com
       LETSENCRYPT_EMAIL: dev@nubcoder.com
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
     depends_on:
       - postgres
     volumes:
       - ./maildata:/app/maildata
     networks:
       - web
-    command: sh -c "until pg_isready -h postgres -U nubmail -d nubmail; do echo waiting for postgres; sleep 1; done; psql $POSTGRES_URL -f scripts/20251007_add_email_verified_to_users.sql || true && psql $POSTGRES_URL -f scripts/20260425_add_email_state_columns.sql || true && psql $POSTGRES_URL -f scripts/20260425_add_teams.sql || true && node scripts/init-admin.js && node server.js"
+    command: sh -c "until pg_isready -h postgres -U nubmail -d nubmail; do echo waiting for postgres; sleep 1; done; psql $POSTGRES_URL -f scripts/20251007_add_email_verified_to_users.sql || true && psql $POSTGRES_URL -f scripts/20260425_add_email_state_columns.sql || true && psql $POSTGRES_URL -f scripts/20260425_add_teams.sql || true && psql $POSTGRES_URL -f scripts/20260429_add_push_subscriptions_table.sql || true && node scripts/init-admin.js && node server.js"
 
   smtp-sender:
     image: boky/postfix
@@ -125,6 +128,9 @@ services:
       INBOUND_ALLOWED_DOMAINS: ${INBOUND_ALLOWED_DOMAINS:-}
       POSTGRES_URL: ${POSTGRES_URL:-postgres://nubmail:nubmail@postgres:5432/nubmail}
       MAILDIR_BASE: /app/maildata
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
     volumes:
       - ./maildata:/app/maildata
     command: node smtp/index.js

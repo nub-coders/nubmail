@@ -116,6 +116,7 @@ export async function GET(req: NextRequest) {
     const admin = await getAdminFromToken(req);
     const payload = admin ?? await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const actorUserId = 'sub' in payload ? payload.sub : payload.id;
 
     const { searchParams } = new URL(req.url);
     const domainId = searchParams.get('domainId');
@@ -141,7 +142,7 @@ export async function GET(req: NextRequest) {
        FROM domains d
        LEFT JOIN users u ON d.user_id = u.id
        WHERE d.id = $1${admin ? '' : ' AND d.user_id = $2'}`,
-      admin ? [domainId] : [domainId, payload.sub]
+      admin ? [domainId] : [domainId, actorUserId]
     );
     
     const domain = rows[0];

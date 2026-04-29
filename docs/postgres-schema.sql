@@ -57,6 +57,18 @@ CREATE TABLE IF NOT EXISTS email_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_email_messages_user_sent ON email_messages(user_id, sent_at DESC);
 
+-- Web push subscriptions for message notifications
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL UNIQUE,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user_id ON push_subscriptions(user_id);
+
 -- Track per-user read/unread state and email actions for emails
 CREATE TABLE IF NOT EXISTS email_reads (
   id SERIAL PRIMARY KEY,

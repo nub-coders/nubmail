@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEmailSelection } from '@/hooks/use-email-selection';
 import { BulkActionBar } from '@/components/bulk-action-bar';
 import { bulkPatchEmails } from '@/lib/bulk-email-actions';
+import { getEmailPreviewText } from '@/lib/email-body';
 import {
   Select,
   SelectContent,
@@ -371,8 +372,8 @@ export default function InboxPage() {
                           )}>
                             {email.subject || '(No Subject)'}
                           </h4>
-                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                            {email.body.replace(/<[^>]*>?/gm, '').trim() || 'No content preview available'}
+                          <p className="text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap break-words leading-relaxed">
+                            {getEmailPreviewText(email.body)}
                           </p>
                         </div>
                       </div>

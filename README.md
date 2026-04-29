@@ -86,6 +86,17 @@ TOKEN_ENCRYPTION_KEY=your-32-char-encryption-key
 # Admin Account
 ADMIN_PASS=secure-admin-password
 ADMIN_EMAIL=admin@example.com
+
+# Web Push Notifications (optional)
+VAPID_PUBLIC_KEY=your-public-vapid-key
+VAPID_PRIVATE_KEY=your-private-vapid-key
+VAPID_SUBJECT=mailto:admin@example.com
+```
+
+Generate VAPID keys:
+
+```bash
+npx web-push generate-vapid-keys
 ```
 
 ### Required Variables Explained

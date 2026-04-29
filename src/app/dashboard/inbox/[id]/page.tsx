@@ -8,26 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/hooks/use-toast';
-import DOMPurify from 'dompurify';
-
-function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function getSafeEmailHtml(body: string | undefined): string {
-  if (!body || !body.trim()) {
-    return '<p class="text-muted-foreground italic">No content available</p>';
-  }
-
-  const looksLikeHtml = /<[a-z][\s\S]*>/i.test(body);
-  const htmlCandidate = looksLikeHtml ? body : escapeHtml(body).replace(/\n/g, '<br>');
-  return DOMPurify.sanitize(htmlCandidate, { USE_PROFILES: { html: true } });
-}
+import { getSafeEmailHtml } from '@/lib/email-body';
 
 interface Email {
   id: string;
