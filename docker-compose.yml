@@ -180,7 +180,7 @@ services:
     command: tail -f /dev/null
     restart: unless-stopped
     environment:
-      - LETSENCRYPT_HOST=*.nubcoder.com
+      - LETSENCRYPT_HOST=nubcoder.com,*.nubcoder.com
       - LETSENCRYPT_EMAIL=dev@nubcoder.com
     networks:
       - web
