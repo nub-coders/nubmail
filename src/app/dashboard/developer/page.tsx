@@ -64,6 +64,9 @@ export default function DeveloperPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
   const [showNewKey, setShowNewKey] = useState(false);
+  const [revealedKey, setRevealedKey] = useState<string | null>(null);
+  const [showRevealedKey, setShowRevealedKey] = useState(false);
+  const [revealingKeyId, setRevealingKeyId] = useState<string | null>(null);
   const [deleteKeyId, setDeleteKeyId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -289,6 +292,34 @@ export default function DeveloperPage() {
     });
   };
 
+  const handleRevealKey = async (id: string) => {
+    setRevealingKeyId(id);
+    try {
+      const res = await fetch(`/api/auth/api-keys?id=${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRevealedKey(data.key);
+        setShowRevealedKey(true);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data.error || 'Failed to load API key'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load API key'
+      });
+    } finally {
+      setRevealingKeyId(null);
+    }
+  };
+
   const closeNewKeyDialog = () => {
     setNewKey(null);
     setShowNewKey(false);
@@ -421,13 +452,23 @@ export default function DeveloperPage() {
                       {key.lastUsed ? new Date(key.lastUsed).toLocaleString() : 'Never'}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteKeyId(key.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRevealKey(key.id)}
+                          disabled={revealingKeyId === key.id}
+                        >
+                          {revealingKeyId === key.id ? 'Loading...' : 'View'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteKeyId(key.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -628,7 +669,7 @@ export default function DeveloperPage() {
               API Key Created
             </DialogTitle>
             <DialogDescription>
-              Copy your API key now. For security reasons, you won't be able to see it again.
+              Copy your API key now. You can also re-open it later from the API keys list.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -663,14 +704,68 @@ export default function DeveloperPage() {
                 </Button>
               </div>
             </div>
-            <div className="bg-amber-500/5 border border-amber-500/10 rounded-lg p-3">
-              <p className="text-sm text-foreground/80">
-                <strong>Important:</strong> Store this key securely. You won't be able to view it again.
-              </p>
-            </div>
           </div>
           <DialogFooter>
             <Button onClick={closeNewKeyDialog}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reveal API Key Dialog */}
+      <Dialog
+        open={!!revealedKey}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRevealedKey(null);
+            setShowRevealedKey(false);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              API Key
+            </DialogTitle>
+            <DialogDescription>
+              You can view and copy this key again from the dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Your API Key</Label>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Input
+                    readOnly
+                    value={revealedKey || ''}
+                    type={showRevealedKey ? 'text' : 'password'}
+                    className="font-mono text-sm pr-10"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                    onClick={() => setShowRevealedKey(!showRevealedKey)}
+                  >
+                    {showRevealedKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => revealedKey && copyToClipboard(revealedKey)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setRevealedKey(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

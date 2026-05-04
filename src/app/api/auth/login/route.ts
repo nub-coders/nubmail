@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
-import { AUTH_COOKIE_NAME, buildAuthCookieOptions } from '@/lib/auth-token';
+import { AUTH_COOKIE_NAME, buildAuthCookieOptions, createSession } from '@/lib/auth-token';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -50,6 +50,11 @@ export async function POST(req: NextRequest) {
     
     const payload = { sub: String(user.id), email: user.email, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin };
     const token = sign(payload, secret, { expiresIn: '7d' });
+
+    // Create a database-backed session for revocation and tracking
+    const userAgent = req.headers.get('user-agent') || undefined;
+    const ipAddress = getClientIP(req.headers);
+    await createSession(String(user.id), token, userAgent, ipAddress);
 
     const response = NextResponse.json({ token, user: { id: String(user.id), email: user.email, fullName: user.full_name, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin } });
     response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());

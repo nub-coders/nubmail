@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
-import { AUTH_COOKIE_NAME, buildAuthCookieOptions } from '@/lib/auth-token';
+import { AUTH_COOKIE_NAME, buildAuthCookieOptions, createSession } from '@/lib/auth-token';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -43,10 +43,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
     
-    const payload = { sub: String(inserted.rows[0].id), email };
+    const userId = String(inserted.rows[0].id);
+    const payload = { sub: userId, email };
     const token = sign(payload, secret, { expiresIn: '7d' });
 
-    const response = NextResponse.json({ token, user: { id: String(inserted.rows[0].id), email, fullName } });
+    // Create a database-backed session
+    const userAgent = req.headers.get('user-agent') || undefined;
+    await createSession(userId, token, userAgent, ip);
+
+    const response = NextResponse.json({ token, user: { id: userId, email, fullName } });
     response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());
     return response;
   } catch (err) {

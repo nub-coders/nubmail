@@ -1,38 +1,64 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+const AUTH_COOKIE_NAME = 'nubmail_auth';
+const PROTECTED_ROUTES = ['/dashboard'];
+const PUBLIC_ONLY_ROUTES = ['/']; // Login page
+
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+
+  // 1. --- Authentication Logic ---
+  
+  // If user is accessing a protected route without a token, redirect to login
+  if (PROTECTED_ROUTES.some(route => pathname.startsWith(route)) && !token) {
+    const url = new URL('/', request.url);
+    // url.searchParams.set('callbackUrl', pathname); // Optional: remember where they were going
+    return NextResponse.redirect(url);
+  }
+
+  // If user is already logged in and trying to access the login page, redirect to dashboard
+  if (PUBLIC_ONLY_ROUTES.includes(pathname) && token) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // 2. --- CSRF Protection (Basic) ---
+  // For mutating requests, verify the Origin or Referer
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host');
+
+    if (origin) {
+      const originUrl = new URL(origin);
+      if (originUrl.host !== host) {
+        return new NextResponse('Invalid Origin', { status: 403 });
+      }
+    } else if (referer) {
+      const refererUrl = new URL(referer);
+      if (refererUrl.host !== host) {
+        return new NextResponse('Invalid Referer', { status: 403 });
+      }
+    }
+  }
+
   const response = NextResponse.next();
 
-  // --- Security Headers ---
-  // These headers tell browsers (and Google Safe Browsing) that this is a
-  // legitimate, security-conscious application — NOT a phishing page.
-
-  // Prevent the page from being embedded in iframes on other origins
+  // 3. --- Security Headers ---
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
-
-  // Prevent MIME-type sniffing
   response.headers.set('X-Content-Type-Options', 'nosniff');
-
-  // Enable XSS protection (legacy browsers)
   response.headers.set('X-XSS-Protection', '1; mode=block');
-
-  // Control referrer information
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-  // Restrict browser features
   response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   );
-
-  // HTTP Strict Transport Security — force HTTPS
   response.headers.set(
     'Strict-Transport-Security',
     'max-age=63072000; includeSubDomains; preload'
   );
 
-  // Content Security Policy — allow only same-origin and trusted sources
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
@@ -52,6 +78,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all request paths except static files and internal Next.js paths
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|api/auth/me|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };
