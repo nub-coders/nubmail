@@ -329,7 +329,7 @@ Response:
 }
 ```
 
-**⚠️ Important:** Store the API key securely. It won't be shown again.
+**⚠️ Important:** Store the API key securely. You can view it again from the dashboard while the encrypted copy remains available.
 
 #### Step 3: Send Email
 

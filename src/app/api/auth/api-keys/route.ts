@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
-import { createApiKey, listApiKeys, revokeApiKey } from '@/lib/api-keys';
+import { createApiKey, listApiKeys, revealApiKey, revokeApiKey } from '@/lib/api-keys';
 
 export async function GET(req: NextRequest) {
   try {
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const url = new URL(req.url);
+    const id = url.searchParams.get('id');
+    if (id) {
+      const key = await revealApiKey(payload.sub, id);
+      if (!key) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json({ key, id });
+    }
     const keys = await listApiKeys(payload.sub);
     return NextResponse.json({ keys });
   } catch (err) {
