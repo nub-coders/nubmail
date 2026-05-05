@@ -36,7 +36,7 @@ interface Email {
 }
 
 export default function TrashPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function TrashPage() {
     setIsLoading(true);
     try {
       const res = await fetch('/api/emails?folder=trash', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) setEmails(data.emails || []);
@@ -69,7 +69,7 @@ export default function TrashPage() {
     try {
       const res = await fetch('/api/emails', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ emailId, deleted: false })
       });
       if (!res.ok) throw new Error();
@@ -88,7 +88,7 @@ export default function TrashPage() {
     try {
       const res = await fetch(`/api/emails?emailId=${emailId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
       setEmails(prev => prev.filter(e => e.id !== emailId));
@@ -107,7 +107,7 @@ export default function TrashPage() {
       await Promise.all(emails.map(e =>
         fetch(`/api/emails?emailId=${e.id}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         })
       ));
       setEmails([]);
@@ -123,7 +123,7 @@ export default function TrashPage() {
   const handleBulkRestore = async () => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkPatchEmails(selection.selectedArray, { deleted: false });
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, { deleted: false }, token);
       if (success > 0) {
         setEmails(prev => prev.filter(e => !selection.isSelected(e.id)));
         selection.clearSelection();
@@ -139,7 +139,7 @@ export default function TrashPage() {
   const handleBulkPermanentDelete = async () => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkDeleteEmails(selection.selectedArray);
+      const { success, failed } = await bulkDeleteEmails(selection.selectedArray, token);
       if (success > 0) {
         setEmails(prev => prev.filter(e => !selection.isSelected(e.id)));
         selection.clearSelection();

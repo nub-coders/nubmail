@@ -69,7 +69,7 @@ export default function AdminDomainDetailPage() {
   const params = useParams();
   const router = useRouter();
   const domainId = params.id as string;
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [data, setData] = useState<AdminDomainDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function AdminDomainDetailPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/domains/dns-status?domainId=${domainId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.status === 403) {

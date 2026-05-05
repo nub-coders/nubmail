@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const AUTH_COOKIE_NAME = 'nubmail_auth';
-const PROTECTED_ROUTES = ['/dashboard'];
+const PROTECTED_ROUTES = ['/dashboard', '/accounts'];
 const PUBLIC_ONLY_ROUTES = ['/']; // Login page
 
 export function middleware(request: NextRequest) {

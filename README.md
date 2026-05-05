@@ -234,16 +234,7 @@ environment:
 ```
 
 **Certificate Renewal:**
-A daily cron job (3 AM) syncs renewed certificates to Dovecot:
-```bash
-# Installed in system crontab
-0 3 * * * /root/nubmail/scripts/renew-dovecot-cert.sh
-```
-
-The script:
-- Detects certificate changes
-- Copies to `./dovecot/ssl/`
-- Automatically restarts Dovecot
+Certificates are automatically renewed via your deployment's certificate management process and synced to Dovecot at renewal intervals.
 
 ### Email Client Configuration
 
@@ -280,7 +271,6 @@ nubmail/
 │   │   ├── api-keys.ts
 │   │   └── utils.ts
 │   └── hooks/             # Custom React hooks
-├── scripts/               # Database migrations & utilities
 ├── docs/                  # Documentation & SQL schemas
 ├── dovecot/              # Dovecot configuration files
 ├── smtp/                 # SMTP receiver implementation
@@ -418,16 +408,9 @@ npm run lint
 npm run format
 ```
 
-### Database Migrations
+### Database Schema
 
-Migration files are in `scripts/` directory. Apply manually or via:
-```bash
-# List available migrations
-ls scripts/2025*.sql
-
-# Apply specific migration
-docker exec -i nubmail-postgres-1 psql -U nubmail -d nubmail < scripts/20250101_migration.sql
-```
+The PostgreSQL container initializes the schema automatically on first boot from `docs/postgres-schema.sql`. No manual migration scripts are required for a fresh local setup.
 
 ## Troubleshooting
 
@@ -449,7 +432,7 @@ docker exec -i nubmail-postgres-1 psql -U nubmail -d nubmail < scripts/20250101_
 - **Reset database:** `docker compose down -v && docker compose up -d postgres`
 
 #### SSL/TLS certificate issues
-- **Renew certificates:** `scripts/renew-dovecot-cert.sh`
+- **Renew certificates:** follow your deployment's certificate renewal process
 - **Check certificate validity:** `openssl x509 -in dovecot/ssl/tls.crt -text`
 - **Update LETSENCRYPT_EMAIL:** Ensure it's a valid email for renewal notifications
 

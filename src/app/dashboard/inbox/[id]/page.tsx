@@ -24,7 +24,7 @@ interface Email {
 export default function EmailViewPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +38,7 @@ export default function EmailViewPage() {
       setIsLoading(true);
       try {
         const res = await fetch('/api/emails?folder=inbox', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
 
@@ -52,7 +52,7 @@ export default function EmailViewPage() {
                 method: 'PATCH',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
+                  Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({ emailId: foundEmail.id, read: true })
               });
@@ -77,7 +77,7 @@ export default function EmailViewPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ emailId: email.id, ...fields })
       });

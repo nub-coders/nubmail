@@ -53,7 +53,7 @@ interface EmailAccount {
 }
 
 export default function DeveloperPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
@@ -87,7 +87,7 @@ export default function DeveloperPage() {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/api-keys', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -109,7 +109,7 @@ export default function DeveloperPage() {
     setIsLoadingAccounts(true);
     try {
       const res = await fetch('/api/accounts', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -164,7 +164,7 @@ export default function DeveloperPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ 
           accountId: selectedAccountId,
@@ -219,7 +219,7 @@ export default function DeveloperPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ name: keyName })
       });
@@ -256,7 +256,7 @@ export default function DeveloperPage() {
     try {
       const res = await fetch(`/api/auth/api-keys?id=${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         fetchKeys();
@@ -296,7 +296,7 @@ export default function DeveloperPage() {
     setRevealingKeyId(id);
     try {
       const res = await fetch(`/api/auth/api-keys?id=${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {

@@ -45,7 +45,7 @@ interface EmailAccount {
 
 export default function InboxPage() {
   const router = useRouter();
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [emails, setEmails] = useState<Email[]>([]);
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
@@ -75,7 +75,7 @@ export default function InboxPage() {
     if (!user) return;
     try {
       const res = await fetch('/api/accounts', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -91,7 +91,7 @@ export default function InboxPage() {
     setIsLoading(true);
     try {
       const res = await fetch('/api/emails?folder=inbox', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -108,7 +108,7 @@ export default function InboxPage() {
     setIsRefreshing(true);
     try {
       const res = await fetch('/api/emails?folder=inbox', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -140,7 +140,7 @@ export default function InboxPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ emailId, ...fields })
       });
@@ -159,7 +159,7 @@ export default function InboxPage() {
   const handleBulkAction = async (fields: Record<string, unknown>, label: string) => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields);
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields, token);
       if (success > 0) {
         setEmails(prev => prev.filter(e => !selection.isSelected(e.id)));
         selection.clearSelection();
@@ -178,7 +178,7 @@ export default function InboxPage() {
   const handleBulkReadState = async (read: boolean) => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkPatchEmails(selection.selectedArray, { read });
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, { read }, token);
       if (success > 0) {
         setEmails(prev => prev.map(e =>
           selection.isSelected(e.id) ? { ...e, read } : e

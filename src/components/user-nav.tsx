@@ -92,11 +92,15 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <button onClick={handleLogout} className="w-full text-left">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
-          </button>
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            void handleLogout();
+          }}
+          className="cursor-pointer"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

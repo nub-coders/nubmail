@@ -111,10 +111,11 @@ function StatusBadge({ status }: { status: ServerDnsRecord["status"] }) {
 }
 
 export default function AdminServerDnsPage() {
-  const { user } = useAuthClient();
+  const { user, token } = useAuthClient();
   const { toast } = useToast();
   const [data, setData] = useState<ServerDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   // DKIM generation is automatic; no UI button needed
   // Test email feature removed
 
@@ -131,11 +132,17 @@ export default function AdminServerDnsPage() {
   const fetchStatus = async () => {
     if (!user?.isAdmin) return;
     setLoading(true);
+    setLoadError(null);
     try {
+      const headers: HeadersInit = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const res = await fetch("/api/admin/server-dns", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers,
+        credentials: "include",
+        cache: "no-store",
       });
 
       if (res.status === 403) {
@@ -144,6 +151,7 @@ export default function AdminServerDnsPage() {
           description: "You need admin privileges to view server DNS setup.",
           variant: "destructive",
         });
+        setLoadError("Access denied. You need admin privileges to view server DNS setup.");
         setData(null);
         return;
       }
@@ -157,11 +165,14 @@ export default function AdminServerDnsPage() {
       setData(body);
     } catch (error: any) {
       console.error("Failed to load server DNS status", error);
+      const message = error?.message || "An unexpected error occurred";
+      setLoadError(message);
       toast({
         title: "Unable to load DNS status",
-        description: error?.message || "An unexpected error occurred",
+        description: message,
         variant: "destructive",
       });
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -337,7 +348,7 @@ export default function AdminServerDnsPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    Server DNS data not available.
+                    {loadError ? `Unable to load server DNS data: ${loadError}` : "Server DNS data not available."}
                   </TableCell>
                 </TableRow>
               )}

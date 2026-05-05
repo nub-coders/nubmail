@@ -18,8 +18,8 @@ export async function GET(req: NextRequest) {
       'SELECT email_address FROM email_accounts WHERE user_id = $1',
       [payload.sub]
     );
-    const ownedEmails = userEmailAccounts.map(account => account.email_address);
-    ownedEmails.push(user.email);
+    const ownedEmails = userEmailAccounts.map(account => (account.email_address || '').toLowerCase());
+    ownedEmails.push((user.email || '').toLowerCase());
 
     let query: string;
     let params: any[];
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.recipients && $1
-          AND NOT (m.sender = ANY($1))
+          AND NOT (array_length(m.recipients, 1) = 1 AND m.recipients[1] = m.sender)
           AND (r.deleted_at IS NULL)
           AND COALESCE(r.archived, false) = false
           AND COALESCE(r.is_spam, false) = false
@@ -154,8 +154,8 @@ export async function PATCH(req: NextRequest) {
       'SELECT email_address FROM email_accounts WHERE user_id = $1',
       [payload.sub]
     );
-    const allEmails = userEmailAccounts.map(a => a.email_address);
-    allEmails.push(user.email);
+    const allEmails = userEmailAccounts.map(a => (a.email_address || '').toLowerCase());
+    allEmails.push((user.email || '').toLowerCase());
 
     const { rows: emails } = await pgQuery<{ sender: string; recipients: string[] }>(
       'SELECT sender, recipients FROM email_messages WHERE id = $1',
@@ -166,8 +166,11 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Email not found' }, { status: 404 });
     }
 
-    const isRecipient = email.recipients && allEmails.some(e => email.recipients.includes(e));
-    const isSender = allEmails.includes(email.sender);
+    const msgSender = (email.sender || '').toLowerCase();
+    const msgRecipients = Array.isArray(email.recipients) ? email.recipients.map(r => (r || '').toLowerCase()) : [];
+
+    const isRecipient = msgRecipients && allEmails.some(e => msgRecipients.includes(e));
+    const isSender = allEmails.includes(msgSender);
     if (!isRecipient && !isSender) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
@@ -249,8 +252,8 @@ export async function DELETE(req: NextRequest) {
       'SELECT email_address FROM email_accounts WHERE user_id = $1',
       [payload.sub]
     );
-    const allEmails = userEmailAccounts.map(a => a.email_address);
-    allEmails.push(user.email);
+    const allEmails = userEmailAccounts.map(a => (a.email_address || '').toLowerCase());
+    allEmails.push((user.email || '').toLowerCase());
 
     const { rows: emails } = await pgQuery<{ sender: string; recipients: string[] }>(
       'SELECT sender, recipients FROM email_messages WHERE id = $1',
@@ -261,8 +264,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Email not found' }, { status: 404 });
     }
 
-    const isRecipient = email.recipients && allEmails.some(e => email.recipients.includes(e));
-    const isSender = allEmails.includes(email.sender);
+    const msgSender = (email.sender || '').toLowerCase();
+    const msgRecipients = Array.isArray(email.recipients) ? email.recipients.map(r => (r || '').toLowerCase()) : [];
+
+    const isRecipient = msgRecipients && allEmails.some(e => msgRecipients.includes(e));
+    const isSender = allEmails.includes(msgSender);
     if (!isRecipient && !isSender) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }

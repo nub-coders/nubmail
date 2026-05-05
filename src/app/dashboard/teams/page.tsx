@@ -62,7 +62,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function TeamsPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +77,6 @@ export default function TeamsPage() {
   const [addMemberEmail, setAddMemberEmail] = useState('');
   const [addingMember, setAddingMember] = useState(false);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const fetchTeams = async () => {
     if (!user) return;

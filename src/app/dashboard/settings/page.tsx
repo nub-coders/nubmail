@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, setToken } = useAuthClient();
+  const { user, setToken , token} = useAuthClient();
   const { toast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function SettingsPage() {
       if (!user) return;
       try {
         const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
         if (res.ok) setProfile(data.user);
@@ -65,7 +65,7 @@ export default function SettingsPage() {
     try {
       const res = await fetch('/api/profile', {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) {
         const data = await res.json();

@@ -1,8 +1,5 @@
-export async function bulkPatchEmails(
-  ids: string[],
-  fields: Record<string, unknown>
-): Promise<{ success: number; failed: number }> {
-  const token = localStorage.getItem('token');
+export async function bulkPatchEmails(ids: string[], fields: Record<string, unknown>, token: string | null): Promise<{ success: number; failed: number }> {
+  
   const results = await Promise.allSettled(
     ids.map(emailId =>
       fetch('/api/emails', {
@@ -16,10 +13,8 @@ export async function bulkPatchEmails(
   return { success, failed: results.length - success };
 }
 
-export async function bulkDeleteEmails(
-  ids: string[]
-): Promise<{ success: number; failed: number }> {
-  const token = localStorage.getItem('token');
+export async function bulkDeleteEmails(ids: string[], token: string | null): Promise<{ success: number; failed: number }> {
+  
   const results = await Promise.allSettled(
     ids.map(emailId =>
       fetch(`/api/emails?emailId=${emailId}`, {
@@ -32,10 +27,8 @@ export async function bulkDeleteEmails(
   return { success, failed: results.length - success };
 }
 
-export async function bulkDeleteDrafts(
-  ids: string[]
-): Promise<{ success: number; failed: number }> {
-  const token = localStorage.getItem('token');
+export async function bulkDeleteDrafts(ids: string[], token: string | null): Promise<{ success: number; failed: number }> {
+  
   const results = await Promise.allSettled(
     ids.map(id =>
       fetch(`/api/drafts?id=${id}`, {

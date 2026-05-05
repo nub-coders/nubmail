@@ -32,7 +32,7 @@ interface Domain {
 }
 
 export default function AdminDomainsPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
@@ -44,8 +44,8 @@ export default function AdminDomainsPage() {
     setLoading(true);
     try {
       const [usersRes, domainsRes] = await Promise.all([
-        fetch('/api/admin/users', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        fetch('/api/admin/domains', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/admin/domains', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       if (usersRes.status === 403 || domainsRes.status === 403) {

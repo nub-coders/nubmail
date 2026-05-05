@@ -24,7 +24,7 @@ interface Email {
 }
 
 export default function ArchivePage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +39,7 @@ export default function ArchivePage() {
     setIsLoading(true);
     try {
       const res = await fetch('/api/emails?folder=archive', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) setEmails(data.emails || []);
@@ -57,7 +57,7 @@ export default function ArchivePage() {
     try {
       const res = await fetch('/api/emails', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ emailId, archived: false })
       });
       if (!res.ok) throw new Error();
@@ -76,7 +76,7 @@ export default function ArchivePage() {
     try {
       const res = await fetch('/api/emails', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ emailId, deleted: true })
       });
       if (!res.ok) throw new Error();
@@ -93,7 +93,7 @@ export default function ArchivePage() {
   const handleBulkAction = async (fields: Record<string, unknown>, label: string) => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields);
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields, token);
       if (success > 0) {
         setEmails(prev => prev.filter(e => !selection.isSelected(e.id)));
         selection.clearSelection();

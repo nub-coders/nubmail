@@ -21,7 +21,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
-  const { user, setToken } = useAuthClient();
+  const { user, setToken , token} = useAuthClient();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +39,7 @@ export default function ProfilePage() {
       if (!user) return;
       try {
         const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
         if (res.ok) {
@@ -58,7 +58,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ fullName })
       });
       const data = await res.json();
@@ -86,7 +86,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword, newPassword })
       });
       const data = await res.json();
@@ -108,7 +108,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/auth/send-verification', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send verification email');
