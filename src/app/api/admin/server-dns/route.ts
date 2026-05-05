@@ -215,7 +215,7 @@ export async function GET(req: NextRequest) {
       ? mailHost.slice(0, mailHost.length - primaryDomain.length - 1)
       : mailHost;
 
-  const [aLookup, mxLookup, spfLookup, dmarcLookup, autodiscoverLookup, autoconfigLookup, webmailLookup, imapLookup, smtpLookup, pop3Lookup, dkimEntry] = await Promise.all([
+    const [aLookup, mxLookup, spfLookup, dmarcLookup, autodiscoverLookup, autoconfigLookup, webmailLookup, imapLookup, smtpLookup, pop3Lookup] = await Promise.all([
       safeResolveA(mailHost),
       safeResolveMx(primaryDomain),
       safeResolveTxt(primaryDomain),
@@ -226,7 +226,6 @@ export async function GET(req: NextRequest) {
       safeResolveCname(`imap.${primaryDomain}`),
       safeResolveCname(`smtp.${primaryDomain}`),
       safeResolveCname(`pop3.${primaryDomain}`),
-      getDkimEntry(primaryDomain),
     ]);
 
     const records: ServerDnsRecord[] = [];
@@ -365,21 +364,33 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    // If no DKIM entry exists, generate one automatically with default selector 'mail'
-    let ensuredDkim = dkimEntry;
-    if (!ensuredDkim) {
-      const selector = 'mail';
-      await ensureDkimTable();
-      const { publicKeyPem, privateKeyPem } = await generateKeyPair();
-      const normalizedDomain = normalizeDomain(primaryDomain);
-      await pgQuery(
-        `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (domain_name)
-         DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
-        [normalizedDomain, selector, publicKeyPem, privateKeyPem]
-      );
-      ensuredDkim = { selector, publicKey: publicKeyPem };
+    let ensuredDkim: { selector: string; publicKey: string } | null = null;
+    let dkimProvisioningError: string | null = null;
+
+    try {
+      ensuredDkim = await getDkimEntry(primaryDomain);
+    } catch (err: any) {
+      dkimProvisioningError = err?.message || 'Failed to access DKIM settings';
+    }
+
+    // If no DKIM entry exists, generate one automatically with default selector 'mail'.
+    if (!ensuredDkim && !dkimProvisioningError) {
+      try {
+        const selector = 'mail';
+        await ensureDkimTable();
+        const { publicKeyPem, privateKeyPem } = await generateKeyPair();
+        const normalizedDomain = normalizeDomain(primaryDomain);
+        await pgQuery(
+          `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (domain_name)
+           DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
+          [normalizedDomain, selector, publicKeyPem, privateKeyPem]
+        );
+        ensuredDkim = { selector, publicKey: publicKeyPem };
+      } catch (err: any) {
+        dkimProvisioningError = err?.message || 'Failed to generate DKIM key';
+      }
     }
 
     if (ensuredDkim) {
@@ -401,6 +412,21 @@ export async function GET(req: NextRequest) {
           : 'Publish DKIM TXT record for outbound signing',
         canAutoGenerate: false,
         selector,
+      });
+    } else {
+      records.push({
+        key: 'dkim',
+        type: 'TXT',
+        name: 'mail._domainkey',
+        host: `mail._domainkey.${primaryDomain}`,
+        expectedValue: 'v=DKIM1; k=rsa; p=<public-key>',
+        status: 'action_required',
+        observedValues: [],
+        message: dkimProvisioningError
+          ? `DKIM provisioning issue: ${dkimProvisioningError}`
+          : 'DKIM key is not provisioned yet',
+        canAutoGenerate: false,
+        selector: 'mail',
       });
     }
 

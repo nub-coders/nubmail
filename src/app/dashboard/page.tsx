@@ -13,7 +13,7 @@ import { useAuthClient } from '@/lib/auth-provider';
 
 
 export default function Dashboard() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const [stats, setStats] = useState({ domains: 0, accounts: 0, emailsSent: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +22,7 @@ export default function Dashboard() {
       if (!user) return;
       setLoading(true);
       try {
-        const res = await fetch('/api/stats', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        const res = await fetch('/api/stats', { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         if (res.ok) setStats({ domains: data.domains || 0, accounts: data.accounts || 0, emailsSent: data.emailsSent || 0 });
       } catch (error) {

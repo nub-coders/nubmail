@@ -13,7 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuthClient } from '@/lib/auth-provider';
 
 function ComposeForm() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -58,7 +58,7 @@ function ComposeForm() {
     const loadAccounts = async () => {
       if (!user) return;
       try {
-        const res = await fetch('/api/accounts', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        const res = await fetch('/api/accounts', { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         if (res.ok && Array.isArray(data.accounts)) {
           setAccounts(data.accounts.map((a: any) => ({ id: a.id, emailAddress: a.emailAddress })));
@@ -76,7 +76,7 @@ function ComposeForm() {
       const loadDraft = async () => {
         try {
           const res = await fetch('/api/drafts', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
           if (res.ok) {
@@ -100,7 +100,7 @@ function ComposeForm() {
       const loadOriginalEmail = async () => {
         try {
           const res = await fetch('/api/emails?folder=inbox', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
           if (res.ok) {
@@ -199,13 +199,13 @@ function ComposeForm() {
       if (draftId) {
         res = await fetch('/api/drafts', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ id: draftId, ...payload })
         });
       } else {
         res = await fetch('/api/drafts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
@@ -245,7 +245,7 @@ function ComposeForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           from, to, subject, text: body,
@@ -268,7 +268,7 @@ function ComposeForm() {
       if (draftId) {
         await fetch(`/api/drafts?id=${draftId}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         }).catch(() => {});
       }
 

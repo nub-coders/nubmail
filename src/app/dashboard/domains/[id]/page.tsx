@@ -91,7 +91,7 @@ export default function DomainDnsPage() {
   const params = useParams();
   const router = useRouter();
   const domainId = params.id as string;
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const { toast } = useToast();
   const [data, setData] = useState<DomainDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -152,7 +152,7 @@ export default function DomainDnsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ domainId })
       });
@@ -202,7 +202,7 @@ export default function DomainDnsPage() {
       const res = await fetch(`/api/domains?id=${domainId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         }
       });
 

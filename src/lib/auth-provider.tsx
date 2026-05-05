@@ -48,8 +48,15 @@ export default function AuthClientProvider({ children }: { children: React.React
       setTokenState(null);
       setUser(null);
       try {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
+        });
       } catch {
+      }
+      if (pathname !== '/') {
+        router.replace('/');
       }
       return;
     }
@@ -109,9 +116,9 @@ export default function AuthClientProvider({ children }: { children: React.React
           setUser(null);
 
           // Redirect to login if trying to access protected route
-          const protectedPrefix = '/dashboard';
+          const protectedPrefixes = ['/dashboard', '/accounts'];
           const publicPaths = ['/', '/register', '/verify-email'];
-          if (pathname && pathname.startsWith(protectedPrefix) && !publicPaths.includes(pathname)) {
+          if (pathname && protectedPrefixes.some((prefix) => pathname.startsWith(prefix)) && !publicPaths.includes(pathname)) {
             router.push('/');
           }
           return;

@@ -149,7 +149,7 @@ export default function AccountsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           emailAddress,
@@ -190,7 +190,7 @@ export default function AccountsPage() {
     try {
       const res = await fetch(`/api/accounts?id=${accountId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       const data = await res.json();

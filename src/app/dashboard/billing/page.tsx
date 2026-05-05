@@ -30,7 +30,7 @@ const FREE_PLAN_FEATURES = [
 ];
 
 export default function BillingPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const [stats, setStats] = useState<Stats | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +38,7 @@ export default function BillingPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
-      const token = localStorage.getItem('token');
+      
       try {
         const [statsRes, accountsRes] = await Promise.all([
           fetch('/api/stats', { headers: { Authorization: `Bearer ${token}` } }),

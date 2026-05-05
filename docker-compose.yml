@@ -23,6 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile
       shm_size: '2gb'
+    image: nubmail-app
     container_name: nubmail-app
     restart: always
     shm_size: '2gb'
@@ -55,7 +56,7 @@ services:
       - ./maildata:/app/maildata
     networks:
       - web
-    command: sh -c "until pg_isready -h postgres -U nubmail -d nubmail; do echo waiting for postgres; sleep 1; done; psql $POSTGRES_URL -f scripts/20251007_add_email_verified_to_users.sql || true && psql $POSTGRES_URL -f scripts/20260425_add_email_state_columns.sql || true && psql $POSTGRES_URL -f scripts/20260425_add_teams.sql || true && psql $POSTGRES_URL -f scripts/20260429_add_push_subscriptions_table.sql || true && node scripts/init-admin.js && node server.js"
+    # Use Dockerfile CMD which now runs migrations and init-admin before starting the server
 
   smtp-sender:
     image: boky/postfix
@@ -122,6 +123,9 @@ services:
     working_dir: /app
     user: "1000:1000"
     restart: always
+    depends_on:
+      - app
+      - postgres
     environment:
       SMTP_PORT: 25
       SMTP_BANNER_HOST: ${SMTP_HOSTNAME:-mails.nubcoder.com}
@@ -134,8 +138,6 @@ services:
     volumes:
       - ./maildata:/app/maildata
     command: node smtp/index.js
-    depends_on:
-      - postgres
     networks:
       - web
     ports:

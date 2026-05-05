@@ -103,20 +103,17 @@ Your nubmail application now supports IMAP and POP3 access for **email accounts*
 - Ensure user exists in your `users` table
 
 ### Email Not Showing
-- Verify emails were exported successfully: `ls -la /home/ubuntu/nubmail/maildata/[username]/Maildir/new/`
-- Re-run export script if needed: `docker exec nubmail-app node scripts/export-to-maildir.js`
+- Verify emails exist in the database
+- Check Dovecot logs: `docker compose logs dovecot`
+- Ensure email accounts are properly configured
 
 ### SSL/TLS Warnings
 - If using ports 993 or 995, you may need to configure SSL certificates
 - For testing, you can use unencrypted ports (143 for IMAP, 110 for POP3)
 
-## Export New Emails
+## Viewing Emails via IMAP/POP3
 
-To export new emails from your database to Maildir:
-
-```bash
-docker exec nubmail-app node scripts/export-to-maildir.js
-```
+Once configured in your email client, emails should appear automatically. Dovecot queries your database for mailbox contents on each connection.
 
 ## Check Dovecot Status
 

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function AdminDashboardPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
   const [stats, setStats] = useState({
@@ -27,10 +27,10 @@ export default function AdminDashboardPage() {
       try {
         const [usersRes, domainsRes] = await Promise.all([
           fetch('/api/admin/users', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            headers: { Authorization: `Bearer ${token}` }
           }),
           fetch('/api/admin/domains', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            headers: { Authorization: `Bearer ${token}` }
           })
         ]);
 

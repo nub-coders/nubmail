@@ -56,7 +56,7 @@ const formSchema = z.object({
 });
 
 export default function DomainsPage() {
-  const { user } = useAuthClient();
+  const { user , token} = useAuthClient();
   const [isAddDomainOpen, setAddDomainOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -73,7 +73,7 @@ export default function DomainsPage() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/domains', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const res = await fetch('/api/domains', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (res.ok) setDomains(data.domains || []);
       else setDomains([]);
@@ -96,7 +96,7 @@ export default function DomainsPage() {
     }
 
     try {
-      const res = await fetch('/api/domains', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify({ domainName: values.domainName }) });
+      const res = await fetch('/api/domains', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ domainName: values.domainName }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to add domain');
       form.reset();
