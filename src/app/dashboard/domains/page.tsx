@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { PlusCircle, Globe } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -119,14 +120,14 @@ export default function DomainsPage() {
           <CardDescription>You must be signed in to manage domains.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center gap-4 py-6">
-            <p className="text-muted-foreground">Please sign in to add and manage custom domains.</p>
-            <div className="flex w-full max-w-xs gap-2">
-              <Link href="/register" className="w-full">
-                <Button className="w-full">Sign up</Button>
+          <div className={styles.nu_flex}>
+            <p className={styles.nu_textMutedForeground}>Please sign in to add and manage custom domains.</p>
+            <div className={styles.nu_flex2}>
+              <Link href="/register" className={styles.nu_wFull}>
+                <Button className={styles.nu_wFull}>Sign up</Button>
               </Link>
-              <Link href="/" className="w-full">
-                <Button variant="outline" className="w-full">Sign in</Button>
+              <Link href="/" className={styles.nu_wFull}>
+                <Button variant="outline" className={styles.nu_wFull}>Sign in</Button>
               </Link>
             </div>
           </div>
@@ -136,16 +137,16 @@ export default function DomainsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
+    <div className={styles.nu_flex3}>
+      <div className={styles.nu_flex4}>
         <div>
-          <h1 className="text-2xl font-semibold">Domain Management</h1>
-          <p className="text-muted-foreground">Add and manage your custom domains.</p>
+          <h1 className={styles.nu_text2xl}>Domain Management</h1>
+          <p className={styles.nu_textMutedForeground}>Add and manage your custom domains.</p>
         </div>
         <Dialog open={isAddDomainOpen} onOpenChange={setAddDomainOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="ml-auto gap-1">
-              <PlusCircle className="h-4 w-4" />
+            <Button size="sm" className={styles.nu_mlAuto}>
+              <PlusCircle className={styles.nu_h4} />
               Add Domain
             </Button>
           </DialogTrigger>
@@ -155,7 +156,7 @@ export default function DomainsPage() {
               <DialogDescription>Enter the domain name you want to add.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className={styles.nu_spaceY4}>
                 <FormField
                   control={form.control}
                   name="domainName"
@@ -186,7 +187,7 @@ export default function DomainsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-center text-muted-foreground">Loading domains...</p>
+            <p className={styles.nu_textCenter}>Loading domains...</p>
           ) : (
             <Table>
               <TableHeader>
@@ -202,11 +203,11 @@ export default function DomainsPage() {
                   domains.map((item: any) => (
                     <TableRow 
                       key={item.id}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      className={styles.nu_cursorPointer}
                       onClick={() => router.push(`/dashboard/domains/${item.id}`)}
                     >
-                      <TableCell className="font-medium flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
+                      <TableCell className={styles.nu_fontMedium}>
+                        <Globe className={styles.nu_h42} />
                         {item.domainName}
                       </TableCell>
                       <TableCell>
@@ -222,7 +223,7 @@ export default function DomainsPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24">No domains added yet.</TableCell>
+                    <TableCell colSpan={4} className={styles.nu_textCenter2}>No domains added yet.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

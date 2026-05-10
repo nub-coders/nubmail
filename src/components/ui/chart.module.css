@@ -1,0 +1,15 @@
+.nu_grid {
+  @apply grid gap-1.5;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_fontMono {
+  @apply font-mono font-medium tabular-nums text-foreground;
+}
+
+.nu_h2 {
+  @apply h-2 w-2 shrink-0 rounded-[2px];
+}

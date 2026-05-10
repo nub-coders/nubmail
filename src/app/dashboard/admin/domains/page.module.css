@@ -1,0 +1,99 @@
+.nu_gap1 {
+  @apply gap-1;
+}
+
+.nu_h3 {
+  @apply h-3 w-3;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-8;
+}
+
+.nu_flex2 {
+  @apply flex flex-col gap-2;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_grid {
+  @apply grid gap-4 md:grid-cols-2 xl:grid-cols-4;
+}
+
+.nu_flex3 {
+  @apply flex flex-row items-center justify-between space-y-0 pb-2;
+}
+
+.nu_textSm {
+  @apply text-sm font-medium;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 text-muted-foreground;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl font-bold;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_grid2 {
+  @apply grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)];
+}
+
+.nu_hFit {
+  @apply h-fit;
+}
+
+.nu_flex4 {
+  @apply flex items-center gap-2 text-base;
+}
+
+.nu_h42 {
+  @apply h-4 w-4;
+}
+
+.nu_py8 {
+  @apply py-8 text-center text-muted-foreground;
+}
+
+.nu_flex5 {
+  @apply flex flex-col gap-1;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_wFit {
+  @apply w-fit gap-1;
+}
+
+.nu_flex6 {
+  @apply flex flex-row items-start justify-between gap-4;
+}
+
+.nu_fontMedium2 {
+  @apply font-medium text-foreground;
+}
+
+.nu_textRight {
+  @apply text-right;
+}
+
+.nu_flex7 {
+  @apply flex items-center gap-2 text-primary hover:underline;
+}
+
+.nu_textLeft {
+  @apply text-left text-sm text-primary hover:underline;
+}

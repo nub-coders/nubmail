@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
@@ -145,13 +146,13 @@ function ResetPasswordForm() {
 
   if (verifying) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className={styles.nu_flex}>
+        <Card className={styles.nu_mxAuto}>
+          <CardContent className={styles.nu_pt6}>
+            <div className={styles.nu_flex2}>
+              <div className={styles.nu_animateSpin}></div>
             </div>
-            <p className="text-center mt-4 text-muted-foreground">Verifying reset link...</p>
+            <p className={styles.nu_textCenter}>Verifying reset link...</p>
           </CardContent>
         </Card>
       </div>
@@ -160,25 +161,25 @@ function ResetPasswordForm() {
 
   if (!validToken) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
-          <CardHeader className="text-center">
-            <div className="mb-2 flex items-center justify-center gap-2">
-              <Mail className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">NubMail</h1>
+      <div className={styles.nu_flex}>
+        <Card className={styles.nu_mxAuto}>
+          <CardHeader className={styles.nu_textCenter2}>
+            <div className={styles.nu_mb2}>
+              <Mail className={styles.nu_h8} />
+              <h1 className={styles.nu_text2xl}>NubMail</h1>
             </div>
-            <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
+            <CardTitle className={styles.nu_text2xl2}>Invalid Reset Link</CardTitle>
             <CardDescription>
               This password reset link is invalid or has expired
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className={styles.nu_spaceY4}>
               <Link href="/forgot-password">
-                <Button className="w-full">Request New Reset Link</Button>
+                <Button className={styles.nu_wFull}>Request New Reset Link</Button>
               </Link>
-              <Link href="/" className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />
+              <Link href="/" className={styles.nu_flex3}>
+                <ArrowLeft className={styles.nu_h4} />
                 Back to login
               </Link>
             </div>
@@ -190,21 +191,21 @@ function ResetPasswordForm() {
 
   if (resetSuccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
-          <CardHeader className="text-center">
-            <div className="mb-2 flex items-center justify-center gap-2">
-              <Mail className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">NubMail</h1>
+      <div className={styles.nu_flex}>
+        <Card className={styles.nu_mxAuto}>
+          <CardHeader className={styles.nu_textCenter2}>
+            <div className={styles.nu_mb2}>
+              <Mail className={styles.nu_h8} />
+              <h1 className={styles.nu_text2xl}>NubMail</h1>
             </div>
-            <CardTitle className="text-2xl">Password Reset Complete</CardTitle>
+            <CardTitle className={styles.nu_text2xl2}>Password Reset Complete</CardTitle>
             <CardDescription>
               Your password has been successfully reset
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4">
-              <p className="text-sm text-foreground/80 text-center">
+            <div className={styles.nu_roundedXl}>
+              <p className={styles.nu_textSm}>
                 Redirecting to login...
               </p>
             </div>
@@ -215,23 +216,23 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="mx-auto w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">NubMail</h1>
+    <div className={styles.nu_flex4}>
+      <Card className={styles.nu_mxAuto2}>
+        <CardHeader className={styles.nu_textCenter2}>
+          <div className={styles.nu_mb2}>
+            <Mail className={styles.nu_h8} />
+            <h1 className={styles.nu_text3xl}>NubMail</h1>
           </div>
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardTitle className={styles.nu_text2xl2}>Reset Password</CardTitle>
           <CardDescription>
             Enter your new password below
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4" autoComplete="on">
-            <div className="grid gap-2">
+          <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+            <div className={styles.nu_grid2}>
               <Label htmlFor="password">New Password</Label>
-              <div className="relative">
+              <div className={styles.nu_relative}>
                 <Input 
                   id="password" 
                   type={showPassword ? "text" : "password"}
@@ -240,29 +241,29 @@ function ResetPasswordForm() {
                   required 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
+                  className={styles.nu_pr10}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  className={styles.nu_absolute}
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className={styles.nu_h42} />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className={styles.nu_h42} />
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className={styles.nu_textXs}>
                 At least 8 characters with uppercase, lowercase, number, and symbol
               </p>
             </div>
-            <div className="grid gap-2">
+            <div className={styles.nu_grid2}>
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
+              <div className={styles.nu_relative}>
                 <Input 
                   id="confirmPassword" 
                   type={showConfirmPassword ? "text" : "password"}
@@ -271,28 +272,28 @@ function ResetPasswordForm() {
                   required 
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pr-10"
+                  className={styles.nu_pr10}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  className={styles.nu_absolute}
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className={styles.nu_h42} />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className={styles.nu_h42} />
                   )}
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className={styles.nu_wFull} disabled={loading}>
               {loading ? 'Resetting...' : 'Reset Password'}
             </Button>
-            <Link href="/" className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" />
+            <Link href="/" className={styles.nu_flex3}>
+              <ArrowLeft className={styles.nu_h4} />
               Back to login
             </Link>
           </form>
@@ -305,13 +306,13 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-        <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className={styles.nu_flex}>
+        <Card className={styles.nu_mxAuto}>
+          <CardContent className={styles.nu_pt6}>
+            <div className={styles.nu_flex2}>
+              <div className={styles.nu_animateSpin}></div>
             </div>
-            <p className="text-center mt-4 text-muted-foreground">Loading...</p>
+            <p className={styles.nu_textCenter}>Loading...</p>
           </CardContent>
         </Card>
       </div>

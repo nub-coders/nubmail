@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { MainNav } from '@/components/main-nav';
 import { PushRegistration } from '@/components/push-registration';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserNav } from '@/components/user-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +11,6 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
-  SidebarTrigger,
   SidebarInset,
 } from '@/components/ui/sidebar';
 
@@ -48,9 +48,9 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border/40 bg-background/80 backdrop-blur-xl px-4 sm:px-6">
-          <SidebarTrigger className="md:hidden hover:bg-muted/50 transition-colors" />
-          <div className="ml-auto flex items-center gap-4">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 bg-background/80 backdrop-blur-xl border-b border-border/40">
+          <SidebarTrigger className="md:hidden text-muted-foreground hover:text-foreground transition-colors" />
+          <div className="ml-auto">
             <UserNav />
           </div>
         </header>

@@ -1,0 +1,99 @@
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_py12 {
+  @apply py-12;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-6 max-w-2xl;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_flex2 {
+  @apply flex items-center gap-4;
+}
+
+.nu_h16 {
+  @apply h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl font-bold text-primary;
+}
+
+.nu_spaceY1 {
+  @apply space-y-1;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2;
+}
+
+.nu_fontSemibold {
+  @apply font-semibold text-lg;
+}
+
+.nu_bgPrimary10 {
+  @apply bg-primary/10 text-primary;
+}
+
+.nu_h3 {
+  @apply h-3 w-3 mr-1;
+}
+
+.nu_hAuto {
+  @apply h-auto p-0 text-xs;
+}
+
+.nu_pt1 {
+  @apply pt-1;
+}
+
+.nu_bgGreen50010 {
+  @apply bg-green-500/10 text-green-700 border-green-500/30;
+}
+
+.nu_bgAmber50010 {
+  @apply bg-amber-500/10 text-amber-700 border-amber-500/30;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground flex items-center gap-1;
+}
+
+.nu_h32 {
+  @apply h-3 w-3;
+}
+
+.nu_flex4 {
+  @apply flex items-end gap-3;
+}
+
+.nu_flex1 {
+  @apply flex-1 space-y-2;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 mr-2;
+}
+
+.nu_h5 {
+  @apply h-5 w-5;
+}

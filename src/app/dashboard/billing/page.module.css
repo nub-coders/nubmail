@@ -1,0 +1,143 @@
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_py12 {
+  @apply py-12;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-6 max-w-3xl;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_borderPrimary20 {
+  @apply border-primary/20 bg-gradient-to-br from-primary/5 to-transparent;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-between;
+}
+
+.nu_textXl {
+  @apply text-xl;
+}
+
+.nu_bgPrimary10 {
+  @apply bg-primary/10 text-primary text-sm px-3 py-1;
+}
+
+.nu_grid {
+  @apply grid gap-3;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2 text-sm;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 text-green-500 flex-shrink-0;
+}
+
+.nu_mt6 {
+  @apply mt-6;
+}
+
+.nu_opacity60 {
+  @apply opacity-60;
+}
+
+.nu_h42 {
+  @apply h-4 w-4 mr-2;
+}
+
+.nu_ml2 {
+  @apply ml-2 text-xs;
+}
+
+.nu_grid2 {
+  @apply grid grid-cols-1 sm:grid-cols-3 gap-4;
+}
+
+.nu_pt6 {
+  @apply pt-6;
+}
+
+.nu_flex4 {
+  @apply flex items-center gap-3;
+}
+
+.nu_h10 {
+  @apply h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center;
+}
+
+.nu_h5 {
+  @apply h-5 w-5 text-blue-500;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl font-bold;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_h102 {
+  @apply h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center;
+}
+
+.nu_h52 {
+  @apply h-5 w-5 text-green-500;
+}
+
+.nu_h103 {
+  @apply h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center;
+}
+
+.nu_h53 {
+  @apply h-5 w-5 text-purple-500;
+}
+
+.nu_flex5 {
+  @apply flex items-center gap-2;
+}
+
+.nu_h54 {
+  @apply h-5 w-5;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_flex6 {
+  @apply flex items-center justify-between text-sm;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_h2 {
+  @apply h-2 rounded-full bg-muted overflow-hidden;
+}
+
+.nu_hFull {
+  @apply h-full rounded-full bg-primary/60 transition-all;
+}

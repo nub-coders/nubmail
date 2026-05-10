@@ -1,4 +1,5 @@
 'use client';
+import styles from './bulk-action-bar.module.css';
 
 import { ReactNode } from 'react';
 import { X } from 'lucide-react';
@@ -34,23 +35,23 @@ export function BulkActionBar({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-2 bg-muted/80 border border-border/40 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
+        <span className={styles.nu_textSm}>
           {selectedCount} selected
         </span>
-        <span className="text-muted-foreground">|</span>
+        <span className={styles.nu_textMutedForeground}>|</span>
         {!isAllSelected ? (
-          <button onClick={onSelectAll} className="text-sm text-primary hover:underline" disabled={loading}>
+          <button onClick={onSelectAll} className={styles.nu_textSm2} disabled={loading}>
             Select all {totalCount}
           </button>
         ) : (
-          <button onClick={onClearSelection} className="text-sm text-primary hover:underline" disabled={loading}>
+          <button onClick={onClearSelection} className={styles.nu_textSm2} disabled={loading}>
             Deselect all
           </button>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className={styles.nu_flex3}>
         {actions.map((action) => (
           <Button
             key={action.label}
@@ -61,11 +62,11 @@ export function BulkActionBar({
             className={cn(action.variant === 'destructive' && 'hover:bg-destructive/90')}
           >
             {action.icon}
-            <span className="ml-1.5">{action.label}</span>
+            <span className={styles.nu_ml15}>{action.label}</span>
           </Button>
         ))}
         <Button size="sm" variant="ghost" onClick={onClearSelection} disabled={loading}>
-          <X className="h-4 w-4" />
+          <X className={styles.nu_h4} />
         </Button>
       </div>
     </div>

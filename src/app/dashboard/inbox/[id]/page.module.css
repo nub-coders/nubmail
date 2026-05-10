@@ -1,0 +1,141 @@
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_flex {
+  @apply flex items-center justify-center min-h-[60vh];
+}
+
+.nu_flex2 {
+  @apply flex flex-col items-center justify-center min-h-[60vh] gap-4;
+}
+
+.nu_h16 {
+  @apply h-16 w-16 text-muted-foreground;
+}
+
+.nu_textXl {
+  @apply text-xl font-semibold;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 mr-2;
+}
+
+.nu_flex3 {
+  @apply flex flex-col gap-6 h-full max-w-6xl mx-auto;
+}
+
+.nu_flex4 {
+  @apply flex items-center justify-between p-6 border-b bg-muted/30 rounded-lg;
+}
+
+.nu_flex5 {
+  @apply flex items-center gap-3;
+}
+
+.nu_hoverBgBackground80 {
+  @apply hover:bg-background/80;
+}
+
+.nu_h42 {
+  @apply h-4 w-px bg-border;
+}
+
+.nu_textXs {
+  @apply text-xs;
+}
+
+.nu_flex6 {
+  @apply flex items-center gap-2;
+}
+
+.nu_textDestructive {
+  @apply text-destructive hover:text-destructive;
+}
+
+.nu_px6 {
+  @apply px-6 py-4 border-b bg-background rounded-lg;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold leading-tight mb-2;
+}
+
+.nu_flex7 {
+  @apply flex items-center gap-4 text-sm text-muted-foreground;
+}
+
+.nu_h43 {
+  @apply h-4 w-4;
+}
+
+.nu_grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/20 rounded-lg;
+}
+
+.nu_textXs2 {
+  @apply text-xs font-medium text-muted-foreground uppercase tracking-wide;
+}
+
+.nu_mt1 {
+  @apply mt-1 flex items-center gap-2;
+}
+
+.nu_h8 {
+  @apply h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center;
+}
+
+.nu_textSm {
+  @apply text-sm font-medium text-primary;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_mt12 {
+  @apply mt-1;
+}
+
+.nu_flex8 {
+  @apply flex flex-wrap gap-2;
+}
+
+.nu_flex1 {
+  @apply flex-1 overflow-auto px-6 py-6 bg-background rounded-lg;
+}
+
+.nu_maxWNone {
+  @apply max-w-none;
+}
+
+.nu_prose {
+  @apply prose prose-sm dark:prose-invert max-w-none
+                       prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed
+                       prose-strong:text-foreground prose-em:text-foreground
+                       prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:p-4 prose-blockquote:rounded-r-lg
+                       prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
+                       prose-pre:bg-muted prose-pre:border
+                       prose-a:text-primary prose-a:no-underline hover:prose-a:underline;
+}
+
+.nu_px62 {
+  @apply px-6 py-4 border-t bg-muted/20 rounded-lg;
+}
+
+.nu_flex9 {
+  @apply flex items-center justify-between;
+}
+
+.nu_flex10 {
+  @apply flex items-center gap-2 text-sm text-muted-foreground;
+}

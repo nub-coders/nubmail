@@ -1,0 +1,107 @@
+.nu_flex {
+  @apply flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4;
+}
+
+.nu_mxAuto {
+  @apply mx-auto w-full max-w-sm shadow-elevated border-border/50;
+}
+
+.nu_pt6 {
+  @apply pt-6;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-center;
+}
+
+.nu_animateSpin {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-primary;
+}
+
+.nu_textCenter {
+  @apply text-center mt-4 text-muted-foreground;
+}
+
+.nu_textCenter2 {
+  @apply text-center;
+}
+
+.nu_mb2 {
+  @apply mb-2 flex items-center justify-center gap-2;
+}
+
+.nu_h8 {
+  @apply h-8 w-8 text-primary;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-bold text-foreground;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_wFull {
+  @apply w-full;
+}
+
+.nu_flex3 {
+  @apply flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_roundedXl {
+  @apply rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4;
+}
+
+.nu_textSm {
+  @apply text-sm text-foreground/80 text-center;
+}
+
+.nu_flex4 {
+  @apply flex min-h-screen items-center justify-center bg-background p-4;
+}
+
+.nu_mxAuto2 {
+  @apply mx-auto w-full max-w-sm;
+}
+
+.nu_text3xl {
+  @apply text-3xl font-bold text-foreground;
+}
+
+.nu_grid {
+  @apply grid gap-4;
+}
+
+.nu_grid2 {
+  @apply grid gap-2;
+}
+
+.nu_relative {
+  @apply relative;
+}
+
+.nu_pr10 {
+  @apply pr-10;
+}
+
+.nu_absolute {
+  @apply absolute right-0 top-0 h-full px-3 hover:bg-transparent;
+}
+
+.nu_h42 {
+  @apply h-4 w-4 text-muted-foreground;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}

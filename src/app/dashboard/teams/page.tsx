@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { Users, Plus, Trash2, UserPlus, Crown, Shield, User } from 'lucide-react';
@@ -50,9 +51,9 @@ interface Member {
 }
 
 const ROLE_ICONS: Record<string, React.ReactNode> = {
-  owner: <Crown className="h-3 w-3" />,
-  admin: <Shield className="h-3 w-3" />,
-  member: <User className="h-3 w-3" />,
+  owner: <Crown className={styles.nu_h3} />,
+  admin: <Shield className={styles.nu_h3} />,
+  member: <User className={styles.nu_h3} />,
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -203,30 +204,30 @@ export default function TeamsPage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to manage teams.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to manage teams.</div>;
   }
 
   if (isLoading) {
     return (
-      <div className="py-12">
+      <div className={styles.nu_py12}>
         <LoadingSpinner size="md" text="Loading teams..." />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-3xl">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Teams</h1>
-          <p className="text-sm text-muted-foreground">
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
+        <div className={styles.nu_spaceY2}>
+          <h1 className={styles.nu_text2xl}>Teams</h1>
+          <p className={styles.nu_textSm}>
             {teams.length === 0 ? 'Create a team to collaborate' : `${teams.length} team${teams.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className={styles.nu_h4} />
               New Team
             </Button>
           </DialogTrigger>
@@ -235,8 +236,8 @@ export default function TeamsPage() {
               <DialogTitle>Create Team</DialogTitle>
               <DialogDescription>Create a new team and invite members to collaborate.</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
+            <div className={styles.nu_spaceY4}>
+              <div className={styles.nu_spaceY2}>
                 <Label htmlFor="team-name">Team Name</Label>
                 <Input
                   id="team-name"
@@ -258,7 +259,7 @@ export default function TeamsPage() {
 
       {teams.length === 0 && (
         <EmptyState
-          icon={<Users className="h-16 w-16" />}
+          icon={<Users className={styles.nu_h16} />}
           title="No Teams Yet"
           description="Create a team to collaborate with others on shared email domains and accounts."
           action={{ label: 'Create Team', onClick: () => setCreateOpen(true) }}
@@ -272,21 +273,21 @@ export default function TeamsPage() {
 
         return (
           <Card key={team.id}>
-            <CardHeader className="cursor-pointer" onClick={() => toggleExpand(team.id)}>
-              <div className="flex items-center justify-between">
+            <CardHeader className={styles.nu_cursorPointer} onClick={() => toggleExpand(team.id)}>
+              <div className={styles.nu_flex2}>
                 <div>
-                  <CardTitle className="text-lg">{team.name}</CardTitle>
+                  <CardTitle className={styles.nu_textLg}>{team.name}</CardTitle>
                   <CardDescription>
                     {team.memberCount} member{team.memberCount !== 1 ? 's' : ''}
                     {isOwner && ' · You own this team'}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className={styles.nu_flex3}>
                   {isOwner && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="hover:bg-destructive/10" onClick={(e) => e.stopPropagation()}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                        <Button variant="ghost" size="sm" className={styles.nu_hoverBgDestructive10} onClick={(e) => e.stopPropagation()}>
+                          <Trash2 className={styles.nu_h42} />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -296,7 +297,7 @@ export default function TeamsPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteTeam(team.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          <AlertDialogAction onClick={() => handleDeleteTeam(team.id)} className={styles.nu_bgDestructive}>Delete</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -306,38 +307,38 @@ export default function TeamsPage() {
             </CardHeader>
 
             {isExpanded && (
-              <CardContent className="pt-0 space-y-4">
+              <CardContent className={styles.nu_pt0}>
                 {membersLoading === team.id ? (
-                  <div className="py-4"><LoadingSpinner size="sm" text="Loading members..." /></div>
+                  <div className={styles.nu_py4}><LoadingSpinner size="sm" text="Loading members..." /></div>
                 ) : (
                   <>
-                    <div className="space-y-2">
+                    <div className={styles.nu_spaceY2}>
                       {teamMembers.map((member) => (
-                        <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-sm font-medium text-primary">
+                        <div key={member.id} className={styles.nu_flex4}>
+                          <div className={styles.nu_flex5}>
+                            <div className={styles.nu_h8}>
+                              <span className={styles.nu_textSm2}>
                                 {(member.fullName || member.email).charAt(0).toUpperCase()}
                               </span>
                             </div>
                             <div>
-                              <p className="text-sm font-medium">{member.fullName || member.email}</p>
-                              {member.fullName && <p className="text-xs text-muted-foreground">{member.email}</p>}
+                              <p className={styles.nu_textSm3}>{member.fullName || member.email}</p>
+                              {member.fullName && <p className={styles.nu_textXs}>{member.email}</p>}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className={styles.nu_flex3}>
                             <Badge variant="secondary" className={ROLE_COLORS[member.role] || ROLE_COLORS.member}>
                               {ROLE_ICONS[member.role]}
-                              <span className="ml-1 capitalize">{member.role}</span>
+                              <span className={styles.nu_ml1}>{member.role}</span>
                             </Badge>
                             {isOwner && member.role !== 'owner' && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 hover:bg-destructive/10"
+                                className={styles.nu_h7}
                                 onClick={() => handleRemoveMember(team.id, member.userId)}
                               >
-                                <Trash2 className="h-3 w-3 text-destructive" />
+                                <Trash2 className={styles.nu_h32} />
                               </Button>
                             )}
                           </div>
@@ -346,9 +347,9 @@ export default function TeamsPage() {
                     </div>
 
                     {isOwner && (
-                      <div className="flex items-end gap-2 pt-2 border-t">
-                        <div className="flex-1 space-y-1">
-                          <Label className="text-xs">Add member by email</Label>
+                      <div className={styles.nu_flex6}>
+                        <div className={styles.nu_flex1}>
+                          <Label className={styles.nu_textXs2}>Add member by email</Label>
                           <Input
                             value={addMemberEmail}
                             onChange={(e) => setAddMemberEmail(e.target.value)}
@@ -361,7 +362,7 @@ export default function TeamsPage() {
                           onClick={() => handleAddMember(team.id)}
                           disabled={addingMember || !addMemberEmail.trim()}
                         >
-                          <UserPlus className="h-4 w-4 mr-1" />
+                          <UserPlus className={styles.nu_h43} />
                           {addingMember ? 'Adding...' : 'Add'}
                         </Button>
                       </div>

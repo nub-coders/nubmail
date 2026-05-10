@@ -1,0 +1,35 @@
+.nu_spaceY6 {
+  @apply space-y-6;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_flex {
+  @apply flex items-center justify-between;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_textSm2 {
+  @apply text-sm font-medium;
+}
+
+.nu_textSm3 {
+  @apply text-sm text-muted-foreground whitespace-pre-wrap break-words;
+}
+
+.nu_textSm4 {
+  @apply text-sm text-destructive;
+}

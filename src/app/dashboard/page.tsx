@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 
@@ -42,16 +43,16 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_grid}>
         {dashboardStats.map((stat) => (
           <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{stat.title}</CardTitle>
+            <CardHeader className={styles.nu_flex2}>
+              <CardTitle className={styles.nu_textXs}>{stat.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold tracking-tight">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+              <div className={styles.nu_text3xl}>{stat.value}</div>
+              <p className={styles.nu_textXs2}>{stat.description}</p>
             </CardContent>
           </Card>
         ))}
@@ -62,18 +63,18 @@ export default function Dashboard() {
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>Common tasks to get you started</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          <a href="/dashboard/domains" className="flex flex-col items-center gap-2 p-5 border border-border/40 rounded-xl hover:bg-muted/50 hover:border-border transition-all duration-150 cursor-pointer">
-            <div className="text-sm font-medium">Add Domain</div>
-            <div className="text-xs text-muted-foreground text-center">Register a new domain</div>
+        <CardContent className={styles.nu_grid2}>
+          <a href="/dashboard/domains" className={styles.nu_flex3}>
+            <div className={styles.nu_textSm}>Add Domain</div>
+            <div className={styles.nu_textXs3}>Register a new domain</div>
           </a>
-          <a href="/dashboard/compose" className="flex flex-col items-center gap-2 p-5 border border-border/40 rounded-xl hover:bg-muted/50 hover:border-border transition-all duration-150 cursor-pointer">
-            <div className="text-sm font-medium">Compose Email</div>
-            <div className="text-xs text-muted-foreground text-center">Send a new message</div>
+          <a href="/dashboard/compose" className={styles.nu_flex3}>
+            <div className={styles.nu_textSm}>Compose Email</div>
+            <div className={styles.nu_textXs3}>Send a new message</div>
           </a>
-          <a href="/dashboard/inbox" className="flex flex-col items-center gap-2 p-5 border border-border/40 rounded-xl hover:bg-muted/50 hover:border-border transition-all duration-150 cursor-pointer">
-            <div className="text-sm font-medium">View Inbox</div>
-            <div className="text-xs text-muted-foreground text-center">Check your messages</div>
+          <a href="/dashboard/inbox" className={styles.nu_flex3}>
+            <div className={styles.nu_textSm}>View Inbox</div>
+            <div className={styles.nu_textXs3}>Check your messages</div>
           </a>
         </CardContent>
       </Card>

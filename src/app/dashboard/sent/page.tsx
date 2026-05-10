@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState, useMemo } from 'react';
 import { Send, Search, ArrowLeft, Trash2, Star } from "lucide-react";
@@ -84,24 +85,24 @@ export default function SentPage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view sent emails.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view sent emails.</div>;
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-between">
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
         <div>
-          <h1 className="text-2xl font-semibold">Sent</h1>
-          <p className="text-muted-foreground">
+          <h1 className={styles.nu_text2xl}>Sent</h1>
+          <p className={styles.nu_textMutedForeground}>
             {isLoading ? 'Loading...' : `${emails.length} sent messages`}
           </p>
         </div>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className={styles.nu_relative}>
+          <Search className={styles.nu_absolute} />
           <Input
             type="search"
             placeholder="Search sent emails..."
-            className="pl-8"
+            className={styles.nu_pl8}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -116,37 +117,37 @@ export default function SentPage() {
         onClearSelection={selection.clearSelection}
         loading={bulkLoading}
         actions={[
-          { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onClick: () => handleBulkAction({ deleted: true }, 'Deleted'), variant: 'destructive' },
-          { label: 'Star', icon: <Star className="h-4 w-4" />, onClick: () => handleBulkAction({ starred: true }, 'Starred') },
+          { label: 'Delete', icon: <Trash2 className={styles.nu_h4} />, onClick: () => handleBulkAction({ deleted: true }, 'Deleted'), variant: 'destructive' },
+          { label: 'Star', icon: <Star className={styles.nu_h4} />, onClick: () => handleBulkAction({ starred: true }, 'Starred') },
         ]}
       />
 
-      <Card className="flex-1">
-        <CardContent className="p-0">
+      <Card className={styles.nu_flex1}>
+        <CardContent className={styles.nu_p0}>
           {isLoading ? (
-            <div className="p-6 h-96 flex flex-col items-center justify-center text-center">
+            <div className={styles.nu_p6}>
               <p>Loading sent emails...</p>
             </div>
           ) : filteredEmails.length === 0 ? (
-            <div className="p-6 h-96 flex flex-col items-center justify-center text-center">
-              <Send className="h-16 w-16 text-muted-foreground/50 mb-4"/>
-              <h3 className="text-xl font-semibold">
+            <div className={styles.nu_p6}>
+              <Send className={styles.nu_h16}/>
+              <h3 className={styles.nu_textXl}>
                 {searchQuery ? 'No matching emails' : 'No Sent Emails'}
               </h3>
-              <p className="text-muted-foreground mt-2">
+              <p className={styles.nu_textMutedForeground2}>
                 {searchQuery ? 'Try a different search term.' : 'Emails you send will appear here.'}
               </p>
             </div>
           ) : (
-            <div className="flex flex-col">
+            <div className={styles.nu_flex3}>
               {!isLoading && filteredEmails.length > 0 && (
-                <div className="flex items-center gap-3 px-4 py-2 border-b bg-muted/20">
+                <div className={styles.nu_flex4}>
                   <Checkbox
                     checked={selection.isAllSelected}
                     onCheckedChange={() => selection.isAllSelected ? selection.clearSelection() : selection.selectAll()}
                     aria-label="Select all"
                   />
-                  <span className="text-xs text-muted-foreground">
+                  <span className={styles.nu_textXs}>
                     {selection.selectedCount > 0 ? `${selection.selectedCount} selected` : 'Select all'}
                   </span>
                 </div>
@@ -159,7 +160,7 @@ export default function SentPage() {
                     selection.isSelected(email.id) && 'bg-primary/10'
                   )}
                 >
-                  <div className="flex items-center px-3 pt-5" onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.nu_flex5} onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selection.isSelected(email.id)}
                       onCheckedChange={() => selection.toggleSelect(email.id)}
@@ -168,27 +169,27 @@ export default function SentPage() {
                   </div>
                   <button
                     onClick={() => handleEmailClick(email)}
-                    className="flex-1 flex flex-col items-start gap-2 p-4 pl-1 text-sm w-full text-left cursor-pointer"
+                    className={styles.nu_flex12}
                   >
-                    <div className="flex w-full items-center">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-primary">
+                    <div className={styles.nu_flex6}>
+                      <div className={styles.nu_flex7}>
+                        <div className={styles.nu_h6}>
+                          <span className={styles.nu_textXs2}>
                             {email.recipients[0]?.charAt(0).toUpperCase() || '?'}
                           </span>
                         </div>
-                        <div className="font-semibold">
+                        <div className={styles.nu_fontSemibold}>
                           To: {email.recipients.join(', ')}
                         </div>
                       </div>
-                      <div className="ml-auto text-xs text-muted-foreground">
+                      <div className={styles.nu_mlAuto}>
                         {new Date(email.sentAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className="text-xs font-medium">
+                    <div className={styles.nu_textXs3}>
                       {email.subject || '(No Subject)'}
                     </div>
-                    <div className="line-clamp-2 whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                    <div className={styles.nu_lineClamp2}>
                       {getEmailPreviewText(email.body)}
                     </div>
                   </button>
@@ -200,28 +201,28 @@ export default function SentPage() {
       </Card>
 
       <Dialog open={isEmailOpen} onOpenChange={setIsEmailOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className={styles.nu_maxW4xl}>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className={styles.nu_flex7}>
               <Button variant="ghost" size="sm" onClick={() => setIsEmailOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className={styles.nu_h4} />
                 Back to Sent
               </Button>
             </DialogTitle>
           </DialogHeader>
           {selectedEmail && (
-            <div className="flex flex-col gap-4 overflow-hidden">
-              <div className="space-y-2 border-b pb-4">
-                <h2 className="text-xl font-semibold">{selectedEmail.subject || '(No Subject)'}</h2>
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+            <div className={styles.nu_flex8}>
+              <div className={styles.nu_spaceY2}>
+                <h2 className={styles.nu_textXl}>{selectedEmail.subject || '(No Subject)'}</h2>
+                <div className={styles.nu_flex9}>
                   <div><strong>From:</strong> {selectedEmail.sender}</div>
                   <div><strong>To:</strong> {selectedEmail.recipients.join(', ')}</div>
                   <div><strong>Date:</strong> {new Date(selectedEmail.sentAt).toLocaleString()}</div>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto">
+              <div className={styles.nu_flex13}>
                 <div
-                  className="prose max-w-none dark:prose-invert"
+                  className={styles.nu_prose}
                   dangerouslySetInnerHTML={{
                     __html: getSafeEmailHtml(selectedEmail.body)
                   }}

@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState, useMemo } from 'react';
 import { Archive, Inbox, Trash2, Clock } from 'lucide-react';
@@ -107,17 +108,17 @@ export default function ArchivePage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view archive.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view archive.</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">Archive</h1>
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
+        <div className={styles.nu_spaceY2}>
+          <div className={styles.nu_flex3}>
+            <h1 className={styles.nu_text2xl}>Archive</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className={styles.nu_textSm}>
             {isLoading ? 'Loading...' : `${emails.length} archived emails`}
           </p>
         </div>
@@ -131,34 +132,34 @@ export default function ArchivePage() {
         onClearSelection={selection.clearSelection}
         loading={bulkLoading}
         actions={[
-          { label: 'Unarchive', icon: <Inbox className="h-4 w-4" />, onClick: () => handleBulkAction({ archived: false }, 'Unarchived') },
-          { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onClick: () => handleBulkAction({ deleted: true }, 'Deleted'), variant: 'destructive' },
+          { label: 'Unarchive', icon: <Inbox className={styles.nu_h4} />, onClick: () => handleBulkAction({ archived: false }, 'Unarchived') },
+          { label: 'Delete', icon: <Trash2 className={styles.nu_h4} />, onClick: () => handleBulkAction({ deleted: true }, 'Deleted'), variant: 'destructive' },
         ]}
       />
 
-      <Card className="flex-1 border border-border/40 shadow-card bg-card">
-        <CardContent className="p-0">
-          <div className="flex flex-col">
+      <Card className={styles.nu_flex1}>
+        <CardContent className={styles.nu_p0}>
+          <div className={styles.nu_flex4}>
             {!isLoading && emails.length > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 border-b border-border/30 bg-muted/20">
+              <div className={styles.nu_flex5}>
                 <Checkbox
                   checked={selection.isAllSelected}
                   onCheckedChange={() => selection.isAllSelected ? selection.clearSelection() : selection.selectAll()}
                   aria-label="Select all"
                 />
-                <span className="text-xs text-muted-foreground">
+                <span className={styles.nu_textXs}>
                   {selection.selectedCount > 0 ? `${selection.selectedCount} selected` : 'Select all'}
                 </span>
               </div>
             )}
             {isLoading && (
-              <div className="py-12">
+              <div className={styles.nu_py12}>
                 <LoadingSpinner size="md" text="Loading archive..." />
               </div>
             )}
             {!isLoading && emails.length === 0 && (
               <EmptyState
-                icon={<Archive className="h-16 w-16" />}
+                icon={<Archive className={styles.nu_h16} />}
                 title="Archive is Empty"
                 description="Emails you archive will appear here."
               />
@@ -172,42 +173,42 @@ export default function ArchivePage() {
                   selection.isSelected(email.id) && 'bg-primary/10'
                 )}
               >
-                <div className="flex items-start gap-0">
-                  <div className="flex items-center px-3 pt-4">
+                <div className={styles.nu_flex6}>
+                  <div className={styles.nu_flex7}>
                     <Checkbox
                       checked={selection.isSelected(email.id)}
                       onCheckedChange={() => selection.toggleSelect(email.id)}
                       aria-label={`Select email from ${email.sender}`}
                     />
                   </div>
-                  <div className="flex-1 flex items-start justify-between gap-4 p-4 pl-1">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-primary">
+                  <div className={styles.nu_flex12}>
+                    <div className={styles.nu_flex13}>
+                      <div className={styles.nu_flex8}>
+                        <div className={styles.nu_h6}>
+                          <span className={styles.nu_textXs2}>
                             {email.sender.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <span className="font-medium text-sm truncate text-foreground/80">{email.sender}</span>
+                        <span className={styles.nu_fontMedium}>{email.sender}</span>
                       </div>
-                      <h4 className="text-sm font-medium text-foreground/90 line-clamp-1">
+                      <h4 className={styles.nu_textSm2}>
                         {email.subject || '(No Subject)'}
                       </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                      <p className={styles.nu_textXs3}>
                         {email.body?.replace(/<[^>]*>/g, '').trim() || 'No content'}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                    <div className={styles.nu_flex9}>
+                      <span className={styles.nu_textXs4}>
+                        <Clock className={styles.nu_h3} />
                         {new Date(email.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                       <Button size="sm" variant="outline" onClick={() => handleUnarchive(email.id)} disabled={actionLoading === email.id}>
-                        <Inbox className="h-3 w-3 mr-1" />
+                        <Inbox className={styles.nu_h32} />
                         Unarchive
                       </Button>
-                      <Button size="sm" variant="ghost" className="hover:bg-destructive/20" onClick={() => handleDelete(email.id)} disabled={actionLoading === email.id}>
-                        <Trash2 className="h-3 w-3" />
+                      <Button size="sm" variant="ghost" className={styles.nu_hoverBgDestructive20} onClick={() => handleDelete(email.id)} disabled={actionLoading === email.id}>
+                        <Trash2 className={styles.nu_h3} />
                       </Button>
                     </div>
                   </div>

@@ -1,0 +1,195 @@
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-6;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-between;
+}
+
+.nu_spaceY1 {
+  @apply space-y-1;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_wFull {
+  @apply w-full;
+}
+
+.nu_grid {
+  @apply grid w-full grid-cols-2 max-w-md;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_spaceY6 {
+  @apply space-y-6 mt-6;
+}
+
+.nu_mlAuto {
+  @apply ml-auto flex;
+}
+
+.nu_h42 {
+  @apply h-4 w-4 mr-2;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_fontSemibold {
+  @apply font-semibold mb-2;
+}
+
+.nu_block {
+  @apply block bg-muted p-3 rounded text-sm;
+}
+
+.nu_block2 {
+  @apply block bg-muted p-3 rounded text-sm whitespace-pre;
+}
+
+.nu_block3 {
+  @apply block bg-muted p-3 rounded text-sm whitespace-pre-wrap break-all;
+}
+
+.nu_py82 {
+  @apply py-8;
+}
+
+.nu_h12 {
+  @apply h-12 w-12;
+}
+
+.nu_textRight {
+  @apply text-right;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_flex4 {
+  @apply flex justify-end gap-2;
+}
+
+.nu_h43 {
+  @apply h-4 w-4 text-destructive;
+}
+
+.nu_spaceY62 {
+  @apply space-y-6;
+}
+
+.nu_fontSemibold2 {
+  @apply font-semibold mb-3;
+}
+
+.nu_grid2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_textSm2 {
+  @apply text-sm font-medium;
+}
+
+.nu_textSm3 {
+  @apply text-sm text-muted-foreground mb-4;
+}
+
+.nu_textCenter {
+  @apply text-center py-8 text-muted-foreground;
+}
+
+.nu_bgGreen500 {
+  @apply bg-green-500;
+}
+
+.nu_h3 {
+  @apply h-3 w-3 mr-1;
+}
+
+.nu_bgPrimary5 {
+  @apply bg-primary/5 border border-primary/10 rounded-lg p-4 mt-3;
+}
+
+.nu_textSm4 {
+  @apply text-sm text-foreground/80;
+}
+
+.nu_listDecimal {
+  @apply list-decimal list-inside space-y-2 text-sm text-muted-foreground;
+}
+
+.nu_spaceY22 {
+  @apply space-y-2 text-sm text-muted-foreground;
+}
+
+.nu_h44 {
+  @apply h-4 w-4 text-green-500;
+}
+
+.nu_spaceY42 {
+  @apply space-y-4 py-4;
+}
+
+.nu_h5 {
+  @apply h-5 w-5 text-green-500;
+}
+
+.nu_flex5 {
+  @apply flex gap-2;
+}
+
+.nu_flex1 {
+  @apply flex-1 relative;
+}
+
+.nu_fontMono {
+  @apply font-mono text-sm pr-10;
+}
+
+.nu_absolute {
+  @apply absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0;
+}
+
+.nu_h52 {
+  @apply h-5 w-5;
+}
+
+.nu_bgDestructive {
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+}
+
+.nu_relative {
+  @apply relative;
+}
+
+.nu_pr10 {
+  @apply pr-10;
+}
+
+.nu_bgPrimary52 {
+  @apply bg-primary/5 border border-primary/10 rounded-lg p-3;
+}

@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -295,42 +296,42 @@ function ComposeForm() {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full max-w-4xl mx-auto">
+    <div className={styles.nu_flex}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">
+      <div className={styles.nu_flex2}>
+        <div className={styles.nu_spaceY2}>
+          <div className={styles.nu_flex3}>
+            <h1 className={styles.nu_text2xl}>
               {mode === 'reply' ? 'Reply' : mode === 'forward' ? 'Forward' : draftId ? 'Edit Draft' : 'Compose Email'}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className={styles.nu_textSm}>
             {mode === 'reply' ? 'Reply to this message' : mode === 'forward' ? 'Forward this message' : 'Draft and send your new message'}
           </p>
         </div>
       </div>
 
       {/* Compose Form */}
-      <Card className="flex-1 border border-border/40 shadow-card bg-card">
-        <CardContent className="p-0">
-          <form className="flex flex-col h-full" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+      <Card className={styles.nu_flex1}>
+        <CardContent className={styles.nu_p0}>
+          <form className={styles.nu_flex4} onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             {/* Email Header Fields */}
-            <div className="space-y-1 p-6 border-b bg-muted/20">
+            <div className={styles.nu_spaceY1}>
               {/* From Field */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="from" className="text-sm font-medium text-muted-foreground w-16 flex-shrink-0">
+              <div className={styles.nu_flex5}>
+                <Label htmlFor="from" className={styles.nu_textSm2}>
                   From
                 </Label>
                 <Select value={from} onValueChange={setFrom}>
-                  <SelectTrigger id="from" className="border-0 bg-transparent hover:bg-muted/50 focus:bg-background">
+                  <SelectTrigger id="from" className={styles.nu_border0}>
                     <SelectValue placeholder="Choose sender..." />
                   </SelectTrigger>
                   <SelectContent>
                     {accounts.map(a => (
                       <SelectItem key={a.id} value={a.emailAddress}>
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                            <span className="text-xs font-medium text-primary">
+                        <div className={styles.nu_flex6}>
+                          <div className={styles.nu_h6}>
+                            <span className={styles.nu_textXs}>
                               {a.emailAddress.charAt(0).toUpperCase()}
                             </span>
                           </div>
@@ -343,8 +344,8 @@ function ComposeForm() {
               </div>
 
               {/* To Field */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="to" className="text-sm font-medium text-muted-foreground w-16 flex-shrink-0">
+              <div className={styles.nu_flex5}>
+                <Label htmlFor="to" className={styles.nu_textSm2}>
                   To
                 </Label>
                 <Input
@@ -353,14 +354,14 @@ function ComposeForm() {
                   placeholder="recipient@example.com"
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
-                  className="border-0 bg-transparent hover:bg-muted/50 focus:bg-background"
+                  className={styles.nu_border0}
                   required
                 />
               </div>
 
               {/* Subject Field */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="subject" className="text-sm font-medium text-muted-foreground w-16 flex-shrink-0">
+              <div className={styles.nu_flex5}>
+                <Label htmlFor="subject" className={styles.nu_textSm2}>
                   Subject
                 </Label>
                 <Input
@@ -368,18 +369,18 @@ function ComposeForm() {
                   placeholder="Enter subject..."
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="border-0 bg-transparent hover:bg-muted/50 focus:bg-background"
+                  className={styles.nu_border0}
                   required
                 />
               </div>
             </div>
 
             {/* Message Body */}
-            <div className="flex-1 flex flex-col">
+            <div className={styles.nu_flex12}>
               <Textarea
                 id="body"
                 placeholder="Write your message here..."
-                className="flex-1 border-0 bg-transparent resize-none focus:ring-0 text-base leading-relaxed p-6 min-h-[400px]"
+                className={styles.nu_flex13}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 required
@@ -388,61 +389,61 @@ function ComposeForm() {
 
             {/* Attachments */}
             {attachments.length > 0 && (
-              <div className="flex flex-wrap gap-2 px-6 py-3 border-t bg-muted/10">
+              <div className={styles.nu_flex7}>
                 {attachments.map((file, i) => (
-                  <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 text-sm">
-                    <File className="h-3 w-3 text-muted-foreground" />
-                    <span className="truncate max-w-[150px]">{file.name}</span>
-                    <span className="text-xs text-muted-foreground">({formatFileSize(file.size)})</span>
-                    <button type="button" onClick={() => removeAttachment(i)} className="ml-1 hover:text-destructive">
-                      <X className="h-3 w-3" />
+                  <div key={i} className={styles.nu_flex8}>
+                    <File className={styles.nu_h3} />
+                    <span className={styles.nu_truncate}>{file.name}</span>
+                    <span className={styles.nu_textXs2}>({formatFileSize(file.size)})</span>
+                    <button type="button" onClick={() => removeAttachment(i)} className={styles.nu_ml1}>
+                      <X className={styles.nu_h32} />
                     </button>
                   </div>
                 ))}
-                <span className="text-xs text-muted-foreground self-center ml-2">
+                <span className={styles.nu_textXs3}>
                   {formatFileSize(attachments.reduce((s, a) => s + a.size, 0))} / 10 MB
                 </span>
               </div>
             )}
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between gap-4 p-6 border-t bg-muted/10">
-              <div className="flex items-center gap-2">
+            <div className={styles.nu_flex9}>
+              <div className={styles.nu_flex6}>
                 <input
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  className="hidden"
+                  className={styles.nu_hidden}
                   onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
                 />
                 <Button variant="outline" size="sm" type="button" onClick={() => fileInputRef.current?.click()}>
-                  <Paperclip className="h-4 w-4 mr-2" />
+                  <Paperclip className={styles.nu_h4} />
                   Attach
                 </Button>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" type="button" onClick={handleDiscard} className="hover:bg-destructive/10 hover:text-destructive">
-                  <Trash className="mr-2 h-4 w-4" />
+              <div className={styles.nu_flex3}>
+                <Button variant="ghost" type="button" onClick={handleDiscard} className={styles.nu_hoverBgDestructive10}>
+                  <Trash className={styles.nu_mr2} />
                   Discard
                 </Button>
                 <Button variant="outline" type="button" onClick={handleSaveDraft} disabled={savingDraft}>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className={styles.nu_mr2} />
                   {savingDraft ? 'Saving...' : 'Save Draft'}
                 </Button>
                 <Button
                   type="submit"
                   disabled={sending || !from || !to || !subject || !body}
-                  className="min-w-[100px] gradient-primary hover:opacity-90 text-white"
+                  className={styles.nu_minW100px}
                 >
                   {sending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className={styles.nu_animateSpin}></div>
                       Sending...
                     </>
                   ) : (
                     <>
-                      <Send className="mr-2 h-4 w-4" />
+                      <Send className={styles.nu_mr2} />
                       Send
                     </>
                   )}
@@ -459,8 +460,8 @@ function ComposeForm() {
 export default function ComposePage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className={styles.nu_flex10}>
+        <div className={styles.nu_animateSpin2}></div>
       </div>
     }>
       <ComposeForm />

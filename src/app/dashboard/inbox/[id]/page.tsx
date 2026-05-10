@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -137,13 +138,13 @@ export default function EmailViewPage() {
 
   if (!user) {
     return (
-      <div className="py-8 text-center">You must be signed in to view this email.</div>
+      <div className={styles.nu_py8}>You must be signed in to view this email.</div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className={styles.nu_flex}>
         <LoadingSpinner size="md" text="Loading email..." />
       </div>
     );
@@ -151,12 +152,12 @@ export default function EmailViewPage() {
 
   if (!email) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Mail className="h-16 w-16 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Email not found</h2>
-        <p className="text-muted-foreground">The email you're looking for doesn't exist or has been deleted.</p>
+      <div className={styles.nu_flex2}>
+        <Mail className={styles.nu_h16} />
+        <h2 className={styles.nu_textXl}>Email not found</h2>
+        <p className={styles.nu_textMutedForeground}>The email you're looking for doesn't exist or has been deleted.</p>
         <Button onClick={() => router.push('/dashboard/inbox')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className={styles.nu_h4} />
           Back to Inbox
         </Button>
       </div>
@@ -164,52 +165,52 @@ export default function EmailViewPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full max-w-6xl mx-auto">
+    <div className={styles.nu_flex3}>
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-muted/30 rounded-lg">
-        <div className="flex items-center gap-3">
+      <div className={styles.nu_flex4}>
+        <div className={styles.nu_flex5}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push('/dashboard/inbox')}
-            className="hover:bg-background/80"
+            className={styles.nu_hoverBgBackground80}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className={styles.nu_h4} />
             Back to Inbox
           </Button>
-          <div className="h-4 w-px bg-border" />
-          <Badge variant={email.read ? "secondary" : "default"} className="text-xs">
+          <div className={styles.nu_h42} />
+          <Badge variant={email.read ? "secondary" : "default"} className={styles.nu_textXs}>
             {email.read ? "Read" : "Unread"}
           </Badge>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className={styles.nu_flex6}>
           <Button variant="outline" size="sm" onClick={handleStar} disabled={actionLoading === 'star'}>
             <Star className={`h-4 w-4 mr-2 ${email.starred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
             {email.starred ? 'Unstar' : 'Star'}
           </Button>
           <Button variant="outline" size="sm" onClick={handleArchive} disabled={actionLoading === 'archive'}>
-            <Archive className="h-4 w-4 mr-2" />
+            <Archive className={styles.nu_h4} />
             Archive
           </Button>
-          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={handleDelete} disabled={actionLoading === 'delete'}>
-            <Trash2 className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" className={styles.nu_textDestructive} onClick={handleDelete} disabled={actionLoading === 'delete'}>
+            <Trash2 className={styles.nu_h4} />
             Delete
           </Button>
         </div>
       </div>
 
       {/* Email Details */}
-      <div className="px-6 py-4 border-b bg-background rounded-lg">
-        <div className="space-y-4">
+      <div className={styles.nu_px6}>
+        <div className={styles.nu_spaceY4}>
           <div>
-            <h1 className="text-2xl font-semibold leading-tight mb-2">
+            <h1 className={styles.nu_text2xl}>
               {email.subject || '(No Subject)'}
             </h1>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+            <div className={styles.nu_flex7}>
+              <span className={styles.nu_flex6}>
+                <Clock className={styles.nu_h43} />
                 {new Date(email.sentAt).toLocaleString('en-US', {
                   weekday: 'long',
                   year: 'numeric',
@@ -222,25 +223,25 @@ export default function EmailViewPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/20 rounded-lg">
+          <div className={styles.nu_grid}>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">From</label>
-              <div className="mt-1 flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-medium text-primary">
+              <label className={styles.nu_textXs2}>From</label>
+              <div className={styles.nu_mt1}>
+                <div className={styles.nu_h8}>
+                  <span className={styles.nu_textSm}>
                     {email.sender.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="font-medium">{email.sender}</span>
+                <span className={styles.nu_fontMedium}>{email.sender}</span>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">To</label>
-              <div className="mt-1">
-                <div className="flex flex-wrap gap-2">
+              <label className={styles.nu_textXs2}>To</label>
+              <div className={styles.nu_mt12}>
+                <div className={styles.nu_flex8}>
                   {email.recipients.map((recipient, i) => (
-                    <Badge key={i} variant="secondary" className="text-xs">
+                    <Badge key={i} variant="secondary" className={styles.nu_textXs}>
                       {recipient}
                     </Badge>
                   ))}
@@ -252,16 +253,10 @@ export default function EmailViewPage() {
       </div>
 
       {/* Email Content */}
-      <div className="flex-1 overflow-auto px-6 py-6 bg-background rounded-lg">
-        <div className="max-w-none">
+      <div className={styles.nu_flex1}>
+        <div className={styles.nu_maxWNone}>
           <div
-            className="prose prose-sm dark:prose-invert max-w-none
-                       prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed
-                       prose-strong:text-foreground prose-em:text-foreground
-                       prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:p-4 prose-blockquote:rounded-r-lg
-                       prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
-                       prose-pre:bg-muted prose-pre:border
-                       prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
+            className={styles.nu_prose}
             dangerouslySetInnerHTML={{
               __html: safeBodyHtml
             }}
@@ -270,19 +265,19 @@ export default function EmailViewPage() {
       </div>
 
       {/* Footer Actions */}
-      <div className="px-6 py-4 border-t bg-muted/20 rounded-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4" />
+      <div className={styles.nu_px62}>
+        <div className={styles.nu_flex9}>
+          <div className={styles.nu_flex10}>
+            <Mail className={styles.nu_h43} />
             <span>Reply to continue the conversation</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={styles.nu_flex6}>
             <Button variant="outline" size="sm" onClick={handleReply}>
-              <Reply className="h-4 w-4 mr-2" />
+              <Reply className={styles.nu_h4} />
               Reply
             </Button>
             <Button variant="outline" size="sm" onClick={handleForward}>
-              <Forward className="h-4 w-4 mr-2" />
+              <Forward className={styles.nu_h4} />
               Forward
             </Button>
           </div>

@@ -1,0 +1,59 @@
+.nu_flex {
+  @apply flex flex-col items-center gap-4 py-6;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_flex2 {
+  @apply flex w-full max-w-xs gap-2;
+}
+
+.nu_wFull {
+  @apply w-full;
+}
+
+.nu_flex3 {
+  @apply flex flex-col gap-8;
+}
+
+.nu_flex4 {
+  @apply flex items-center justify-between;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold;
+}
+
+.nu_mlAuto {
+  @apply ml-auto gap-1;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_textCenter {
+  @apply text-center text-muted-foreground;
+}
+
+.nu_cursorPointer {
+  @apply cursor-pointer hover:bg-muted/50 transition-colors;
+}
+
+.nu_fontMedium {
+  @apply font-medium flex items-center gap-2;
+}
+
+.nu_h42 {
+  @apply h-4 w-4 text-muted-foreground;
+}
+
+.nu_textCenter2 {
+  @apply text-center h-24;
+}

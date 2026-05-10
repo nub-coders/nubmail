@@ -1,4 +1,5 @@
 "use client"
+import styles from './toast.module.css';
 
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
@@ -83,7 +84,7 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <X className="h-4 w-4" />
+    <X className={styles.nu_h4} />
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName

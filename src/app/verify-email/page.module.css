@@ -1,0 +1,51 @@
+.nu_flex {
+  @apply flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4;
+}
+
+.nu_mxAuto {
+  @apply mx-auto w-full max-w-md shadow-elevated border-border/50;
+}
+
+.nu_textCenter {
+  @apply text-center;
+}
+
+.nu_mb2 {
+  @apply mb-2 flex items-center justify-center gap-2;
+}
+
+.nu_h8 {
+  @apply h-8 w-8 text-primary;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-bold text-foreground;
+}
+
+.nu_textLg {
+  @apply text-lg;
+}
+
+.nu_textCenter2 {
+  @apply text-center text-sm text-green-600;
+}
+
+.nu_grid {
+  @apply grid gap-4;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_wFull {
+  @apply w-full;
+}
+
+.nu_wFull2 {
+  @apply w-full mt-2;
+}
+
+.nu_flex2 {
+  @apply flex min-h-screen items-center justify-center p-4;
+}

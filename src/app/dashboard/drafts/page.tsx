@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -94,17 +95,17 @@ export default function DraftsPage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view drafts.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view drafts.</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">Drafts</h1>
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
+        <div className={styles.nu_spaceY2}>
+          <div className={styles.nu_flex3}>
+            <h1 className={styles.nu_text2xl}>Drafts</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className={styles.nu_textSm}>
             {isLoading ? 'Loading...' : `${drafts.length} saved drafts`}
           </p>
         </div>
@@ -118,33 +119,33 @@ export default function DraftsPage() {
         onClearSelection={selection.clearSelection}
         loading={bulkLoading}
         actions={[
-          { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onClick: handleBulkDelete, variant: 'destructive' },
+          { label: 'Delete', icon: <Trash2 className={styles.nu_h4} />, onClick: handleBulkDelete, variant: 'destructive' },
         ]}
       />
 
-      <Card className="flex-1 border border-border/40 shadow-card bg-card">
-        <CardContent className="p-0">
-          <div className="flex flex-col">
+      <Card className={styles.nu_flex1}>
+        <CardContent className={styles.nu_p0}>
+          <div className={styles.nu_flex4}>
             {!isLoading && drafts.length > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 border-b border-border/30 bg-muted/20">
+              <div className={styles.nu_flex5}>
                 <Checkbox
                   checked={selection.isAllSelected}
                   onCheckedChange={() => selection.isAllSelected ? selection.clearSelection() : selection.selectAll()}
                   aria-label="Select all"
                 />
-                <span className="text-xs text-muted-foreground">
+                <span className={styles.nu_textXs}>
                   {selection.selectedCount > 0 ? `${selection.selectedCount} selected` : 'Select all'}
                 </span>
               </div>
             )}
             {isLoading && (
-              <div className="py-12">
+              <div className={styles.nu_py12}>
                 <LoadingSpinner size="md" text="Loading drafts..." />
               </div>
             )}
             {!isLoading && drafts.length === 0 && (
               <EmptyState
-                icon={<FileText className="h-16 w-16" />}
+                icon={<FileText className={styles.nu_h16} />}
                 title="No Drafts"
                 description="Emails you save as drafts will appear here."
                 action={{
@@ -162,8 +163,8 @@ export default function DraftsPage() {
                   selection.isSelected(draft.id) && 'bg-primary/10'
                 )}
               >
-                <div className="flex items-start gap-0">
-                  <div className="flex items-center px-3 pt-4" onClick={(e) => e.stopPropagation()}>
+                <div className={styles.nu_flex6}>
+                  <div className={styles.nu_flex7} onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selection.isSelected(draft.id)}
                       onCheckedChange={() => selection.toggleSelect(draft.id)}
@@ -172,45 +173,45 @@ export default function DraftsPage() {
                   </div>
                   <button
                     onClick={() => handleEdit(draft)}
-                    className="flex-1 p-4 pl-1 text-left focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-inset"
+                    className={styles.nu_flex12}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-medium text-primary">
+                    <div className={styles.nu_flex8}>
+                      <div className={styles.nu_flex13}>
+                        <div className={styles.nu_flex9}>
+                          <div className={styles.nu_h5}>
+                            <span className={styles.nu_text10px}>
                               {draft.toAddress ? draft.toAddress.charAt(0).toUpperCase() : '?'}
                             </span>
                           </div>
-                          <Edit className="h-3 w-3 text-muted-foreground ml-1" />
-                          <span className="text-xs text-muted-foreground truncate">
+                          <Edit className={styles.nu_h3} />
+                          <span className={styles.nu_textXs2}>
                             {draft.toAddress ? `To: ${draft.toAddress}` : 'No recipient'}
                           </span>
                         </div>
-                        <h4 className="text-sm font-medium text-foreground/90 line-clamp-1">
+                        <h4 className={styles.nu_textSm2}>
                           {draft.subject || '(No Subject)'}
                         </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                        <p className={styles.nu_textXs3}>
                           {draft.body?.replace(/<[^>]*>/g, '').trim() || 'Empty draft'}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
+                      <div className={styles.nu_flex10}>
+                        <span className={styles.nu_textXs4}>
+                          <Clock className={styles.nu_h32} />
                           {new Date(draft.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20"
+                          className={styles.nu_h7}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDelete(draft.id);
                           }}
                           disabled={deletingId === draft.id}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className={styles.nu_h32} />
                         </Button>
                       </div>
                     </div>

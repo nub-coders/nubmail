@@ -1,0 +1,115 @@
+.nu_h35 {
+  @apply h-3.5 w-3.5;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-8;
+}
+
+.nu_flex2 {
+  @apply flex flex-col gap-4 md:flex-row md:items-center md:justify-between;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-4;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_flex4 {
+  @apply flex flex-wrap gap-2;
+}
+
+.nu_mr2 {
+  @apply mr-2 h-4 w-4;
+}
+
+.nu_grid {
+  @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.nu_roundedLg {
+  @apply rounded-lg border p-4;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_mt2 {
+  @apply mt-2 font-medium;
+}
+
+.nu_mt22 {
+  @apply mt-2;
+}
+
+.nu_h24 {
+  @apply h-24 text-center text-muted-foreground;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_flex5 {
+  @apply flex flex-col;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_flex6 {
+  @apply flex items-center gap-2;
+}
+
+.nu_breakAll {
+  @apply break-all text-xs;
+}
+
+.nu_h7 {
+  @apply h-7 w-7;
+}
+
+.nu_flex7 {
+  @apply flex flex-col gap-1;
+}
+
+.nu_maxWXs {
+  @apply max-w-xs text-sm text-muted-foreground;
+}
+
+.nu_borderAmber200 {
+  @apply border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20;
+}
+
+.nu_pt6 {
+  @apply pt-6;
+}
+
+.nu_flex8 {
+  @apply flex gap-3;
+}
+
+.nu_mt05 {
+  @apply mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400;
+}
+
+.nu_mb1 {
+  @apply mb-1 font-semibold text-amber-800 dark:text-amber-200;
+}
+
+.nu_textSm2 {
+  @apply text-sm text-amber-700 dark:text-amber-300;
+}

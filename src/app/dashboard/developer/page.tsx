@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { Key, Plus, Trash2, Copy, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
@@ -328,39 +329,39 @@ export default function DeveloperPage() {
 
   if (!user) {
     return (
-      <div className="py-8 text-center">You must be signed in to access developer settings.</div>
+      <div className={styles.nu_py8}>You must be signed in to access developer settings.</div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={styles.nu_flex}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Developer</h1>
-          <p className="text-sm text-muted-foreground">
+      <div className={styles.nu_flex2}>
+        <div className={styles.nu_spaceY1}>
+          <h1 className={styles.nu_text2xl}>Developer</h1>
+          <p className={styles.nu_textSm}>
             API keys and IMAP/POP3 configuration for your email accounts
           </p>
         </div>
       </div>
 
       {/* Tabs for API and IMAP/POP3 */}
-      <Tabs defaultValue="api" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="api" className="flex items-center gap-2">
-            <Key className="h-4 w-4" />
+      <Tabs defaultValue="api" className={styles.nu_wFull}>
+        <TabsList className={styles.nu_grid}>
+          <TabsTrigger value="api" className={styles.nu_flex3}>
+            <Key className={styles.nu_h4} />
             API Keys
           </TabsTrigger>
-          <TabsTrigger value="imap" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
+          <TabsTrigger value="imap" className={styles.nu_flex3}>
+            <Mail className={styles.nu_h4} />
             IMAP/POP3
           </TabsTrigger>
         </TabsList>
 
         {/* API Keys Tab */}
-        <TabsContent value="api" className="space-y-6 mt-6">
-          <Button onClick={() => setIsCreateDialogOpen(true)} className="ml-auto flex">
-            <Plus className="h-4 w-4 mr-2" />
+        <TabsContent value="api" className={styles.nu_spaceY6}>
+          <Button onClick={() => setIsCreateDialogOpen(true)} className={styles.nu_mlAuto}>
+            <Plus className={styles.nu_h42} />
             Create API Key
           </Button>
 
@@ -370,23 +371,23 @@ export default function DeveloperPage() {
           <CardTitle>API Documentation</CardTitle>
           <CardDescription>Use API keys to send emails programmatically</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className={styles.nu_spaceY4}>
           <div>
-            <h3 className="font-semibold mb-2">Endpoint</h3>
-            <code className="block bg-muted p-3 rounded text-sm">
+            <h3 className={styles.nu_fontSemibold}>Endpoint</h3>
+            <code className={styles.nu_block}>
               POST /api/emails/send-api
             </code>
           </div>
           <div>
-            <h3 className="font-semibold mb-2">Headers</h3>
-            <code className="block bg-muted p-3 rounded text-sm">
+            <h3 className={styles.nu_fontSemibold}>Headers</h3>
+            <code className={styles.nu_block}>
               X-Api-Key: nm_live_...{'\n'}
               Content-Type: application/json
             </code>
           </div>
           <div>
-            <h3 className="font-semibold mb-2">Request Body</h3>
-            <code className="block bg-muted p-3 rounded text-sm whitespace-pre">
+            <h3 className={styles.nu_fontSemibold}>Request Body</h3>
+            <code className={styles.nu_block2}>
 {`{
   "from": "support@yourdomain.com",
   "to": "user@example.com",
@@ -397,8 +398,8 @@ export default function DeveloperPage() {
             </code>
           </div>
           <div>
-            <h3 className="font-semibold mb-2">Example (curl)</h3>
-            <code className="block bg-muted p-3 rounded text-sm whitespace-pre-wrap break-all">
+            <h3 className={styles.nu_fontSemibold}>Example (curl)</h3>
+            <code className={styles.nu_block3}>
 {`curl -X POST ${apiHost}/api/emails/send-api \\
   -H "X-Api-Key: nm_live_..." \\
   -H "Content-Type: application/json" \\
@@ -418,12 +419,12 @@ export default function DeveloperPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="py-8">
+            <div className={styles.nu_py82}>
               <LoadingSpinner size="md" text="Loading API keys..." />
             </div>
           ) : keys.length === 0 ? (
             <EmptyState
-              icon={<Key className="h-12 w-12" />}
+              icon={<Key className={styles.nu_h12} />}
               title="No API keys yet"
               description="Create your first API key to start sending emails programmatically"
               action={{
@@ -438,21 +439,21 @@ export default function DeveloperPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Last Used</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className={styles.nu_textRight}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {keys.map((key) => (
                   <TableRow key={key.id}>
-                    <TableCell className="font-medium">{key.name}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className={styles.nu_fontMedium}>{key.name}</TableCell>
+                    <TableCell className={styles.nu_textSm}>
                       {new Date(key.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className={styles.nu_textSm}>
                       {key.lastUsed ? new Date(key.lastUsed).toLocaleString() : 'Never'}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                    <TableCell className={styles.nu_textRight}>
+                      <div className={styles.nu_flex4}>
                         <Button
                           variant="outline"
                           size="sm"
@@ -466,7 +467,7 @@ export default function DeveloperPage() {
                           size="sm"
                           onClick={() => setDeleteKeyId(key.id)}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className={styles.nu_h43} />
                         </Button>
                       </div>
                     </TableCell>
@@ -480,7 +481,7 @@ export default function DeveloperPage() {
         </TabsContent>
 
         {/* IMAP/POP3 Tab */}
-        <TabsContent value="imap" className="space-y-6 mt-6">
+        <TabsContent value="imap" className={styles.nu_spaceY6}>
           <Card>
             <CardHeader>
               <CardTitle>IMAP/POP3 Configuration</CardTitle>
@@ -488,48 +489,48 @@ export default function DeveloperPage() {
                 Connect your email accounts to mail clients like Gmail, Outlook, or Thunderbird
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className={styles.nu_spaceY62}>
               <div>
-                <h3 className="font-semibold mb-3">Server Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">IMAP Server</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">imap.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                <h3 className={styles.nu_fontSemibold2}>Server Settings</h3>
+                <div className={styles.nu_grid2}>
+                  <div className={styles.nu_spaceY2}>
+                    <Label className={styles.nu_textSm2}>IMAP Server</Label>
+                    <code className={styles.nu_block}>imap.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">IMAP Ports</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">993 (SSL/TLS)</code>
+                  <div className={styles.nu_spaceY2}>
+                    <Label className={styles.nu_textSm2}>IMAP Ports</Label>
+                    <code className={styles.nu_block}>993 (SSL/TLS)</code>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">POP3 Server</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">pop3.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                  <div className={styles.nu_spaceY2}>
+                    <Label className={styles.nu_textSm2}>POP3 Server</Label>
+                    <code className={styles.nu_block}>pop3.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">POP3 Ports</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">995 (SSL/TLS)</code>
+                  <div className={styles.nu_spaceY2}>
+                    <Label className={styles.nu_textSm2}>POP3 Ports</Label>
+                    <code className={styles.nu_block}>995 (SSL/TLS)</code>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">SMTP Server</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">smtp.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                  <div className={styles.nu_spaceY2}>
+                    <Label className={styles.nu_textSm2}>SMTP Server</Label>
+                    <code className={styles.nu_block}>smtp.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">SMTP Ports</Label>
-                    <code className="block bg-muted p-3 rounded text-sm">587 (STARTTLS)</code>
+                  <div className={styles.nu_spaceY2}>
+                    <Label className={styles.nu_textSm2}>SMTP Ports</Label>
+                    <code className={styles.nu_block}>587 (STARTTLS)</code>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Email Accounts</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className={styles.nu_fontSemibold2}>Email Accounts</h3>
+                <p className={styles.nu_textSm3}>
                   Set up IMAP/POP3 passwords for your email accounts
                 </p>
                 {isLoadingAccounts ? (
-                  <div className="py-8">
+                  <div className={styles.nu_py82}>
                     <LoadingSpinner size="md" text="Loading accounts..." />
                   </div>
                 ) : emailAccounts.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className={styles.nu_textCenter}>
                     <p>No email accounts found. Create an email account first in the Accounts page.</p>
                   </div>
                 ) : (
@@ -538,24 +539,24 @@ export default function DeveloperPage() {
                       <TableRow>
                         <TableHead>Email Address</TableHead>
                         <TableHead>IMAP/POP3 Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className={styles.nu_textRight}>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {emailAccounts.map((account) => (
                         <TableRow key={account.id}>
-                          <TableCell className="font-medium">{account.email_address}</TableCell>
+                          <TableCell className={styles.nu_fontMedium}>{account.email_address}</TableCell>
                           <TableCell>
                             {account.has_imap_password ? (
-                              <Badge variant="default" className="bg-green-500">
-                                <CheckCircle className="h-3 w-3 mr-1" />
+                              <Badge variant="default" className={styles.nu_bgGreen500}>
+                                <CheckCircle className={styles.nu_h3} />
                                 Configured
                               </Badge>
                             ) : (
                               <Badge variant="secondary">Not Configured</Badge>
                             )}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className={styles.nu_textRight}>
                             <Button
                               variant="outline"
                               size="sm"
@@ -572,13 +573,13 @@ export default function DeveloperPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Authentication</h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                <h3 className={styles.nu_fontSemibold2}>Authentication</h3>
+                <div className={styles.nu_spaceY2}>
+                  <p className={styles.nu_textSm}>
                     Use your <strong>email account address</strong> as the username and the password set for that specific email account (not your portal login password).
                   </p>
-                  <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 mt-3">
-                    <p className="text-sm text-foreground/80">
+                  <div className={styles.nu_bgPrimary5}>
+                    <p className={styles.nu_textSm4}>
                       <strong>Note:</strong> Each email account you create can have its own IMAP/POP3 password. Set the password for your email account above, then use those credentials in your mail client.
                     </p>
                   </div>
@@ -586,8 +587,8 @@ export default function DeveloperPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Setup Example (Gmail App)</h3>
-                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                <h3 className={styles.nu_fontSemibold2}>Setup Example (Gmail App)</h3>
+                <ol className={styles.nu_listDecimal}>
                   <li>Open Gmail app → Profile → Add another account → Other</li>
                   <li>Enter your email address (e.g., support@yourdomain.com)</li>
                   <li>Select IMAP</li>
@@ -599,22 +600,22 @@ export default function DeveloperPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Supported Features</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                <h3 className={styles.nu_fontSemibold2}>Supported Features</h3>
+                <ul className={styles.nu_spaceY22}>
+                  <li className={styles.nu_flex3}>
+                    <CheckCircle className={styles.nu_h44} />
                     Real-time email synchronization
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  <li className={styles.nu_flex3}>
+                    <CheckCircle className={styles.nu_h44} />
                     Multiple device access with IMAP
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  <li className={styles.nu_flex3}>
+                    <CheckCircle className={styles.nu_h44} />
                     Automatic email account authentication
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  <li className={styles.nu_flex3}>
+                    <CheckCircle className={styles.nu_h44} />
                     Compatible with all major email clients
                   </li>
                 </ul>
@@ -633,8 +634,8 @@ export default function DeveloperPage() {
               Give your API key a descriptive name to help identify it later.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className={styles.nu_spaceY42}>
+            <div className={styles.nu_spaceY2}>
               <Label htmlFor="keyName">Key Name</Label>
               <Input
                 id="keyName"
@@ -664,35 +665,35 @@ export default function DeveloperPage() {
       <Dialog open={!!newKey} onOpenChange={(open) => !open && closeNewKeyDialog()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+            <DialogTitle className={styles.nu_flex3}>
+              <CheckCircle className={styles.nu_h5} />
               API Key Created
             </DialogTitle>
             <DialogDescription>
               Copy your API key now. You can also re-open it later from the API keys list.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className={styles.nu_spaceY42}>
+            <div className={styles.nu_spaceY2}>
               <Label>Your API Key</Label>
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
+              <div className={styles.nu_flex5}>
+                <div className={styles.nu_flex1}>
                   <Input
                     readOnly
                     value={newKey || ''}
                     type={showNewKey ? 'text' : 'password'}
-                    className="font-mono text-sm pr-10"
+                    className={styles.nu_fontMono}
                   />
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                    className={styles.nu_absolute}
                     onClick={() => setShowNewKey(!showNewKey)}
                   >
                     {showNewKey ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className={styles.nu_h4} />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className={styles.nu_h4} />
                     )}
                   </Button>
                 </div>
@@ -700,7 +701,7 @@ export default function DeveloperPage() {
                   variant="outline"
                   onClick={() => newKey && copyToClipboard(newKey)}
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className={styles.nu_h4} />
                 </Button>
               </div>
             </div>
@@ -723,35 +724,35 @@ export default function DeveloperPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5" />
+            <DialogTitle className={styles.nu_flex3}>
+              <Key className={styles.nu_h52} />
               API Key
             </DialogTitle>
             <DialogDescription>
               You can view and copy this key again from the dashboard.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className={styles.nu_spaceY42}>
+            <div className={styles.nu_spaceY2}>
               <Label>Your API Key</Label>
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
+              <div className={styles.nu_flex5}>
+                <div className={styles.nu_flex1}>
                   <Input
                     readOnly
                     value={revealedKey || ''}
                     type={showRevealedKey ? 'text' : 'password'}
-                    className="font-mono text-sm pr-10"
+                    className={styles.nu_fontMono}
                   />
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                    className={styles.nu_absolute}
                     onClick={() => setShowRevealedKey(!showRevealedKey)}
                   >
                     {showRevealedKey ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className={styles.nu_h4} />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className={styles.nu_h4} />
                     )}
                   </Button>
                 </div>
@@ -759,7 +760,7 @@ export default function DeveloperPage() {
                   variant="outline"
                   onClick={() => revealedKey && copyToClipboard(revealedKey)}
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className={styles.nu_h4} />
                 </Button>
               </div>
             </div>
@@ -784,7 +785,7 @@ export default function DeveloperPage() {
             <AlertDialogAction
               onClick={() => deleteKeyId && handleDeleteKey(deleteKeyId)}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className={styles.nu_bgDestructive}
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
@@ -812,33 +813,33 @@ export default function DeveloperPage() {
               <strong>{emailAccounts.find(a => a.id === selectedAccountId)?.email_address}</strong>
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className={styles.nu_spaceY42}>
+            <div className={styles.nu_spaceY2}>
               <Label htmlFor="imap-password">Password</Label>
-              <div className="relative">
+              <div className={styles.nu_relative}>
                 <Input
                   id="imap-password"
                   type={showImapPassword ? 'text' : 'password'}
                   value={imapPassword}
                   onChange={(e) => setImapPassword(e.target.value)}
                   placeholder="Enter IMAP/POP3 password"
-                  className="pr-10"
+                  className={styles.nu_pr10}
                 />
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  className={styles.nu_absolute}
                   onClick={() => setShowImapPassword(!showImapPassword)}
                 >
                   {showImapPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className={styles.nu_h4} />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className={styles.nu_h4} />
                   )}
                 </Button>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className={styles.nu_spaceY2}>
               <Label htmlFor="confirm-password">Confirm Password</Label>
               <Input
                 id="confirm-password"
@@ -848,8 +849,8 @@ export default function DeveloperPage() {
                 placeholder="Confirm password"
               />
             </div>
-            <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
-              <p className="text-sm text-foreground/80">
+            <div className={styles.nu_bgPrimary52}>
+              <p className={styles.nu_textSm4}>
                 This password will be used to authenticate IMAP/POP3 access in your mail client (like Gmail app, Outlook, Thunderbird, etc.). It's separate from your portal login password.
               </p>
             </div>

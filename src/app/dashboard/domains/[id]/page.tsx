@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -81,7 +82,7 @@ function StatusBadge({ status }: { status: DomainDnsRecord["status"] }) {
   const { icon: Icon, label, className } = config[status];
   return (
     <Badge variant="outline" className={cn("gap-1", className)}>
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className={styles.h35} />
       {label}
     </Badge>
   );
@@ -249,31 +250,31 @@ export default function DomainDnsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
+    <div className={styles.flex}>
+      <div className={styles.flex2}>
+        <div className={styles.flex3}>
           <Button
             variant="outline"
             size="icon"
             onClick={() => router.push('/dashboard/domains')}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className={styles.h4} />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">Domain DNS Setup</h1>
-            <p className="text-muted-foreground">
+            <h1 className={styles.text2xl}>Domain DNS Setup</h1>
+            <p className={styles.textMutedForeground}>
               Configure DNS records for {data?.domainName || 'your domain'}
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className={styles.flex4}>
           <Button variant="outline" onClick={fetchDomainDns} disabled={loading}>
             <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
             Refresh status
           </Button>
           {data && (
             <Button variant="outline" onClick={() => downloadBindFile(data.domainName, data.records)}>
-              <Download className="mr-2 h-4 w-4" />
+              <Download className={styles.mr2} />
               Download zone file
             </Button>
           )}
@@ -284,7 +285,7 @@ export default function DomainDnsPage() {
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" disabled={loading || !data}>
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className={styles.mr2} />
                 Delete
               </Button>
             </AlertDialogTrigger>
@@ -297,7 +298,7 @@ export default function DomainDnsPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteDomain} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogAction onClick={handleDeleteDomain} disabled={deleting} className={styles.bgDestructive}>
                   {deleting ? "Deleting..." : "Delete Domain"}
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -315,16 +316,16 @@ export default function DomainDnsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">Domain name</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="font-medium">{data.domainName}</span>
+            <div className={styles.grid}>
+              <div className={styles.roundedLg}>
+                <p className={styles.textSm}>Domain name</p>
+                <div className={styles.mt2}>
+                  <span className={styles.fontMedium}>{data.domainName}</span>
                 </div>
               </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">Verification status</p>
-                <div className="mt-2">
+              <div className={styles.roundedLg}>
+                <p className={styles.textSm}>Verification status</p>
+                <div className={styles.mt22}>
                   <Badge
                     variant={data.verificationStatus === 'verified' ? 'default' : 'secondary'}
                     className={data.verificationStatus === 'verified' ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}
@@ -333,9 +334,9 @@ export default function DomainDnsPage() {
                   </Badge>
                 </div>
               </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">Configuration status</p>
-                <div className="mt-2">
+              <div className={styles.roundedLg}>
+                <p className={styles.textSm}>Configuration status</p>
+                <div className={styles.mt22}>
                   <StatusBadge status={allVerified ? "verified" : hasFailedRecords ? "failed" : "not_checked"} />
                 </div>
               </div>
@@ -366,37 +367,37 @@ export default function DomainDnsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className={styles.h24}>
                     Loading DNS status...
                   </TableCell>
                 </TableRow>
               ) : data ? (
                 data.records.map((record) => (
                   <TableRow key={record.key} className={cn(record.optional && "opacity-80")}>
-                    <TableCell className="font-medium">{record.type}</TableCell>
+                    <TableCell className={styles.fontMedium}>{record.type}</TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
+                      <div className={styles.flex5}>
                         <span>{record.name}</span>
-                        <span className="text-xs text-muted-foreground">{record.host}</span>
+                        <span className={styles.textXs}>{record.host}</span>
                         {record.optional && (
-                          <span className="text-xs text-muted-foreground">Optional</span>
+                          <span className={styles.textXs}>Optional</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <code className="break-all text-xs">{record.expectedValue}</code>
+                      <div className={styles.flex6}>
+                        <code className={styles.breakAll}>{record.expectedValue}</code>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className={styles.h7}
                           onClick={() => copyToClipboard(record.expectedValue)}
                         >
-                          <Copy className="h-3.5 w-3.5" />
+                          <Copy className={styles.h35} />
                         </Button>
                       </div>
                       {typeof record.priority === "number" && (
-                        <div className="text-xs text-muted-foreground">Priority {record.priority}</div>
+                        <div className={styles.textXs}>Priority {record.priority}</div>
                       )}
                     </TableCell>
                     <TableCell>
@@ -404,25 +405,25 @@ export default function DomainDnsPage() {
                     </TableCell>
                     <TableCell>
                       {record.observedValues.length > 0 ? (
-                        <div className="flex flex-col gap-1">
+                        <div className={styles.flex7}>
                           {record.observedValues.map((value, index) => (
-                            <code key={`${record.key}-${index}`} className="break-all text-xs">
+                            <code key={`${record.key}-${index}`} className={styles.breakAll}>
                               {value}
                             </code>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">No records detected</span>
+                        <span className={styles.textXs}>No records detected</span>
                       )}
                     </TableCell>
-                    <TableCell className="max-w-xs text-sm text-muted-foreground">
+                    <TableCell className={styles.maxWXs}>
                       {record.message}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className={styles.h24}>
                     Domain DNS data not available.
                   </TableCell>
                 </TableRow>
@@ -433,19 +434,19 @@ export default function DomainDnsPage() {
       </Card>
 
       {data && (
-        <Card className="border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <Card className={styles.borderAmber200}>
+          <CardContent className={styles.pt6}>
+            <div className={styles.flex8}>
+              <AlertTriangle className={styles.h5} />
               <div>
-                <p className="font-semibold text-amber-800 dark:text-amber-200 mb-1">
+                <p className={styles.fontSemibold}>
                   DNS Propagation Notice
                 </p>
-                <p className="text-sm text-amber-700 dark:text-amber-300">
+                <p className={styles.textSm2}>
                   DNS changes can take anywhere from a few minutes to 48 hours to propagate globally. 
                   If verification fails, please wait and try again later.
                 </p>
-                <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                <p className={styles.mt23}>
                   For full inbox deliverability, also ensure your server DNS is configured by your admin in Dashboard → Admin → Server.
                 </p>
               </div>

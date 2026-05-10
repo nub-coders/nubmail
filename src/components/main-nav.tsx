@@ -1,4 +1,5 @@
 'use client';
+import styles from './main-nav.module.css';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -39,8 +40,8 @@ export function MainNav({ className }: { className?: string }) {
     <nav className={cn('flex flex-col space-y-6', className)}>
       {/* Management Section */}
       <div>
-        <div className="px-3 mb-3">
-          <h4 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+        <div className={styles.nu_px3}>
+          <h4 className={styles.nu_text11px}>
             Management
           </h4>
         </div>
@@ -50,7 +51,7 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard')}
               tooltip="Dashboard"
-              className="hover:bg-sidebar-accent transition-colors duration-150"
+              className={styles.nu_hoverBgSidebarAccent}
             >
               <Link href="/dashboard">
                 <LayoutDashboard />
@@ -63,7 +64,7 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/domains')}
               tooltip="Domains"
-              className="hover:bg-sidebar-accent transition-colors duration-150"
+              className={styles.nu_hoverBgSidebarAccent}
             >
               <Link href="/dashboard/domains">
                 <Globe />
@@ -76,7 +77,7 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/accounts')}
               tooltip="Accounts"
-              className="hover:bg-sidebar-accent transition-colors duration-150"
+              className={styles.nu_hoverBgSidebarAccent}
             >
               <Link href="/dashboard/accounts">
                 <Users />
@@ -89,7 +90,7 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/developer')}
               tooltip="Developer"
-              className="hover:bg-sidebar-accent transition-colors duration-150"
+              className={styles.nu_hoverBgSidebarAccent}
             >
               <Link href="/dashboard/developer">
                 <Key />
@@ -102,8 +103,8 @@ export function MainNav({ className }: { className?: string }) {
       
       {/* Mail Section */}
       <div>
-        <div className="px-3 mb-3">
-          <h4 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+        <div className={styles.nu_px3}>
+          <h4 className={styles.nu_text11px}>
             Mail
           </h4>
         </div>
@@ -113,7 +114,7 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/inbox')}
               tooltip="Inbox"
-              className="hover:bg-sidebar-accent transition-colors duration-150"
+              className={styles.nu_hoverBgSidebarAccent}
             >
               <Link href="/dashboard/inbox">
                 <Inbox />
@@ -126,7 +127,7 @@ export function MainNav({ className }: { className?: string }) {
               asChild
               isActive={isActive('/dashboard/sent')}
               tooltip="Sent"
-              className="hover:bg-sidebar-accent transition-colors duration-150"
+              className={styles.nu_hoverBgSidebarAccent}
             >
               <Link href="/dashboard/sent">
                 <Send />
@@ -139,7 +140,7 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/drafts')}
             tooltip="Drafts"
-            className="hover:bg-sidebar-accent transition-colors duration-150"
+            className={styles.nu_hoverBgSidebarAccent}
           >
             <Link href="/dashboard/drafts">
               <FileText />
@@ -152,7 +153,7 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/archive')}
             tooltip="Archive"
-            className="hover:bg-sidebar-accent transition-colors duration-150"
+            className={styles.nu_hoverBgSidebarAccent}
           >
             <Link href="/dashboard/archive">
               <Archive />
@@ -165,7 +166,7 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/spam')}
             tooltip="Spam"
-            className="hover:bg-sidebar-accent transition-colors duration-150"
+            className={styles.nu_hoverBgSidebarAccent}
           >
             <Link href="/dashboard/spam">
               <Shield />
@@ -178,7 +179,7 @@ export function MainNav({ className }: { className?: string }) {
             asChild
             isActive={isActive('/dashboard/trash')}
             tooltip="Trash"
-            className="hover:bg-sidebar-accent transition-colors duration-150"
+            className={styles.nu_hoverBgSidebarAccent}
           >
             <Link href="/dashboard/trash">
               <Trash2 />
@@ -192,8 +193,8 @@ export function MainNav({ className }: { className?: string }) {
       {/* Admin Section */}
       {isAdmin && (
         <div>
-          <div className="px-3 mb-3">
-            <h4 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+          <div className={styles.nu_px3}>
+            <h4 className={styles.nu_text11px}>
               Administration
             </h4>
           </div>
@@ -203,7 +204,7 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin')}
                 tooltip="Admin Dashboard"
-                className="hover:bg-sidebar-accent transition-colors duration-150"
+                className={styles.nu_hoverBgSidebarAccent}
               >
                 <Link href="/dashboard/admin">
                   <ShieldCheck />
@@ -216,7 +217,7 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin/domains')}
                 tooltip="Domains"
-                className="hover:bg-sidebar-accent transition-colors duration-150"
+                className={styles.nu_hoverBgSidebarAccent}
               >
                 <Link href="/dashboard/admin/domains">
                   <Globe />
@@ -229,7 +230,7 @@ export function MainNav({ className }: { className?: string }) {
                 asChild
                 isActive={isActive('/dashboard/admin/server-dns')}
                 tooltip="Server DNS"
-                className="hover:bg-sidebar-accent transition-colors duration-150"
+                className={styles.nu_hoverBgSidebarAccent}
               >
                 <Link href="/dashboard/admin/server-dns">
                   <Server />

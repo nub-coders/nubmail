@@ -1,4 +1,5 @@
 "use client";
+import styles from './user-nav.module.css';
 
 import { useRouter } from 'next/navigation';
 import {
@@ -41,31 +42,31 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full hover:bg-muted/50 transition-colors">
-          <Avatar className="h-8 w-8 ring-1 ring-border/30 hover:ring-border/60 transition-all duration-150">
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+        <Button variant="ghost" className={styles.nu_relative}>
+          <Avatar className={styles.nu_h8}>
+            <AvatarFallback className={styles.nu_bgPrimary10}>
               {getInitial()}
             </AvatarFallback>
           </Avatar>
           {user && !user.emailVerified && (
             <span
-              className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-background"
+              className={styles.nu_absolute}
               aria-label="Email verification pending"
             />
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-60 animate-scale-in shadow-elevated" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal p-3 bg-muted/20">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
+      <DropdownMenuContent className={`${styles.nu_w60} animate-scale-in`} align="end" forceMount>
+        <DropdownMenuLabel className={styles.nu_fontNormal}>
+          <div className={styles.nu_flex}>
+            <Avatar className={styles.nu_h12}>
+              <AvatarFallback className={styles.nu_bgPrimary102}>
                 {getInitial()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-semibold leading-none">{user?.fullName ?? 'User'}</p>
-              <p className="text-xs leading-none text-muted-foreground">
+            <div className={styles.nu_flex2}>
+              <p className={styles.nu_textSm}>{user?.fullName ?? 'User'}</p>
+              <p className={styles.nu_textXs}>
                 {user?.email ?? 'Not signed in'}
               </p>
             </div>
@@ -74,20 +75,20 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-            <User className="mr-2 h-4 w-4" />
+            <User className={styles.nu_mr2} />
             <span>Profile</span>
-            {user && !user.emailVerified && <AlertCircle className="ml-auto h-4 w-4 text-amber-500" />}
+            {user && !user.emailVerified && <AlertCircle className={styles.nu_mlAuto} />}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/dashboard/billing')}>
-            <CreditCard className="mr-2 h-4 w-4" />
+            <CreditCard className={styles.nu_mr2} />
             <span>Billing</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
-            <Settings className="mr-2 h-4 w-4" />
+            <Settings className={styles.nu_mr2} />
             <span>Settings</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/dashboard/teams')}>
-            <Mail className="mr-2 h-4 w-4" />
+            <Mail className={styles.nu_mr2} />
             <span>New Team</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -97,9 +98,9 @@ export function UserNav() {
             event.preventDefault();
             void handleLogout();
           }}
-          className="cursor-pointer"
+          className={styles.nu_cursorPointer}
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className={styles.nu_mr2} />
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

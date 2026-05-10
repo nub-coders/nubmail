@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -207,11 +208,11 @@ export default function AccountsPage() {
   if (!user || !token) {
     if (authLoading) {
       return (
-        <div className="container mx-auto p-4">
-          <h1 className="text-2xl font-semibold mb-4">Email Accounts</h1>
-          <div className="animate-pulse">
-            <div className="h-12 bg-muted rounded mb-4"></div>
-            <div className="h-32 bg-muted rounded"></div>
+        <div className={styles.nu_container}>
+          <h1 className={styles.nu_text2xl}>Email Accounts</h1>
+          <div className={styles.nu_animatePulse}>
+            <div className={styles.nu_h12}></div>
+            <div className={styles.nu_h32}></div>
           </div>
         </div>
       );
@@ -221,16 +222,16 @@ export default function AccountsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
         <div>
-          <h1 className="text-2xl font-semibold">Email Accounts</h1>
-          <p className="text-muted-foreground">Manage email accounts for your verified domains.</p>
+          <h1 className={styles.nu_text2xl2}>Email Accounts</h1>
+          <p className={styles.nu_textMutedForeground}>Manage email accounts for your verified domains.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button disabled={!isAdmin && domains.length === 0}>
-              <PlusCircle className="mr-2 h-4 w-4" />
+              <PlusCircle className={styles.nu_mr2} />
               Create Account
             </Button>
           </DialogTrigger>
@@ -241,8 +242,8 @@ export default function AccountsPage() {
                 Create a new email account. SMTP settings are optional - leave them empty to use NubMail&apos;s built-in SMTP server.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
-              <div className="grid gap-2">
+            <div className={styles.nu_grid}>
+              <div className={styles.nu_grid2}>
                 <Label htmlFor="localpart">Username</Label>
                 <Input
                   id="localpart"
@@ -253,8 +254,8 @@ export default function AccountsPage() {
               </div>
               
               {isAdmin && serverDomain && serverDnsVerified && (
-                <div className="grid gap-2">
-                  <div className="flex items-center gap-2">
+                <div className={styles.nu_grid2}>
+                  <div className={styles.nu_flex3}>
                     <Checkbox
                       id="useServerDomain"
                       checked={useServerDomain}
@@ -265,18 +266,18 @@ export default function AccountsPage() {
                         }
                       }}
                     />
-                    <Label htmlFor="useServerDomain" className="font-medium">
+                    <Label htmlFor="useServerDomain" className={styles.nu_fontMedium}>
                       Use server domain ({serverDomain})
                     </Label>
                   </div>
-                  <p className="text-xs text-muted-foreground ml-6">
+                  <p className={styles.nu_textXs}>
                     Admin option: Create accounts on the verified server domain without manually adding it.
                   </p>
                 </div>
               )}
               
               {!useServerDomain && (
-                <div className="grid gap-2">
+                <div className={styles.nu_grid2}>
                   <Label htmlFor="domain">Domain</Label>
                   <Select value={selectedDomainId} onValueChange={setSelectedDomainId}>
                     <SelectTrigger>
@@ -294,14 +295,14 @@ export default function AccountsPage() {
               )}
               
               {localPart && (useServerDomain ? serverDomain : selectedDomainId) && (
-                <div className="text-sm text-muted-foreground">
-                  Email address: <span className="font-medium">
+                <div className={styles.nu_textSm}>
+                  Email address: <span className={styles.nu_fontMedium}>
                     {localPart}@{useServerDomain ? serverDomain : domains.find(d => d.id === selectedDomainId)?.domainName}
                   </span>
                 </div>
               )}
-              <div className="border-t pt-4 space-y-4">
-                <div className="flex items-start gap-3">
+              <div className={styles.nu_borderT}>
+                <div className={styles.nu_flex4}>
                   <Checkbox
                     id="useCustomSmtp"
                     checked={useCustomSmtp}
@@ -317,18 +318,18 @@ export default function AccountsPage() {
                     }}
                   />
                   <div>
-                    <Label htmlFor="useCustomSmtp" className="font-medium">
+                    <Label htmlFor="useCustomSmtp" className={styles.nu_fontMedium}>
                       Use custom SMTP settings
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className={styles.nu_textSm}>
                       Leave disabled to use NubMail&apos;s built-in SMTP server. Enable to provide your own SMTP credentials.
                     </p>
                   </div>
                 </div>
 
                 {useCustomSmtp && (
-                  <div className="grid gap-3">
-                    <div className="grid gap-2">
+                  <div className={styles.nu_grid3}>
+                    <div className={styles.nu_grid2}>
                       <Label htmlFor="smtpHost">SMTP Host</Label>
                       <Input
                         id="smtpHost"
@@ -337,7 +338,7 @@ export default function AccountsPage() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpHost(e.target.value)}
                       />
                     </div>
-                    <div className="grid gap-2">
+                    <div className={styles.nu_grid2}>
                       <Label htmlFor="smtpPort">SMTP Port</Label>
                       <Input
                         id="smtpPort"
@@ -347,7 +348,7 @@ export default function AccountsPage() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpPort(e.target.value)}
                       />
                     </div>
-                    <div className="grid gap-2">
+                    <div className={styles.nu_grid2}>
                       <Label htmlFor="smtpUser">SMTP Username</Label>
                       <Input
                         id="smtpUser"
@@ -356,7 +357,7 @@ export default function AccountsPage() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSmtpUser(e.target.value)}
                       />
                     </div>
-                    <div className="grid gap-2">
+                    <div className={styles.nu_grid2}>
                       <Label htmlFor="smtpPass">SMTP Password</Label>
                       <Input
                         id="smtpPass"
@@ -389,22 +390,22 @@ export default function AccountsPage() {
         </CardHeader>
         <CardContent>
           {dataLoading ? (
-            <div className="py-6 text-center">Loading accounts...</div>
+            <div className={styles.nu_py6}>Loading accounts...</div>
           ) : accounts.length === 0 ? (
-            <div className="py-6 text-center text-muted-foreground">
+            <div className={styles.nu_py62}>
               {domains.length === 0 
                 ? 'Please add and verify a domain first.' 
                 : 'No email accounts created yet.'}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className={styles.nu_spaceY2}>
               {accounts.map(account => (
-                <div key={account.id} className="flex items-center justify-between p-4 border border-border/40 rounded-xl hover:bg-muted/30 transition-colors duration-150">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
+                <div key={account.id} className={styles.nu_flex5}>
+                  <div className={styles.nu_flex6}>
+                    <Mail className={styles.nu_h5} />
                     <div>
-                      <div className="font-medium">{account.emailAddress}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className={styles.nu_fontMedium}>{account.emailAddress}</div>
+                      <div className={styles.nu_textSm}>
                         {account.storageQuota}MB storage
                       </div>
                     </div>
@@ -414,7 +415,7 @@ export default function AccountsPage() {
                     size="sm"
                     onClick={() => handleDeleteAccount(account.id, account.emailAddress)}
                   >
-                    <Trash className="h-4 w-4 text-destructive" />
+                    <Trash className={styles.nu_h4} />
                   </Button>
                 </div>
               ))}

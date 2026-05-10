@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState, useMemo } from 'react';
 import { Trash2, RotateCcw, Clock } from 'lucide-react';
@@ -153,17 +154,17 @@ export default function TrashPage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view trash.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view trash.</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">Trash</h1>
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
+        <div className={styles.nu_spaceY2}>
+          <div className={styles.nu_flex3}>
+            <h1 className={styles.nu_text2xl}>Trash</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className={styles.nu_textSm}>
             {isLoading ? 'Loading...' : `${emails.length} deleted emails`}
           </p>
         </div>
@@ -171,7 +172,7 @@ export default function TrashPage() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={actionLoading === 'empty'}>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className={styles.nu_h4} />
                 Empty Trash
               </Button>
             </AlertDialogTrigger>
@@ -184,7 +185,7 @@ export default function TrashPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleEmptyTrash} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogAction onClick={handleEmptyTrash} className={styles.nu_bgDestructive}>
                   Delete All
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -201,34 +202,34 @@ export default function TrashPage() {
         onClearSelection={selection.clearSelection}
         loading={bulkLoading}
         actions={[
-          { label: 'Restore', icon: <RotateCcw className="h-4 w-4" />, onClick: handleBulkRestore },
-          { label: 'Delete Forever', icon: <Trash2 className="h-4 w-4" />, onClick: handleBulkPermanentDelete, variant: 'destructive' },
+          { label: 'Restore', icon: <RotateCcw className={styles.nu_h42} />, onClick: handleBulkRestore },
+          { label: 'Delete Forever', icon: <Trash2 className={styles.nu_h42} />, onClick: handleBulkPermanentDelete, variant: 'destructive' },
         ]}
       />
 
-      <Card className="flex-1 border border-border/40 shadow-card bg-card">
-        <CardContent className="p-0">
-          <div className="flex flex-col">
+      <Card className={styles.nu_flex1}>
+        <CardContent className={styles.nu_p0}>
+          <div className={styles.nu_flex4}>
             {!isLoading && emails.length > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 border-b border-border/30 bg-muted/20">
+              <div className={styles.nu_flex5}>
                 <Checkbox
                   checked={selection.isAllSelected}
                   onCheckedChange={() => selection.isAllSelected ? selection.clearSelection() : selection.selectAll()}
                   aria-label="Select all"
                 />
-                <span className="text-xs text-muted-foreground">
+                <span className={styles.nu_textXs}>
                   {selection.selectedCount > 0 ? `${selection.selectedCount} selected` : 'Select all'}
                 </span>
               </div>
             )}
             {isLoading && (
-              <div className="py-12">
+              <div className={styles.nu_py12}>
                 <LoadingSpinner size="md" text="Loading trash..." />
               </div>
             )}
             {!isLoading && emails.length === 0 && (
               <EmptyState
-                icon={<Trash2 className="h-16 w-16" />}
+                icon={<Trash2 className={styles.nu_h16} />}
                 title="Trash is Empty"
                 description="When you delete an email, it will appear here."
               />
@@ -242,44 +243,44 @@ export default function TrashPage() {
                   selection.isSelected(email.id) && 'bg-primary/10'
                 )}
               >
-                <div className="flex items-start gap-0">
-                  <div className="flex items-center px-3 pt-4">
+                <div className={styles.nu_flex6}>
+                  <div className={styles.nu_flex7}>
                     <Checkbox
                       checked={selection.isSelected(email.id)}
                       onCheckedChange={() => selection.toggleSelect(email.id)}
                       aria-label={`Select email from ${email.sender}`}
                     />
                   </div>
-                  <div className="flex-1 flex items-start justify-between gap-4 p-4 pl-1">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-primary">
+                  <div className={styles.nu_flex12}>
+                    <div className={styles.nu_flex13}>
+                      <div className={styles.nu_flex8}>
+                        <div className={styles.nu_h6}>
+                          <span className={styles.nu_textXs2}>
                             {email.sender.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <span className="font-medium text-sm truncate text-foreground/80">{email.sender}</span>
+                        <span className={styles.nu_fontMedium}>{email.sender}</span>
                       </div>
-                      <h4 className="text-sm font-medium text-foreground/90 line-clamp-1">
+                      <h4 className={styles.nu_textSm2}>
                         {email.subject || '(No Subject)'}
                       </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                      <p className={styles.nu_textXs3}>
                         {email.body?.replace(/<[^>]*>/g, '').trim() || 'No content'}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                    <div className={styles.nu_flex9}>
+                      <span className={styles.nu_textXs4}>
+                        <Clock className={styles.nu_h3} />
                         {new Date(email.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                       <Button size="sm" variant="outline" onClick={() => handleRestore(email.id)} disabled={actionLoading === email.id}>
-                        <RotateCcw className="h-3 w-3 mr-1" />
+                        <RotateCcw className={styles.nu_h32} />
                         Restore
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="destructive" disabled={actionLoading === email.id}>
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className={styles.nu_h3} />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -289,7 +290,7 @@ export default function TrashPage() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handlePermanentDelete(email.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                            <AlertDialogAction onClick={() => handlePermanentDelete(email.id)} className={styles.nu_bgDestructive}>Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
