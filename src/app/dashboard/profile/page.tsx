@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { Shield, Calendar, Save, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -121,22 +122,22 @@ export default function ProfilePage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view your profile.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view your profile.</div>;
   }
 
   if (isLoading) {
     return (
-      <div className="py-12">
+      <div className={styles.nu_py12}>
         <LoadingSpinner size="md" text="Loading profile..." />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
-        <p className="text-sm text-muted-foreground">Manage your account information</p>
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_spaceY2}>
+        <h1 className={styles.nu_text2xl}>Profile</h1>
+        <p className={styles.nu_textSm}>Manage your account information</p>
       </div>
 
       <Card>
@@ -144,30 +145,30 @@ export default function ProfilePage() {
           <CardTitle>Account Info</CardTitle>
           <CardDescription>Your account details</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">
+        <CardContent className={styles.nu_spaceY4}>
+          <div className={styles.nu_flex2}>
+            <div className={styles.nu_h16}>
+              <span className={styles.nu_text2xl2}>
                 {(profile?.fullName || profile?.email || 'U').charAt(0).toUpperCase()}
               </span>
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-lg">{profile?.fullName || 'No display name'}</span>
+            <div className={styles.nu_spaceY1}>
+              <div className={styles.nu_flex3}>
+                <span className={styles.nu_fontSemibold}>{profile?.fullName || 'No display name'}</span>
                 {profile?.isAdmin && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    <Shield className="h-3 w-3 mr-1" />
+                  <Badge variant="secondary" className={styles.nu_bgPrimary10}>
+                    <Shield className={styles.nu_h3} />
                     Admin
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">{profile?.email}</p>
+              <div className={styles.nu_flex3}>
+                <p className={styles.nu_textSm}>{profile?.email}</p>
                 {!profile?.emailVerified && (
                   <Button
                     type="button"
                     variant="link"
-                    className="h-auto p-0 text-xs"
+                    className={styles.nu_hAuto}
                     onClick={handleResendVerification}
                     disabled={sendingVerification}
                   >
@@ -175,22 +176,22 @@ export default function ProfilePage() {
                   </Button>
                 )}
               </div>
-              <div className="pt-1">
+              <div className={styles.nu_pt1}>
                 {profile?.emailVerified ? (
-                  <Badge variant="secondary" className="bg-green-500/10 text-green-700 border-green-500/30">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                  <Badge variant="secondary" className={styles.nu_bgGreen50010}>
+                    <CheckCircle2 className={styles.nu_h3} />
                     Email verified
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 border-amber-500/30">
-                    <AlertCircle className="h-3 w-3 mr-1" />
+                  <Badge variant="secondary" className={styles.nu_bgAmber50010}>
+                    <AlertCircle className={styles.nu_h3} />
                     Email not verified
                   </Badge>
                 )}
               </div>
               {profile?.createdAt && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
+                <p className={styles.nu_textXs}>
+                  <Calendar className={styles.nu_h32} />
                   Member since {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </p>
               )}
@@ -205,8 +206,8 @@ export default function ProfilePage() {
           <CardDescription>This is how your name appears in emails and the dashboard</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-3">
-            <div className="flex-1 space-y-2">
+          <div className={styles.nu_flex4}>
+            <div className={styles.nu_flex1}>
               <Label htmlFor="fullName">Full Name</Label>
               <Input
                 id="fullName"
@@ -216,7 +217,7 @@ export default function ProfilePage() {
               />
             </div>
             <Button onClick={handleSaveName} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
+              <Save className={styles.nu_h4} />
               {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
@@ -225,14 +226,14 @@ export default function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
+          <CardTitle className={styles.nu_flex3}>
+            <Lock className={styles.nu_h5} />
             Change Password
           </CardTitle>
           <CardDescription>Update your account password</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+        <CardContent className={styles.nu_spaceY4}>
+          <div className={styles.nu_spaceY2}>
             <Label htmlFor="currentPassword">Current Password</Label>
             <Input
               id="currentPassword"
@@ -242,7 +243,7 @@ export default function ProfilePage() {
               placeholder="Enter current password"
             />
           </div>
-          <div className="space-y-2">
+          <div className={styles.nu_spaceY2}>
             <Label htmlFor="newPassword">New Password</Label>
             <Input
               id="newPassword"
@@ -252,7 +253,7 @@ export default function ProfilePage() {
               placeholder="Enter new password (min 6 characters)"
             />
           </div>
-          <div className="space-y-2">
+          <div className={styles.nu_spaceY2}>
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <Input
               id="confirmPassword"

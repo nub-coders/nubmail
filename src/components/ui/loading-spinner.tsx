@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import styles from './loading-spinner.module.css';
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg"
@@ -34,9 +35,9 @@ export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerP
 export function LoadingDots({ className }: { className?: string }) {
   return (
     <div className={cn("flex space-x-1", className)}>
-      <div className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-      <div className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-      <div className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className={styles.nu_h2} style={{ animationDelay: '0ms' }} />
+      <div className={styles.nu_h2} style={{ animationDelay: '150ms' }} />
+      <div className={styles.nu_h2} style={{ animationDelay: '300ms' }} />
     </div>
   )
 }

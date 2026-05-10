@@ -1,4 +1,5 @@
 "use client"
+import styles from './carousel.module.css';
 
 import * as React from "react"
 import useEmblaCarousel, {
@@ -157,7 +158,7 @@ const CarouselContent = React.forwardRef<
   const { carouselRef, orientation } = useCarousel()
 
   return (
-    <div ref={carouselRef} className="overflow-hidden">
+    <div ref={carouselRef} className={styles.nu_overflowHidden}>
       <div
         ref={ref}
         className={cn(
@@ -216,8 +217,8 @@ const CarouselPrevious = React.forwardRef<
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft className="h-4 w-4" />
-      <span className="sr-only">Previous slide</span>
+      <ArrowLeft className={styles.nu_h4} />
+      <span className={styles.nu_srOnly}>Previous slide</span>
     </Button>
   )
 })
@@ -245,8 +246,8 @@ const CarouselNext = React.forwardRef<
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight className="h-4 w-4" />
-      <span className="sr-only">Next slide</span>
+      <ArrowRight className={styles.nu_h4} />
+      <span className={styles.nu_srOnly}>Next slide</span>
     </Button>
   )
 })

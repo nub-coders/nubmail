@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -94,22 +95,22 @@ export default function AdminServerPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.nu_spaceY6}>
       <Card>
         <CardHeader>
           <CardTitle>Server Configuration</CardTitle>
           <CardDescription>DNS verification for this server only. Add the records below exactly, then re-run checks.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Root domain: <span className="font-medium">{config?.rootDomain}</span> · Mail host: <span className="font-medium">{config?.mailHostname}</span> · DKIM selector: <span className="font-medium">{dkimSelector}</span>
+        <CardContent className={styles.nu_spaceY4}>
+          <div className={styles.nu_flex}>
+            <div className={styles.nu_textSm}>
+              Root domain: <span className={styles.nu_fontMedium}>{config?.rootDomain}</span> · Mail host: <span className={styles.nu_fontMedium}>{config?.mailHostname}</span> · DKIM selector: <span className={styles.nu_fontMedium}>{dkimSelector}</span>
             </div>
             <Button size="sm" onClick={load} disabled={loading}>{loading ? 'Checking…' : 'Re-run checks'}</Button>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Required DNS records</div>
+          <div className={styles.nu_spaceY2}>
+            <div className={styles.nu_textSm2}>Required DNS records</div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -125,10 +126,10 @@ export default function AdminServerPage() {
                   const ok = isSuggestedVerified(rec);
                   return (
                     <TableRow key={i}>
-                      <TableCell className="font-medium">{rec.name}</TableCell>
+                      <TableCell className={styles.nu_fontMedium}>{rec.name}</TableCell>
                       <TableCell>{rec.type}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{rec.value}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{rec.note || '-'}</TableCell>
+                      <TableCell className={styles.nu_textSm3}>{rec.value}</TableCell>
+                      <TableCell className={styles.nu_textSm3}>{rec.note || '-'}</TableCell>
                       <TableCell>{ok ? <Badge variant="default">OK</Badge> : <Badge variant="destructive">Missing</Badge>}</TableCell>
                     </TableRow>
                   );
@@ -137,7 +138,7 @@ export default function AdminServerPage() {
             </Table>
           </div>
 
-          {error && <div className="text-sm text-destructive">{error}</div>}
+          {error && <div className={styles.nu_textSm4}>{error}</div>}
 
           <Table>
             <TableHeader>
@@ -150,14 +151,14 @@ export default function AdminServerPage() {
             <TableBody>
               {results.map((r, i) => (
                 <TableRow key={i}>
-                  <TableCell className="font-medium">{r.check}</TableCell>
+                  <TableCell className={styles.nu_fontMedium}>{r.check}</TableCell>
                   <TableCell>{r.ok ? <Badge variant="default">OK</Badge> : <Badge variant="destructive">Fail</Badge>}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{r.details || ''}</TableCell>
+                  <TableCell className={styles.nu_textSm3}>{r.details || ''}</TableCell>
                 </TableRow>
               ))}
               {results.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-sm text-muted-foreground">No results yet</TableCell>
+                  <TableCell colSpan={3} className={styles.nu_textSm}>No results yet</TableCell>
                 </TableRow>
               )}
             </TableBody>

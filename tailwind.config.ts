@@ -103,5 +103,15 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+    function({ addUtilities }: { addUtilities: any }) {
+      addUtilities({
+        '.gradient-primary': {
+          background: 'linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(262 83% 58%) 100%)',
+        }
+      })
+    }
+  ],
 } satisfies Config;

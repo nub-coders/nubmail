@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import styles from './empty-state.module.css';
 
 interface EmptyStateProps {
   icon?: ReactNode
@@ -26,25 +27,25 @@ export function EmptyState({
       className
     )}>
       {icon && (
-        <div className="mb-6 rounded-2xl bg-muted/50 p-6 text-muted-foreground/30">
+        <div className={styles.nu_mb6}>
           {icon}
         </div>
       )}
       
-      <div className="space-y-3 max-w-md">
-        <h3 className="text-lg font-medium text-foreground">
+      <div className={styles.nu_spaceY3}>
+        <h3 className={styles.nu_textLg}>
           {title}
         </h3>
         
         {description && (
-          <p className="text-sm text-muted-foreground/80 leading-relaxed">
+          <p className={styles.nu_textSm}>
             {description}
           </p>
         )}
       </div>
       
       {action && (
-        <div className="mt-6">
+        <div className={styles.nu_mt6}>
           <Button onClick={action.onClick}>
             {action.label}
           </Button>

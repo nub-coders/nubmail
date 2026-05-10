@@ -1,0 +1,7 @@
+.nu_flex {
+  @apply flex items-center justify-center;
+}
+
+.nu_h25 {
+  @apply h-2.5 w-2.5 fill-current text-current;
+}

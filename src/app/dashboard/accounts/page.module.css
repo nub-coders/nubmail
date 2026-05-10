@@ -1,0 +1,103 @@
+.nu_container {
+  @apply container mx-auto p-4;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold mb-4;
+}
+
+.nu_animatePulse {
+  @apply animate-pulse;
+}
+
+.nu_h12 {
+  @apply h-12 bg-muted rounded mb-4;
+}
+
+.nu_h32 {
+  @apply h-32 bg-muted rounded;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-8;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-between;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl font-semibold;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_mr2 {
+  @apply mr-2 h-4 w-4;
+}
+
+.nu_grid {
+  @apply grid gap-4 py-4 max-h-[60vh] overflow-y-auto;
+}
+
+.nu_grid2 {
+  @apply grid gap-2;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground ml-6;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_borderT {
+  @apply border-t pt-4 space-y-4;
+}
+
+.nu_flex4 {
+  @apply flex items-start gap-3;
+}
+
+.nu_grid3 {
+  @apply grid gap-3;
+}
+
+.nu_py6 {
+  @apply py-6 text-center;
+}
+
+.nu_py62 {
+  @apply py-6 text-center text-muted-foreground;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_flex5 {
+  @apply flex items-center justify-between p-4 border border-border/40 rounded-xl hover:bg-muted/30 transition-colors duration-150;
+}
+
+.nu_flex6 {
+  @apply flex items-center gap-3;
+}
+
+.nu_h5 {
+  @apply h-5 w-5 text-muted-foreground;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 text-destructive;
+}

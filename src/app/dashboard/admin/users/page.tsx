@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,8 +12,8 @@ export default function AdminUsersPage() {
   }, [router]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">Redirecting to domain management...</p>
+    <div className={styles.nu_flex}>
+      <p className={styles.nu_textSm}>Redirecting to domain management...</p>
     </div>
   );
 }

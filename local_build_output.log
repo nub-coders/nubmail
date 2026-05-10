@@ -1,0 +1,1916 @@
+Unable to find image 'node:22-alpine' locally
+22-alpine: Pulling from library/node
+6a0ac1617861: Already exists
+9e177ba73d9f: Already exists
+4cc15311d45b: Already exists
+8bfa0019f928: Already exists
+Digest: sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f
+Status: Downloaded newer image for node:22-alpine
+
+> nubmail@0.1.0 build
+> NODE_ENV=production next build
+
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.4 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 121 errors:
+./src/components/ui/sidebar.module.css
+Error evaluating Node.js code
+CssSyntaxError: /app/src/components/ui/sidebar.module.css:14:3: @apply should not be used with the 'group' utility
+    at Input.error (node_modules/postcss/lib/input.js:135:16) [/app/.next/build/chunks/node_modules_13sb.px._.js:4692:22]
+    at error (node_modules/postcss/lib/node.js:146:32) [/app/.next/build/chunks/node_modules_13sb.px._.js:954:38]
+    [at processApply (/app/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:377:29)]
+    [at /app/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:551:9]
+    [at /app/node_modules/tailwindcss/lib/processTailwindFeatures.js:55:50]
+    [at process.processTicksAndRejections (node:internal/process/task_queues:103:5)]
+    [at async plugins (/app/node_modules/tailwindcss/lib/plugin.js:38:17)]
+    at async LazyResult.runAsync (node_modules/postcss/lib/lazy-result.js:293:11) [/app/.next/build/chunks/node_modules_13sb.px._.js:6255:21]
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [/app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js:146:36]
+    at async run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:23) [/app/.next/build/chunks/[root-of-the-server]__0ubbtyl._.js:443:31]
+
+Import traces:
+  Server Component:
+    ./src/components/ui/sidebar.module.css
+    ./src/components/ui/sidebar.tsx
+    ./src/app/dashboard/layout.tsx
+
+  Client Component Browser:
+    ./src/components/ui/sidebar.module.css [Client Component Browser]
+    ./src/components/ui/sidebar.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/ui/sidebar.module.css [Client Component SSR]
+    ./src/components/ui/sidebar.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+
+./src/components/user-nav.module.css
+Error evaluating Node.js code
+CssSyntaxError: /app/src/components/user-nav.module.css:18:3: The `animate-scale-in` class does not exist. If `animate-scale-in` is a custom class, make sure it is defined within a `@layer` directive.
+    at Input.error (node_modules/postcss/lib/input.js:135:16) [/app/.next/build/chunks/node_modules_13sb.px._.js:4692:22]
+    at error (node_modules/postcss/lib/node.js:146:32) [/app/.next/build/chunks/node_modules_13sb.px._.js:954:38]
+    [at processApply (/app/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:380:29)]
+    [at /app/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:551:9]
+    [at /app/node_modules/tailwindcss/lib/processTailwindFeatures.js:55:50]
+    [at process.processTicksAndRejections (node:internal/process/task_queues:103:5)]
+    [at async plugins (/app/node_modules/tailwindcss/lib/plugin.js:38:17)]
+    at async LazyResult.runAsync (node_modules/postcss/lib/lazy-result.js:293:11) [/app/.next/build/chunks/node_modules_13sb.px._.js:6255:21]
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [/app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js:146:36]
+    at async run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:23) [/app/.next/build/chunks/[root-of-the-server]__0ubbtyl._.js:443:31]
+
+Import traces:
+  Client Component Browser:
+    ./src/components/user-nav.module.css [Client Component Browser]
+    ./src/components/user-nav.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/user-nav.module.css [Client Component SSR]
+    ./src/components/user-nav.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+
+./src/app/dashboard/accounts/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mReact[0m, { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/[id]/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mCheckCircle[0m, [33mGlobe[0m, [33mShield[0m, [33mUsers[0m, [33mXCircle[0m, [33mAlertCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mUsers[0m, [33mGlobe[0m, [33mShield[0m, [33mActivity[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/server-dns/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+  [90m5 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mShieldCheck[0m, [33m...[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/server/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mCard[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardContent[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/users/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/archive/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mArchive[0m, [33mInbox[0m, [33mTrash2[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/billing/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mGlobe[0m, [33mUsers[0m, [33mMail[0m, [33mHardDrive[0m, [33mCheckCircle[0m, [33mArrowUpCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/compose/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useState, useEffect, useRef, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/developer/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mKey[0m, [33mPlus[0m, [33mTrash2[0m, [33mCopy[0m, [33mEye[0m, [33mEyeOff[0m, [33mCheckCircle[0m, [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/[id]/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+  [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m"next/navigation"[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mGlobe[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m5 |[0m [36mimport[0m { useCallback, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/drafts/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/[id]/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter, useParams } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/profile/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mShield[0m, [33mCalendar[0m, [33mSave[0m, [33mLock[0m, [33mCheckCircle2[0m, [33mAlertCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/sent/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mSend[0m, [33mSearch[0m, [33mArrowLeft[0m, [33mTrash2[0m, [33mStar[0m } [36mfrom[0m [32m"lucide-react"[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/settings/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/spam/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mShield[0m, [33mInbox[0m, [33mTrash2[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/teams/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mUsers[0m, [33mPlus[0m, [33mTrash2[0m, [33mUserPlus[0m, [33mCrown[0m, [33mShield[0m, [33mUser[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/trash/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mTrash2[0m, [33mRotateCcw[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/forgot-password/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/register/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/reset-password/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/verify-email/page.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./page.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mSuspense[0m, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+
+./src/components/bulk-action-bar.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./bulk-action-bar.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mReactNode[0m } [36mfrom[0m [32m'react'[0m;
+  [90m5 |[0m [36mimport[0m { [33mX[0m } [36mfrom[0m [32m'lucide-react'[0m;
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/bulk-action-bar.tsx
+    ./src/app/dashboard/trash/page.tsx
+
+
+./src/components/main-nav.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./main-nav.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m'use client'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { usePathname } [36mfrom[0m [32m'next/navigation'[0m;
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/main-nav.tsx
+    ./src/app/dashboard/layout.tsx
+
+
+./src/components/ui/checkbox.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./checkbox.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m * [36mas[0m [33mCheckboxPrimitive[0m [36mfrom[0m [32m"@radix-ui/react-checkbox"[0m
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/ui/checkbox.tsx
+    ./src/app/dashboard/trash/page.tsx
+
+
+./src/components/ui/dialog.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./dialog.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m * [36mas[0m [33mDialogPrimitive[0m [36mfrom[0m [32m"@radix-ui/react-dialog"[0m
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/ui/dialog.tsx
+    ./src/app/dashboard/teams/page.tsx
+
+
+./src/components/ui/dropdown-menu.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./dropdown-menu.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m * [36mas[0m [33mDropdownMenuPrimitive[0m [36mfrom[0m [32m"@radix-ui/react-dropdown-menu"[0m
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./src/components/ui/dropdown-menu.tsx [Client Component Browser]
+    ./src/components/user-nav.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/ui/dropdown-menu.tsx [Client Component SSR]
+    ./src/components/user-nav.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+
+./src/components/ui/select.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./select.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m * [36mas[0m [33mSelectPrimitive[0m [36mfrom[0m [32m"@radix-ui/react-select"[0m
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/ui/select.tsx
+    ./src/app/dashboard/inbox/page.tsx
+
+
+./src/components/ui/sheet.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./sheet.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m * [36mas[0m [33mSheetPrimitive[0m [36mfrom[0m [32m"@radix-ui/react-dialog"[0m
+
+Ecmascript file had an error
+
+Import traces:
+  Server Component:
+    ./src/components/ui/sheet.tsx
+    ./src/components/ui/sidebar.tsx
+    ./src/app/dashboard/layout.tsx
+
+  Client Component Browser:
+    ./src/components/ui/sheet.tsx [Client Component Browser]
+    ./src/components/ui/sidebar.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/ui/sheet.tsx [Client Component SSR]
+    ./src/components/ui/sidebar.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+
+./src/components/ui/sidebar.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./sidebar.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m { [33mSlot[0m } [36mfrom[0m [32m"@radix-ui/react-slot"[0m
+
+Ecmascript file had an error
+
+Import traces:
+  Server Component:
+    ./src/components/ui/sidebar.tsx
+    ./src/app/dashboard/layout.tsx
+
+  Client Component Browser:
+    ./src/components/ui/sidebar.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/ui/sidebar.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+
+./src/components/ui/toast.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./toast.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m * [36mas[0m [33mReact[0m [36mfrom[0m [32m"react"[0m
+  [90m5 |[0m [36mimport[0m * [36mas[0m [33mToastPrimitives[0m [36mfrom[0m [32m"@radix-ui/react-toast"[0m
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/ui/toast.tsx
+    ./src/components/ui/toaster.tsx
+    ./src/app/layout.tsx
+
+
+./src/components/ui/toaster.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./toaster.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useToast } [36mfrom[0m [32m"@/hooks/use-toast"[0m
+  [90m5 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/ui/toaster.tsx
+    ./src/app/layout.tsx
+
+
+./src/components/user-nav.tsx:2:1
+The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+  [90m1 |[0m [36mimport[0m styles [36mfrom[0m [32m'./user-nav.module.css'[0m;
+[31m[1m>[0m [90m2 |[0m [32m"use client"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^[0m
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m5 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./src/components/user-nav.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Client Component Browser]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/user-nav.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Client Component SSR]
+    ./src/components/app-header.tsx [Server Component]
+    ./src/app/dashboard/layout.tsx [Server Component]
+
+
+./src/app/dashboard/accounts/page.tsx:4:27
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mReact[0m, { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                           [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mMail[0m, [33mTrash[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/[id]/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m } [36mf...[0m
+  [90m7 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mCheckCircle[0m, [33mGlobe[0m, [33mShield[0m, [33mUsers[0m, [33mXCircle[0m, [33mAlertCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { format } [36mfrom[0m [32m'date-fns'[0m;
+  [90m7 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mUsers[0m, [33mGlobe[0m, [33mShield[0m, [33mActivity[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { useAuthClient } [36mfrom[0m [32m'@/lib/auth-provider'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/server-dns/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mShieldCheck[0m, [33m...[0m
+  [90m6 |[0m
+  [90m7 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m"@/components/ui/badge"[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/server/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mCard[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardContent[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m6 |[0m [36mimport[0m { [33mTable[0m, [33mTableHeader[0m, [33mTableRow[0m, [33mTableHead[0m, [33mTableBody[0m, [33mTableCell[0m } [36mfrom[0m [32m'@/components...[0m
+  [90m7 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m'@/components/ui/badge'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/users/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m
+  [90m7 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mAdminUsersPage[0m() {
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/archive/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mArchive[0m, [33mInbox[0m, [33mTrash2[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/billing/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mGlobe[0m, [33mUsers[0m, [33mMail[0m, [33mHardDrive[0m, [33mCheckCircle[0m, [33mArrowUpCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/compose/page.tsx:4:20
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useState, useEffect, useRef, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                    [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mPaperclip[0m, [33mSend[0m, [33mTrash[0m, [33mSave[0m, [33mX[0m, [33mFile[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/developer/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mKey[0m, [33mPlus[0m, [33mTrash2[0m, [33mCopy[0m, [33mEye[0m, [33mEyeOff[0m, [33mCheckCircle[0m, [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardDescription[0m, [33mCardHeader[0m, [33mCardTitle[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/[id]/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m"next/navigation"[0m;
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mSp...[0m
+  [90m7 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/page.tsx:5:23
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mGlobe[0m } [36mfrom[0m [32m'lucide-react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useCallback, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                       [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { useForm } [36mfrom[0m [32m'react-hook-form'[0m;
+  [90m8 |[0m [36mimport[0m { zodResolver } [36mfrom[0m [32m'@hookform/resolvers/zod'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/drafts/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mFileText[0m, [33mTrash2[0m, [33mClock[0m, [33mEdit[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/[id]/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mArrowLeft[0m, [33mMail[0m, [33mClock[0m, [33mStar[0m, [33mArchive[0m, [33mTrash2[0m, [33mReply[0m, [33mForward[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mSearch[0m, [33mMail[0m, [33mMailOpen[0m, [33mClock[0m, [33mArchive[0m, [33mTrash2[0m, [33mRefreshCw[0m, [33mStar[0m, [33mShield[0m, [33mBookOpen[0m,.[33m..[0m
+  [90m7 |[0m [36mimport[0m { [33mInput[0m } [36mfrom[0m [32m'@/components/ui/input'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m
+  [90m6 |[0m [36mimport[0m {
+  [90m7 |[0m   [33mCard[0m,
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/profile/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mShield[0m, [33mCalendar[0m, [33mSave[0m, [33mLock[0m, [33mCheckCircle2[0m, [33mAlertCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/sent/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mSend[0m, [33mSearch[0m, [33mArrowLeft[0m, [33mTrash2[0m, [33mStar[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m"@/components/ui/card"[0m;
+  [90m7 |[0m [36mimport[0m { [33mInput[0m } [36mfrom[0m [32m'@/components/ui/input'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/settings/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mBell[0m, [33mAlertTriangle[0m, [33mMail[0m, [33mCheckCircle[0m, [33mXCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/spam/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mShield[0m, [33mInbox[0m, [33mTrash2[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/teams/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mUsers[0m, [33mPlus[0m, [33mTrash2[0m, [33mUserPlus[0m, [33mCrown[0m, [33mShield[0m, [33mUser[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/trash/page.tsx:4:10
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mTrash2[0m, [33mRotateCcw[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/page.tsx:5:20
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                    [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/register/page.tsx:5:20
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                    [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/reset-password/page.tsx:5:20
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState, useEffect, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                    [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m, [33mArrowLeft[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/verify-email/page.tsx:4:20
+You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { [33mSuspense[0m, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                    [31m[1m^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/[id]/page.tsx:5:10
+You're importing a module that depends on `useParams` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m } [36mf...[0m
+  [90m7 |[0m
+  [90m8 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m'@/components/ui/badge'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/[id]/page.tsx:5:10
+You're importing a module that depends on `useParams` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m"next/navigation"[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mSp...[0m
+  [90m7 |[0m
+  [90m8 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m"@/components/ui/badge"[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/[id]/page.tsx:5:21
+You're importing a module that depends on `useParams` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter, useParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mArrowLeft[0m, [33mMail[0m, [33mClock[0m, [33mStar[0m, [33mArchive[0m, [33mTrash2[0m, [33mReply[0m, [33mForward[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m'@/components/ui/badge'[0m;
+
+Ecmascript file had an error
+
+
+./src/components/main-nav.tsx:5:10
+You're importing a module that depends on `usePathname` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { usePathname } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m {
+  [90m7 |[0m   [33mFileText[0m,
+  [90m8 |[0m   [33mGlobe[0m,
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/main-nav.tsx
+    ./src/app/dashboard/layout.tsx
+
+
+./src/app/dashboard/compose/page.tsx:4:31
+You're importing a module that depends on `useRef` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useState, useEffect, useRef, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                               [31m[1m^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mPaperclip[0m, [33mSend[0m, [33mTrash[0m, [33mSave[0m, [33mX[0m, [33mFile[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/accounts/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mReact[0m, { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mMail[0m, [33mTrash[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/[id]/page.tsx:5:21
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m } [36mf...[0m
+  [90m7 |[0m
+  [90m8 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m'@/components/ui/badge'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/page.tsx:14:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m12 |[0m [36mimport[0m { [33mTable[0m, [33mTableBody[0m, [33mTableCell[0m, [33mTableHead[0m, [33mTableHeader[0m, [33mTableRow[0m } [36mfrom[0m [32m'@/component...[0m
+  [90m13 |[0m [36mimport[0m { useAuthClient } [36mfrom[0m [32m'@/lib/auth-provider'[0m;
+[31m[1m>[0m [90m14 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m   |[0m          [31m[1m^^^^^^^^^[0m
+  [90m15 |[0m [36mimport[0m { useToast } [36mfrom[0m [32m'@/components/ui/use-toast'[0m;
+  [90m16 |[0m
+  [90m17 |[0m [36minterface[0m [33mUser[0m {
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/page.tsx:8:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m 6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m 7 |[0m [36mimport[0m { useAuthClient } [36mfrom[0m [32m'@/lib/auth-provider'[0m;
+[31m[1m>[0m [90m 8 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m   |[0m          [31m[1m^^^^^^^^^[0m
+  [90m 9 |[0m [36mimport[0m { useToast } [36mfrom[0m [32m'@/components/ui/use-toast'[0m;
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mAdminDashboardPage[0m() {
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/users/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m
+  [90m7 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mAdminUsersPage[0m() {
+  [90m8 |[0m   [36mconst[0m router = useRouter();
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/compose/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useState, useEffect, useRef, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mPaperclip[0m, [33mSend[0m, [33mTrash[0m, [33mSave[0m, [33mX[0m, [33mFile[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/[id]/page.tsx:5:21
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m"next/navigation"[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mSp...[0m
+  [90m7 |[0m
+  [90m8 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m"@/components/ui/badge"[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/page.tsx:6:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m4 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mGlobe[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m5 |[0m [36mimport[0m { useCallback, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m { useForm } [36mfrom[0m [32m'react-hook-form'[0m;
+  [90m8 |[0m [36mimport[0m { zodResolver } [36mfrom[0m [32m'@hookform/resolvers/zod'[0m;
+  [90m9 |[0m [36mimport[0m * [36mas[0m z [36mfrom[0m [32m'zod'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/drafts/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mFileText[0m, [33mTrash2[0m, [33mClock[0m, [33mEdit[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/[id]/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter, useParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mArrowLeft[0m, [33mMail[0m, [33mClock[0m, [33mStar[0m, [33mArchive[0m, [33mTrash2[0m, [33mReply[0m, [33mForward[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m'@/components/ui/badge'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mSearch[0m, [33mMail[0m, [33mMailOpen[0m, [33mClock[0m, [33mArchive[0m, [33mTrash2[0m, [33mRefreshCw[0m, [33mStar[0m, [33mShield[0m, [33mBookOpen[0m,.[33m..[0m
+  [90m7 |[0m [36mimport[0m { [33mInput[0m } [36mfrom[0m [32m'@/components/ui/input'[0m;
+  [90m8 |[0m [36mimport[0m { cn } [36mfrom[0m [32m'@/lib/utils'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/settings/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mBell[0m, [33mAlertTriangle[0m, [33mMail[0m, [33mCheckCircle[0m, [33mXCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/page.tsx:6:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/register/page.tsx:6:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/reset-password/page.tsx:6:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m, [33mArrowLeft[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m9 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+
+./src/app/verify-email/page.tsx:5:10
+You're importing a module that depends on `useRouter` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mSuspense[0m, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/compose/page.tsx:5:21
+You're importing a module that depends on `useSearchParams` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { useState, useEffect, useRef, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mPaperclip[0m, [33mSend[0m, [33mTrash[0m, [33mSave[0m, [33mX[0m, [33mFile[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/reset-password/page.tsx:6:21
+You're importing a module that depends on `useSearchParams` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m5 |[0m [36mimport[0m { useState, useEffect, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m, [33mArrowLeft[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m9 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+
+./src/app/verify-email/page.tsx:5:21
+You're importing a module that depends on `useSearchParams` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mSuspense[0m, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/accounts/page.tsx:4:17
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mReact[0m, { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                 [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mMail[0m, [33mTrash[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/[id]/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m } [36mf...[0m
+  [90m7 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/domains/page.tsx:4:30
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                              [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mCheckCircle[0m, [33mGlobe[0m, [33mShield[0m, [33mUsers[0m, [33mXCircle[0m, [33mAlertCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { format } [36mfrom[0m [32m'date-fns'[0m;
+  [90m7 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mUsers[0m, [33mGlobe[0m, [33mShield[0m, [33mActivity[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { useAuthClient } [36mfrom[0m [32m'@/lib/auth-provider'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/server-dns/page.tsx:4:30
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+  [90m  |[0m                              [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mShieldCheck[0m, [33m...[0m
+  [90m6 |[0m
+  [90m7 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m"@/components/ui/badge"[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/admin/server/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mCard[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardContent[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m6 |[0m [36mimport[0m { [33mTable[0m, [33mTableHeader[0m, [33mTableRow[0m, [33mTableHead[0m, [33mTableBody[0m, [33mTableCell[0m } [36mfrom[0m [32m'@/components...[0m
+  [90m7 |[0m [36mimport[0m { [33mBadge[0m } [36mfrom[0m [32m'@/components/ui/badge'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/archive/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mArchive[0m, [33mInbox[0m, [33mTrash2[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/billing/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mGlobe[0m, [33mUsers[0m, [33mMail[0m, [33mHardDrive[0m, [33mCheckCircle[0m, [33mArrowUpCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/compose/page.tsx:4:10
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useState, useEffect, useRef, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mPaperclip[0m, [33mSend[0m, [33mTrash[0m, [33mSave[0m, [33mX[0m, [33mFile[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/developer/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mKey[0m, [33mPlus[0m, [33mTrash2[0m, [33mCopy[0m, [33mEye[0m, [33mEyeOff[0m, [33mCheckCircle[0m, [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardDescription[0m, [33mCardHeader[0m, [33mCardTitle[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/[id]/page.tsx:4:30
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useMemo, useState } [36mfrom[0m [32m"react"[0m;
+  [90m  |[0m                              [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useParams, useRouter } [36mfrom[0m [32m"next/navigation"[0m;
+  [90m6 |[0m [36mimport[0m { [33mAlertTriangle[0m, [33mArrowLeft[0m, [33mCheckCircle2[0m, [33mCopy[0m, [33mDownload[0m, [33mRefreshCw[0m, [33mShieldAlert[0m, [33mSp...[0m
+  [90m7 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/domains/page.tsx:5:34
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m { [33mPlusCircle[0m, [33mGlobe[0m } [36mfrom[0m [32m'lucide-react'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useCallback, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                                  [31m[1m^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { useForm } [36mfrom[0m [32m'react-hook-form'[0m;
+  [90m8 |[0m [36mimport[0m { zodResolver } [36mfrom[0m [32m'@hookform/resolvers/zod'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/drafts/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mFileText[0m, [33mTrash2[0m, [33mClock[0m, [33mEdit[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/[id]/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mArrowLeft[0m, [33mMail[0m, [33mClock[0m, [33mStar[0m, [33mArchive[0m, [33mTrash2[0m, [33mReply[0m, [33mForward[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/inbox/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mSearch[0m, [33mMail[0m, [33mMailOpen[0m, [33mClock[0m, [33mArchive[0m, [33mTrash2[0m, [33mRefreshCw[0m, [33mStar[0m, [33mShield[0m, [33mBookOpen[0m,.[33m..[0m
+  [90m7 |[0m [36mimport[0m { [33mInput[0m } [36mfrom[0m [32m'@/components/ui/input'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m
+  [90m6 |[0m [36mimport[0m {
+  [90m7 |[0m   [33mCard[0m,
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/profile/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mShield[0m, [33mCalendar[0m, [33mSave[0m, [33mLock[0m, [33mCheckCircle2[0m, [33mAlertCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/sent/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mSend[0m, [33mSearch[0m, [33mArrowLeft[0m, [33mTrash2[0m, [33mStar[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m"@/components/ui/card"[0m;
+  [90m7 |[0m [36mimport[0m { [33mInput[0m } [36mfrom[0m [32m'@/components/ui/input'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/settings/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mBell[0m, [33mAlertTriangle[0m, [33mMail[0m, [33mCheckCircle[0m, [33mXCircle[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/spam/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mShield[0m, [33mInbox[0m, [33mTrash2[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/teams/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mUsers[0m, [33mPlus[0m, [33mTrash2[0m, [33mUserPlus[0m, [33mCrown[0m, [33mShield[0m, [33mUser[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m, [33mCardHeader[0m, [33mCardTitle[0m, [33mCardDescription[0m } [36mfrom[0m [32m'@/components/ui/...[0m
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/dashboard/trash/page.tsx:4:21
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m'use client'[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { useEffect, useState, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                     [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { [33mTrash2[0m, [33mRotateCcw[0m, [33mClock[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m6 |[0m [36mimport[0m { [33mCard[0m, [33mCardContent[0m } [36mfrom[0m [32m'@/components/ui/card'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/forgot-password/page.tsx:5:10
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { [33mMail[0m, [33mArrowLeft[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+  [90m8 |[0m [36mimport[0m {
+
+Ecmascript file had an error
+
+
+./src/app/page.tsx:5:10
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/register/page.tsx:5:10
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState, useEffect } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m
+
+Ecmascript file had an error
+
+
+./src/app/reset-password/page.tsx:5:10
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m3 |[0m
+  [90m4 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m { useState, useEffect, [33mSuspense[0m } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m7 |[0m [36mimport[0m { [33mMail[0m, [33mEye[0m, [33mEyeOff[0m, [33mArrowLeft[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m8 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/app/verify-email/page.tsx:4:31
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [90m2 |[0m [32m"use client"[0m;
+  [90m3 |[0m
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { [33mSuspense[0m, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m                               [31m[1m^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m { useRouter, useSearchParams } [36mfrom[0m [32m'next/navigation'[0m;
+  [90m6 |[0m [36mimport[0m { [33mMail[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m7 |[0m [36mimport[0m { [33mButton[0m } [36mfrom[0m [32m'@/components/ui/button'[0m;
+
+Ecmascript file had an error
+
+
+./src/hooks/use-email-selection.ts:1:10
+You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+[31m[1m>[0m [90m1 |[0m [36mimport[0m { useState, useCallback, useMemo } [36mfrom[0m [32m'react'[0m;
+  [90m  |[0m          [31m[1m^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mfunction[0m useEmailSelection(allIds: string[]) {
+  [90m4 |[0m   [36mconst[0m [selectedIds, setSelectedIds] = useState<[33mSet[0m<string>>([36mnew[0m [33mSet[0m());
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/hooks/use-email-selection.ts
+    ./src/app/dashboard/trash/page.tsx
+
+
+./src/app/dashboard/domains/page.tsx:7:1
+Export useForm doesn't exist in target module
+  [90m 5 |[0m [36mimport[0m { useCallback, useEffect, useState } [36mfrom[0m [32m'react'[0m;
+  [90m 6 |[0m [36mimport[0m { useRouter } [36mfrom[0m [32m'next/navigation'[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m { useForm } [36mfrom[0m [32m'react-hook-form'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m [36mimport[0m { zodResolver } [36mfrom[0m [32m'@hookform/resolvers/zod'[0m;
+  [90m 9 |[0m [36mimport[0m * [36mas[0m z [36mfrom[0m [32m'zod'[0m;
+  [90m10 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+
+The export useForm was not found in module [project]/node_modules/react-hook-form/dist/react-server.esm.mjs [app-rsc] (ecmascript).
+Did you mean to import set?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [/app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js:146:36])
+    at async run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:23) [/app/.next/build/chunks/[root-of-the-server]__0ubbtyl._.js:443:31])
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [/app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js:146:36])
+    at async run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:23) [/app/.next/build/chunks/[root-of-the-server]__0ubbtyl._.js:443:31])
+    at <unknown> (./src/app/dashboard/accounts/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/admin/domains/[id]/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/admin/domains/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/admin/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/admin/server-dns/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/admin/server/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/admin/users/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/archive/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/billing/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/compose/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/developer/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/domains/[id]/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/domains/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/drafts/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/inbox/[id]/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/inbox/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/profile/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/sent/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/settings/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/spam/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/teams/page.tsx:2:1)
+    at <unknown> (./src/app/dashboard/trash/page.tsx:2:1)
+    at <unknown> (./src/app/forgot-password/page.tsx:2:1)
+    at <unknown> (./src/app/page.tsx:2:1)
+    at <unknown> (./src/app/register/page.tsx:2:1)
+    at <unknown> (./src/app/reset-password/page.tsx:2:1)
+    at <unknown> (./src/app/verify-email/page.tsx:2:1)
+    at <unknown> (./src/components/bulk-action-bar.tsx:2:1)
+    at <unknown> (./src/components/main-nav.tsx:2:1)
+    at <unknown> (./src/components/ui/checkbox.tsx:2:1)
+    at <unknown> (./src/components/ui/dialog.tsx:2:1)
+    at <unknown> (./src/components/ui/dropdown-menu.tsx:2:1)
+    at <unknown> (./src/components/ui/select.tsx:2:1)
+    at <unknown> (./src/components/ui/sheet.tsx:2:1)
+    at <unknown> (./src/components/ui/sidebar.tsx:2:1)
+    at <unknown> (./src/components/ui/toast.tsx:2:1)
+    at <unknown> (./src/components/ui/toaster.tsx:2:1)
+    at <unknown> (./src/components/user-nav.tsx:2:1)
+    at <unknown> (./src/app/dashboard/accounts/page.tsx:4:27)
+    at <unknown> (./src/app/dashboard/admin/domains/[id]/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/admin/domains/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/admin/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/admin/server-dns/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/admin/server/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/admin/users/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/archive/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/billing/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/compose/page.tsx:4:20)
+    at <unknown> (./src/app/dashboard/developer/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/domains/[id]/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/domains/page.tsx:5:23)
+    at <unknown> (./src/app/dashboard/drafts/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/inbox/[id]/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/inbox/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/profile/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/sent/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/settings/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/spam/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/teams/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/trash/page.tsx:4:10)
+    at <unknown> (./src/app/page.tsx:5:20)
+    at <unknown> (./src/app/register/page.tsx:5:20)
+    at <unknown> (./src/app/reset-password/page.tsx:5:20)
+    at <unknown> (./src/app/verify-email/page.tsx:4:20)
+    at <unknown> (./src/app/dashboard/admin/domains/[id]/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/domains/[id]/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/inbox/[id]/page.tsx:5:21)
+    at <unknown> (./src/components/main-nav.tsx:5:10)
+    at <unknown> (./src/app/dashboard/compose/page.tsx:4:31)
+    at <unknown> (./src/app/dashboard/accounts/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/admin/domains/[id]/page.tsx:5:21)
+    at <unknown> (./src/app/dashboard/admin/domains/page.tsx:14:10)
+    at <unknown> (./src/app/dashboard/admin/page.tsx:8:10)
+    at <unknown> (./src/app/dashboard/admin/users/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/compose/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/domains/[id]/page.tsx:5:21)
+    at <unknown> (./src/app/dashboard/domains/page.tsx:6:10)
+    at <unknown> (./src/app/dashboard/drafts/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/inbox/[id]/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/inbox/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/settings/page.tsx:5:10)
+    at <unknown> (./src/app/page.tsx:6:10)
+    at <unknown> (./src/app/register/page.tsx:6:10)
+    at <unknown> (./src/app/reset-password/page.tsx:6:10)
+    at <unknown> (./src/app/verify-email/page.tsx:5:10)
+    at <unknown> (./src/app/dashboard/compose/page.tsx:5:21)
+    at <unknown> (./src/app/reset-password/page.tsx:6:21)
+    at <unknown> (./src/app/verify-email/page.tsx:5:21)
+    at <unknown> (./src/app/dashboard/accounts/page.tsx:4:17)
+    at <unknown> (./src/app/dashboard/admin/domains/[id]/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/admin/domains/page.tsx:4:30)
+    at <unknown> (./src/app/dashboard/admin/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/admin/server-dns/page.tsx:4:30)
+    at <unknown> (./src/app/dashboard/admin/server/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/archive/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/billing/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/compose/page.tsx:4:10)
+    at <unknown> (./src/app/dashboard/developer/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/domains/[id]/page.tsx:4:30)
+    at <unknown> (./src/app/dashboard/domains/page.tsx:5:34)
+    at <unknown> (./src/app/dashboard/drafts/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/inbox/[id]/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/inbox/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/profile/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/sent/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/settings/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/spam/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/teams/page.tsx:4:21)
+    at <unknown> (./src/app/dashboard/trash/page.tsx:4:21)
+    at <unknown> (./src/app/forgot-password/page.tsx:5:10)
+    at <unknown> (./src/app/page.tsx:5:10)
+    at <unknown> (./src/app/register/page.tsx:5:10)
+    at <unknown> (./src/app/reset-password/page.tsx:5:10)
+    at <unknown> (./src/app/verify-email/page.tsx:4:31)
+    at <unknown> (./src/hooks/use-email-selection.ts:1:10)
+    at <unknown> (./src/app/dashboard/domains/page.tsx:7:1)
+npm notice
+npm notice New major version of npm available! 10.9.7 -> 11.14.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.14.1
+npm notice To update run: npm install -g npm@11.14.1
+npm notice

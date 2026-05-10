@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -80,54 +81,54 @@ export default function SettingsPage() {
   };
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view settings.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view settings.</div>;
   }
 
   if (isLoading) {
     return (
-      <div className="py-12">
+      <div className={styles.nu_py12}>
         <LoadingSpinner size="md" text="Loading settings..." />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your account settings and preferences</p>
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_spaceY2}>
+        <h1 className={styles.nu_text2xl}>Settings</h1>
+        <p className={styles.nu_textSm}>Manage your account settings and preferences</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+          <CardTitle className={styles.nu_flex2}>
+            <Mail className={styles.nu_h5} />
             Account
           </CardTitle>
           <CardDescription>Your account information</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm font-medium">Email</span>
-            <span className="text-sm text-muted-foreground">{profile?.email}</span>
+        <CardContent className={styles.nu_spaceY3}>
+          <div className={styles.nu_flex3}>
+            <span className={styles.nu_textSm2}>Email</span>
+            <span className={styles.nu_textSm}>{profile?.email}</span>
           </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm font-medium">Verified</span>
+          <div className={styles.nu_flex3}>
+            <span className={styles.nu_textSm2}>Verified</span>
             {profile?.emailVerified ? (
-              <Badge variant="secondary" className="bg-green-500/10 text-green-600">
-                <CheckCircle className="h-3 w-3 mr-1" />
+              <Badge variant="secondary" className={styles.nu_bgGreen50010}>
+                <CheckCircle className={styles.nu_h3} />
                 Verified
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-destructive/10 text-destructive">
-                <XCircle className="h-3 w-3 mr-1" />
+              <Badge variant="secondary" className={styles.nu_bgDestructive10}>
+                <XCircle className={styles.nu_h3} />
                 Not verified
               </Badge>
             )}
           </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm font-medium">Member since</span>
-            <span className="text-sm text-muted-foreground">
+          <div className={styles.nu_flex3}>
+            <span className={styles.nu_textSm2}>Member since</span>
+            <span className={styles.nu_textSm}>
               {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-'}
             </span>
           </div>
@@ -136,17 +137,17 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
+          <CardTitle className={styles.nu_flex2}>
+            <Bell className={styles.nu_h5} />
             Notifications
           </CardTitle>
           <CardDescription>Configure how you receive notifications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <div className={styles.nu_flex4}>
+            <div className={styles.nu_spaceY05}>
               <Label htmlFor="email-notifications">Email notifications</Label>
-              <p className="text-xs text-muted-foreground">Receive email alerts for new messages</p>
+              <p className={styles.nu_textXs}>Receive email alerts for new messages</p>
             </div>
             <Switch
               id="email-notifications"
@@ -157,19 +158,19 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-destructive/50">
+      <Card className={styles.nu_borderDestructive50}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
+          <CardTitle className={styles.nu_flex5}>
+            <AlertTriangle className={styles.nu_h5} />
             Danger Zone
           </CardTitle>
           <CardDescription>Irreversible actions that affect your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium">Delete account</p>
-              <p className="text-xs text-muted-foreground">
+          <div className={styles.nu_flex4}>
+            <div className={styles.nu_spaceY05}>
+              <p className={styles.nu_textSm2}>Delete account</p>
+              <p className={styles.nu_textXs}>
                 Permanently delete your account and all associated data including domains, email accounts, and messages.
               </p>
             </div>
@@ -190,7 +191,7 @@ export default function SettingsPage() {
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDeleteAccount}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className={styles.nu_bgDestructive}
                   >
                     Delete Everything
                   </AlertDialogAction>

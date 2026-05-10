@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -59,73 +60,73 @@ export default function LoginPage() {
   }, [user, router]);
 
   return (
-    <div className="flex min-h-screen">
+    <div className={styles.nu_flex}>
       {/* Left panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center gradient-primary relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-        <div className="relative z-10 max-w-md px-8 text-white">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Mail className="h-6 w-6" />
+      <div className={styles.nu_hidden}>
+        <div className={styles.nu_absolute} style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        <div className={styles.nu_relative}>
+          <div className={styles.nu_flex2}>
+            <div className={styles.nu_h12}>
+              <Mail className={styles.nu_h6} />
             </div>
-            <span className="text-2xl font-bold">NubMail</span>
+            <span className={styles.nu_text2xl}>NubMail</span>
           </div>
-          <h2 className="text-3xl font-bold leading-tight mb-4">
+          <h2 className={styles.nu_text3xl}>
             Professional email for your custom domains
           </h2>
-          <p className="text-white/70 text-lg leading-relaxed">
+          <p className={styles.nu_textWhite70}>
             Send, receive, and manage emails with your own domain. Built-in SMTP, DKIM signing, and API access included.
           </p>
         </div>
       </div>
 
       {/* Right panel - Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-8 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden flex items-center justify-center gap-2">
-            <Mail className="h-7 w-7 text-primary" />
-            <span className="text-2xl font-bold">NubMail</span>
+      <div className={styles.nu_flex3}>
+        <div className={styles.nu_wFull}>
+          <div className={styles.nu_mb8}>
+            <Mail className={styles.nu_h7} />
+            <span className={styles.nu_text2xl}>NubMail</span>
           </div>
-          <div className="space-y-2 mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">Enter your credentials to sign in</p>
+          <div className={styles.nu_spaceY2}>
+            <h1 className={styles.nu_text2xl2}>Welcome back</h1>
+            <p className={styles.nu_textSm}>Enter your credentials to sign in</p>
           </div>
-          <form onSubmit={handleSubmit} className="grid gap-4" autoComplete="on">
-            <div className="grid gap-2">
+          <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+            <div className={styles.nu_grid2}>
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" name="email" autoComplete="username" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
+            <div className={styles.nu_grid2}>
+              <div className={styles.nu_flex4}>
                 <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" className="ml-auto inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">Forgot password?</Link>
+                <Link href="/forgot-password" className={styles.nu_mlAuto}>Forgot password?</Link>
               </div>
-              <div className="relative">
-                <Input id="password" type={showPassword ? "text" : "password"} name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
+              <div className={styles.nu_relative2}>
+                <Input id="password" type={showPassword ? "text" : "password"} name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className={styles.nu_pr10} />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  className={styles.nu_absolute2}
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className={styles.nu_h4} />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className={styles.nu_h4} />
                   )}
                 </Button>
               </div>
             </div>
             {errorMessage && (
-              <div role="alert" aria-live="polite" className="text-sm text-destructive">
+              <div role="alert" aria-live="polite" className={styles.nu_textSm2}>
                 {errorMessage}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
+            <Button type="submit" className={styles.nu_wFull2} disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
           </form>
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account? <Link href="/register" className="text-primary hover:underline font-medium">Sign up</Link>
+          <div className={styles.nu_mt6}>
+            Don&apos;t have an account? <Link href="/register" className={styles.nu_textPrimary}>Sign up</Link>
           </div>
         </div>
       </div>

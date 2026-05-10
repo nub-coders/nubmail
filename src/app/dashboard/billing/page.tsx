@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { Globe, Users, Mail, HardDrive, CheckCircle, ArrowUpCircle } from 'lucide-react';
@@ -56,91 +57,91 @@ export default function BillingPage() {
   }, [user]);
 
   if (!user) {
-    return <div className="py-8 text-center">You must be signed in to view billing.</div>;
+    return <div className={styles.nu_py8}>You must be signed in to view billing.</div>;
   }
 
   if (isLoading) {
     return (
-      <div className="py-12">
+      <div className={styles.nu_py12}>
         <LoadingSpinner size="md" text="Loading billing info..." />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-3xl">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
-        <p className="text-sm text-muted-foreground">Manage your plan and view usage</p>
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_spaceY2}>
+        <h1 className={styles.nu_text2xl}>Billing</h1>
+        <p className={styles.nu_textSm}>Manage your plan and view usage</p>
       </div>
 
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <Card className={styles.nu_borderPrimary20}>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className={styles.nu_flex2}>
             <div>
-              <CardTitle className="text-xl">Free Plan</CardTitle>
+              <CardTitle className={styles.nu_textXl}>Free Plan</CardTitle>
               <CardDescription>Your current subscription</CardDescription>
             </div>
-            <Badge variant="secondary" className="bg-primary/10 text-primary text-sm px-3 py-1">
+            <Badge variant="secondary" className={styles.nu_bgPrimary10}>
               Active
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3">
+          <div className={styles.nu_grid}>
             {FREE_PLAN_FEATURES.map((feature) => (
-              <div key={feature} className="flex items-center gap-2 text-sm">
-                <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+              <div key={feature} className={styles.nu_flex3}>
+                <CheckCircle className={styles.nu_h4} />
                 <span>{feature}</span>
               </div>
             ))}
           </div>
-          <div className="mt-6">
-            <Button disabled className="opacity-60">
-              <ArrowUpCircle className="h-4 w-4 mr-2" />
+          <div className={styles.nu_mt6}>
+            <Button disabled className={styles.nu_opacity60}>
+              <ArrowUpCircle className={styles.nu_h42} />
               Upgrade Plan
-              <span className="ml-2 text-xs">(Coming Soon)</span>
+              <span className={styles.nu_ml2}>(Coming Soon)</span>
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={styles.nu_grid2}>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Globe className="h-5 w-5 text-blue-500" />
+          <CardContent className={styles.nu_pt6}>
+            <div className={styles.nu_flex4}>
+              <div className={styles.nu_h10}>
+                <Globe className={styles.nu_h5} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.domains ?? '-'}</p>
-                <p className="text-xs text-muted-foreground">Domains</p>
+                <p className={styles.nu_text2xl2}>{stats?.domains ?? '-'}</p>
+                <p className={styles.nu_textXs}>Domains</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                <Users className="h-5 w-5 text-green-500" />
+          <CardContent className={styles.nu_pt6}>
+            <div className={styles.nu_flex4}>
+              <div className={styles.nu_h102}>
+                <Users className={styles.nu_h52} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.accounts ?? '-'}</p>
-                <p className="text-xs text-muted-foreground">Email Accounts</p>
+                <p className={styles.nu_text2xl2}>{stats?.accounts ?? '-'}</p>
+                <p className={styles.nu_textXs}>Email Accounts</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <Mail className="h-5 w-5 text-purple-500" />
+          <CardContent className={styles.nu_pt6}>
+            <div className={styles.nu_flex4}>
+              <div className={styles.nu_h103}>
+                <Mail className={styles.nu_h53} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.emailsSent ?? '-'}</p>
-                <p className="text-xs text-muted-foreground">Emails Sent</p>
+                <p className={styles.nu_text2xl2}>{stats?.emailsSent ?? '-'}</p>
+                <p className={styles.nu_textXs}>Emails Sent</p>
               </div>
             </div>
           </CardContent>
@@ -150,23 +151,23 @@ export default function BillingPage() {
       {accounts.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5" />
+            <CardTitle className={styles.nu_flex5}>
+              <HardDrive className={styles.nu_h54} />
               Storage Usage
             </CardTitle>
             <CardDescription>Storage allocation per email account</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className={styles.nu_spaceY4}>
               {accounts.map((account) => (
-                <div key={account.id} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{account.emailAddress}</span>
-                    <span className="text-muted-foreground">{account.storageQuota} MB allocated</span>
+                <div key={account.id} className={styles.nu_spaceY2}>
+                  <div className={styles.nu_flex6}>
+                    <span className={styles.nu_fontMedium}>{account.emailAddress}</span>
+                    <span className={styles.nu_textMutedForeground}>{account.storageQuota} MB allocated</span>
                   </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className={styles.nu_h2}>
                     <div
-                      className="h-full rounded-full bg-primary/60 transition-all"
+                      className={styles.nu_hFull}
                       style={{ width: '0%' }}
                     />
                   </div>

@@ -1,0 +1,3 @@
+.nu_relative {
+  @apply relative w-full overflow-auto;
+}

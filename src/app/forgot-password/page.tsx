@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import Link from 'next/link';
 import { useState } from 'react';
@@ -60,14 +61,14 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-      <Card className="mx-auto w-full max-w-sm shadow-elevated border-border/50">
-        <CardHeader className="text-center">
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">NubMail</h1>
+    <div className={styles.nu_flex}>
+      <Card className={styles.nu_mxAuto}>
+        <CardHeader className={styles.nu_textCenter}>
+          <div className={styles.nu_mb2}>
+            <Mail className={styles.nu_h8} />
+            <h1 className={styles.nu_text2xl}>NubMail</h1>
           </div>
-          <CardTitle className="text-2xl">Forgot Password</CardTitle>
+          <CardTitle className={styles.nu_text2xl2}>Forgot Password</CardTitle>
           <CardDescription>
             {sent 
               ? 'We\'ve sent you a password reset link' 
@@ -76,8 +77,8 @@ export default function ForgotPasswordPage() {
         </CardHeader>
         <CardContent>
           {!sent ? (
-            <form onSubmit={handleSubmit} className="grid gap-4" autoComplete="on">
-              <div className="grid gap-2">
+            <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+              <div className={styles.nu_grid2}>
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email" 
@@ -90,23 +91,23 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)} 
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className={styles.nu_wFull} disabled={loading}>
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </Button>
-              <Link href="/" className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />
+              <Link href="/" className={styles.nu_flex2}>
+                <ArrowLeft className={styles.nu_h4} />
                 Back to login
               </Link>
             </form>
           ) : (
-            <div className="space-y-4">
-              <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4">
-                <p className="text-sm text-foreground/80">
+            <div className={styles.nu_spaceY4}>
+              <div className={styles.nu_roundedXl}>
+                <p className={styles.nu_textSm}>
                   If an account exists with <strong>{email}</strong>, you will receive a password reset link shortly.
                 </p>
               </div>
-              <Link href="/" className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />
+              <Link href="/" className={styles.nu_flex2}>
+                <ArrowLeft className={styles.nu_h4} />
                 Back to login
               </Link>
             </div>

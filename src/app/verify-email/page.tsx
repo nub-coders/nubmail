@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -78,14 +79,14 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-      <Card className="mx-auto w-full max-w-md shadow-elevated border-border/50">
-        <CardHeader className="text-center">
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Verify your email</h1>
+    <div className={styles.nu_flex}>
+      <Card className={styles.nu_mxAuto}>
+        <CardHeader className={styles.nu_textCenter}>
+          <div className={styles.nu_mb2}>
+            <Mail className={styles.nu_h8} />
+            <h1 className={styles.nu_text2xl}>Verify your email</h1>
           </div>
-          <CardTitle className="text-lg">Email verification required</CardTitle>
+          <CardTitle className={styles.nu_textLg}>Email verification required</CardTitle>
           <CardDescription>
             {verified
               ? 'Your email is verified. Redirecting...'
@@ -96,10 +97,10 @@ function VerifyEmailContent() {
         </CardHeader>
         <CardContent>
           {verified ? (
-            <div className="text-center text-sm text-green-600">Email verified! Redirecting to dashboard...</div>
+            <div className={styles.nu_textCenter2}>Email verified! Redirecting to dashboard...</div>
           ) : linkSent ? (
-            <div className="grid gap-4">
-              <p className="text-sm text-muted-foreground">
+            <div className={styles.nu_grid}>
+              <p className={styles.nu_textSm}>
                 Open the email and click the verification link. If you cannot find it, check your spam folder.
               </p>
               <Button
@@ -107,23 +108,23 @@ function VerifyEmailContent() {
                 variant="outline"
                 onClick={handleSendLink}
                 disabled={loading}
-                className="w-full"
+                className={styles.nu_wFull}
               >
                 {loading ? 'Sending...' : 'Resend Verification Email'}
               </Button>
-              <Button type="button" variant="ghost" onClick={handleLogout} className="w-full mt-2">
+              <Button type="button" variant="ghost" onClick={handleLogout} className={styles.nu_wFull2}>
                 Log out
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4">
-              <p className="text-sm text-muted-foreground">
+            <div className={styles.nu_grid}>
+              <p className={styles.nu_textSm}>
                 Click below to receive a one-click verification link. The link will be valid for 30 minutes.
               </p>
-              <Button onClick={handleSendLink} disabled={loading} className="w-full">
+              <Button onClick={handleSendLink} disabled={loading} className={styles.nu_wFull}>
                 {loading ? 'Sending...' : 'Send Verification Email'}
               </Button>
-              <Button type="button" variant="ghost" onClick={handleLogout} className="w-full mt-2">
+              <Button type="button" variant="ghost" onClick={handleLogout} className={styles.nu_wFull2}>
                 Log out
               </Button>
             </div>
@@ -136,7 +137,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center p-4">Loading...</div>}>
+    <Suspense fallback={<div className={styles.nu_flex2}>Loading...</div>}>
       <VerifyEmailContent />
     </Suspense>
   );

@@ -1,4 +1,5 @@
 "use client"
+import styles from './menubar.module.css';
 
 import * as React from "react"
 import * as MenubarPrimitive from "@radix-ui/react-menubar"
@@ -82,7 +83,7 @@ const MenubarSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
+    <ChevronRight className={styles.nu_mlAuto} />
   </MenubarPrimitive.SubTrigger>
 ))
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
@@ -158,9 +159,9 @@ const MenubarCheckboxItem = React.forwardRef<
     checked={checked}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className={styles.nu_absolute}>
       <MenubarPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
+        <Check className={styles.nu_h4} />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}
@@ -180,9 +181,9 @@ const MenubarRadioItem = React.forwardRef<
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className={styles.nu_absolute}>
       <MenubarPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" />
+        <Circle className={styles.nu_h2} />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}

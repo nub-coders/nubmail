@@ -1,0 +1,11 @@
+.nu_h4 {
+  @apply h-4 w-4 opacity-50;
+}
+
+.nu_h42 {
+  @apply h-4 w-4;
+}
+
+.nu_absolute {
+  @apply absolute left-2 flex h-3.5 w-3.5 items-center justify-center;
+}

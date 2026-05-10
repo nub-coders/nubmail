@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle, Globe, Shield, Users, XCircle, AlertCircle } from 'lucide-react';
@@ -103,22 +104,22 @@ export default function AdminDomainsPage() {
     switch (status) {
       case 'verified':
         return (
-          <Badge variant="default" className="gap-1">
-            <CheckCircle className="h-3 w-3" />
+          <Badge variant="default" className={styles.nu_gap1}>
+            <CheckCircle className={styles.nu_h3} />
             Verified
           </Badge>
         );
       case 'failed':
         return (
-          <Badge variant="destructive" className="gap-1">
-            <XCircle className="h-3 w-3" />
+          <Badge variant="destructive" className={styles.nu_gap1}>
+            <XCircle className={styles.nu_h3} />
             Failed
           </Badge>
         );
       default:
         return (
-          <Badge variant="secondary" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
+          <Badge variant="secondary" className={styles.nu_gap1}>
+            <AlertCircle className={styles.nu_h3} />
             Pending
           </Badge>
         );
@@ -126,62 +127,62 @@ export default function AdminDomainsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Domain Management</h1>
-        <p className="text-muted-foreground">
+    <div className={styles.nu_flex}>
+      <div className={styles.nu_flex2}>
+        <h1 className={styles.nu_text2xl}>Domain Management</h1>
+        <p className={styles.nu_textMutedForeground}>
           Click a user to filter their domains, then click a domain to view DNS records.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className={styles.nu_grid}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={styles.nu_flex3}>
+            <CardTitle className={styles.nu_textSm}>Total Users</CardTitle>
+            <Users className={styles.nu_h4} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : users.length}</div>
-            <p className="text-xs text-muted-foreground">Select a user to drill down</p>
+            <div className={styles.nu_text2xl2}>{loading ? '...' : users.length}</div>
+            <p className={styles.nu_textXs}>Select a user to drill down</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Domains</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={styles.nu_flex3}>
+            <CardTitle className={styles.nu_textSm}>Total Domains</CardTitle>
+            <Globe className={styles.nu_h4} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : domains.length}</div>
-            <p className="text-xs text-muted-foreground">Across all users</p>
+            <div className={styles.nu_text2xl2}>{loading ? '...' : domains.length}</div>
+            <p className={styles.nu_textXs}>Across all users</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Verified Domains</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={styles.nu_flex3}>
+            <CardTitle className={styles.nu_textSm}>Verified Domains</CardTitle>
+            <CheckCircle className={styles.nu_h4} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : verifiedDomains}</div>
-            <p className="text-xs text-muted-foreground">DNS verified and active</p>
+            <div className={styles.nu_text2xl2}>{loading ? '...' : verifiedDomains}</div>
+            <p className={styles.nu_textXs}>DNS verified and active</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Filter</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={styles.nu_flex3}>
+            <CardTitle className={styles.nu_textSm}>Active Filter</CardTitle>
+            <Shield className={styles.nu_h4} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{selectedUser ? '1 user' : 'All users'}</div>
-            <p className="text-xs text-muted-foreground">{selectedUser ? selectedUser.email : 'Showing every domain'}</p>
+            <div className={styles.nu_text2xl2}>{selectedUser ? '1 user' : 'All users'}</div>
+            <p className={styles.nu_textXs}>{selectedUser ? selectedUser.email : 'Showing every domain'}</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <Card className="h-fit">
+      <div className={styles.nu_grid2}>
+        <Card className={styles.nu_hFit}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4" />
+            <CardTitle className={styles.nu_flex4}>
+              <Users className={styles.nu_h42} />
               Users
             </CardTitle>
             <CardDescription>
@@ -199,13 +200,13 @@ export default function AdminDomainsPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={2} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={2} className={styles.nu_py8}>
                       Loading users...
                     </TableCell>
                   </TableRow>
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={2} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={2} className={styles.nu_py8}>
                       No users found
                     </TableCell>
                   </TableRow>
@@ -220,18 +221,18 @@ export default function AdminDomainsPage() {
                         onClick={() => setSelectedUserId(item.id)}
                       >
                         <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium">{item.fullName || item.email}</span>
-                            <span className="text-xs text-muted-foreground">{item.email}</span>
+                          <div className={styles.nu_flex5}>
+                            <span className={styles.nu_fontMedium}>{item.fullName || item.email}</span>
+                            <span className={styles.nu_textXs}>{item.email}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <Badge variant={item.emailVerified ? 'default' : 'secondary'} className="w-fit gap-1">
-                              {item.isAdmin ? <Shield className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                          <div className={styles.nu_flex5}>
+                            <Badge variant={item.emailVerified ? 'default' : 'secondary'} className={styles.nu_wFit}>
+                              {item.isAdmin ? <Shield className={styles.nu_h3} /> : <CheckCircle className={styles.nu_h3} />}
                               {item.isAdmin ? 'Admin' : item.emailVerified ? 'Verified' : 'Unverified'}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">{domainCount} domains</span>
+                            <span className={styles.nu_textXs}>{domainCount} domains</span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -244,16 +245,16 @@ export default function AdminDomainsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <CardHeader className={styles.nu_flex6}>
             <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Globe className="h-4 w-4" />
+              <CardTitle className={styles.nu_flex4}>
+                <Globe className={styles.nu_h42} />
                 Domains
               </CardTitle>
               <CardDescription>
                 {selectedUser ? (
                   <>
-                    Showing domains for <span className="font-medium text-foreground">{selectedUser.email}</span>
+                    Showing domains for <span className={styles.nu_fontMedium2}>{selectedUser.email}</span>
                   </>
                 ) : loading ? 'Loading...' : `${domains.length} total domains`}
               </CardDescription>
@@ -272,28 +273,28 @@ export default function AdminDomainsPage() {
                   <TableHead>Owner</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className={styles.nu_textRight}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className={styles.nu_py8}>
                       Loading domains...
                     </TableCell>
                   </TableRow>
                 ) : visibleDomains.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className={styles.nu_py8}>
                       No domains found for the selected user
                     </TableCell>
                   </TableRow>
                 ) : (
                   visibleDomains.map((domain) => (
                     <TableRow key={domain.id}>
-                      <TableCell className="font-medium">
-                        <Link href={`/dashboard/admin/domains/${domain.id}`} className="flex items-center gap-2 text-primary hover:underline">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
+                      <TableCell className={styles.nu_fontMedium}>
+                        <Link href={`/dashboard/admin/domains/${domain.id}`} className={styles.nu_flex7}>
+                          <Globe className={styles.nu_h4} />
                           {domain.domainName}
                         </Link>
                       </TableCell>
@@ -301,14 +302,14 @@ export default function AdminDomainsPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedUserId(domain.userId)}
-                          className="text-left text-sm text-primary hover:underline"
+                          className={styles.nu_textLeft}
                         >
                           {domain.userEmail}
                         </button>
                       </TableCell>
                       <TableCell>{getStatusBadge(domain.verificationStatus)}</TableCell>
                       <TableCell>{format(new Date(domain.createdAt), 'MMM d, yyyy')}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className={styles.nu_textRight}>
                         <Button asChild variant="ghost" size="sm">
                           <Link href={`/dashboard/admin/domains/${domain.id}`}>View records</Link>
                         </Button>

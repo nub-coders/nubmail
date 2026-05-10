@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
@@ -70,9 +71,9 @@ function CopyButton({ text }: { text: string }) {
   };
 
   return (
-    <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 shrink-0" onClick={handleCopy} title="Copy">
-      {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-      <span className="sr-only">Copy</span>
+    <Button variant="ghost" size="icon" className={styles.nu_h6} onClick={handleCopy} title="Copy">
+      {copied ? <CheckCircle2 className={styles.nu_h35} /> : <Copy className={styles.nu_h352} />}
+      <span className={styles.nu_srOnly}>Copy</span>
     </Button>
   );
 }
@@ -104,7 +105,7 @@ function StatusBadge({ status }: { status: ServerDnsRecord["status"] }) {
   const { icon: Icon, label, className } = config[status];
   return (
     <Badge variant="outline" className={cn("gap-1", className)}>
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className={styles.nu_h353} />
       {label}
     </Badge>
   );
@@ -207,7 +208,7 @@ export default function AdminServerDnsPage() {
           <CardDescription>This page is only available to administrator accounts.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
+          <p className={styles.nu_textSm}>
             Contact an administrator if you believe you should have access.
           </p>
         </CardContent>
@@ -216,22 +217,22 @@ export default function AdminServerDnsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className={styles.nu_spaceY6}>
+      <div className={styles.nu_flex}>
         <div>
-          <h1 className="text-2xl font-semibold">Server DNS Setup</h1>
-          <p className="text-muted-foreground">
+          <h1 className={styles.nu_text2xl}>Server DNS Setup</h1>
+          <p className={styles.nu_textMutedForeground}>
             Configure authoritative DNS records required for the NubMail infrastructure.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className={styles.nu_flex2}>
           <Button variant="outline" onClick={fetchStatus} disabled={loading}>
             <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
             Refresh status
           </Button>
           {data && (
             <Button variant="outline" onClick={() => downloadBindFile(data.primaryDomain, data.records)}>
-              <Download className="mr-2 h-4 w-4" />
+              <Download className={styles.nu_mr2} />
               Download zone file
             </Button>
           )}
@@ -247,24 +248,24 @@ export default function AdminServerDnsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">Primary domain</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{data.primaryDomain}</span>
+            <div className={styles.nu_grid}>
+              <div className={styles.nu_roundedLg}>
+                <p className={styles.nu_textSm}>Primary domain</p>
+                <div className={styles.nu_mt2}>
+                  <ShieldCheck className={styles.nu_h4} />
+                  <span className={styles.nu_fontMedium}>{data.primaryDomain}</span>
                 </div>
               </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">Mail host</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{data.mailHost}</span>
+              <div className={styles.nu_roundedLg}>
+                <p className={styles.nu_textSm}>Mail host</p>
+                <div className={styles.nu_mt2}>
+                  <ShieldCheck className={styles.nu_h4} />
+                  <span className={styles.nu_fontMedium}>{data.mailHost}</span>
                 </div>
               </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">Configuration status</p>
-                <div className="mt-2">
+              <div className={styles.nu_roundedLg}>
+                <p className={styles.nu_textSm}>Configuration status</p>
+                <div className={styles.nu_mt22}>
                   <StatusBadge status={hasBlockingIssues ? "missing" : "configured"} />
                 </div>
               </div>
@@ -295,33 +296,33 @@ export default function AdminServerDnsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className={styles.nu_h24}>
                     Loading DNS status...
                   </TableCell>
                 </TableRow>
               ) : data ? (
                 data.records.map((record) => (
                   <TableRow key={record.key} className={cn(record.optional && "opacity-80")}> 
-                    <TableCell className="font-medium">{record.type}</TableCell>
+                    <TableCell className={styles.nu_fontMedium}>{record.type}</TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
+                      <div className={styles.nu_flex3}>
                         <span>{record.name}</span>
-                        <div className="flex items-center">
-                          <span className="text-xs text-muted-foreground">{record.host}</span>
+                        <div className={styles.nu_flex4}>
+                          <span className={styles.nu_textXs}>{record.host}</span>
                           <CopyButton text={record.host} />
                         </div>
                         {record.optional && (
-                          <span className="text-xs text-muted-foreground">Optional</span>
+                          <span className={styles.nu_textXs}>Optional</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center">
-                        <code className="break-all text-xs">{record.expectedValue}</code>
+                      <div className={styles.nu_flex4}>
+                        <code className={styles.nu_breakAll}>{record.expectedValue}</code>
                         <CopyButton text={record.expectedValue} />
                       </div>
                       {typeof record.priority === "number" && (
-                        <div className="text-xs text-muted-foreground">Priority {record.priority}</div>
+                        <div className={styles.nu_textXs}>Priority {record.priority}</div>
                       )}
                     </TableCell>
                     <TableCell>
@@ -329,25 +330,25 @@ export default function AdminServerDnsPage() {
                     </TableCell>
                     <TableCell>
                       {record.observedValues.length > 0 ? (
-                        <div className="flex flex-col gap-1">
+                        <div className={styles.nu_flex5}>
                           {record.observedValues.map((value, index) => (
-                            <code key={`${record.key}-${index}`} className="break-all text-xs">
+                            <code key={`${record.key}-${index}`} className={styles.nu_breakAll}>
                               {value}
                             </code>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">No records detected</span>
+                        <span className={styles.nu_textXs}>No records detected</span>
                       )}
                     </TableCell>
-                    <TableCell className="max-w-xs text-sm text-muted-foreground">
+                    <TableCell className={styles.nu_maxWXs}>
                       {record.message}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className={styles.nu_h24}>
                     {loadError ? `Unable to load server DNS data: ${loadError}` : "Server DNS data not available."}
                   </TableCell>
                 </TableRow>

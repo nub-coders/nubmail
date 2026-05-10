@@ -1,0 +1,19 @@
+.nu_mb6 {
+  @apply mb-6 rounded-2xl bg-muted/50 p-6 text-muted-foreground/30;
+}
+
+.nu_spaceY3 {
+  @apply space-y-3 max-w-md;
+}
+
+.nu_textLg {
+  @apply text-lg font-medium text-foreground;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground/80 leading-relaxed;
+}
+
+.nu_mt6 {
+  @apply mt-6;
+}

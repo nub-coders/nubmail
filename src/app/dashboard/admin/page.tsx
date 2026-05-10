@@ -1,4 +1,5 @@
 "use client";
+import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { Users, Globe, Shield, Activity } from 'lucide-react';
@@ -98,22 +99,22 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={styles.nu_flex}>
       <div>
-        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">System overview and management</p>
+        <h1 className={styles.nu_text2xl}>Admin Dashboard</h1>
+        <p className={styles.nu_textMutedForeground}>System overview and management</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className={styles.nu_grid}>
         {adminStats.map((stat) => (
           <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className={styles.nu_flex2}>
+              <CardTitle className={styles.nu_textSm}>{stat.title}</CardTitle>
+              <stat.icon className={styles.nu_h4} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
+              <div className={styles.nu_text2xl2}>{stat.value}</div>
+              <p className={styles.nu_textXs}>{stat.description}</p>
             </CardContent>
           </Card>
         ))}
@@ -123,25 +124,25 @@ export default function AdminDashboardPage() {
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className={styles.nu_grid2}>
           <button
             onClick={() => router.push('/dashboard/admin/domains')}
-            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+            className={styles.nu_flex3}
           >
-            <Globe className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Manage Domains</div>
-              <div className="text-sm text-muted-foreground">View users, domains, and DNS records</div>
+            <Globe className={styles.nu_h5} />
+            <div className={styles.nu_textLeft}>
+              <div className={styles.nu_fontMedium}>Manage Domains</div>
+              <div className={styles.nu_textSm2}>View users, domains, and DNS records</div>
             </div>
           </button>
           <button
             onClick={() => router.push('/dashboard/admin/server-dns')}
-            className="flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+            className={styles.nu_flex3}
           >
-            <Shield className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Server DNS</div>
-              <div className="text-sm text-muted-foreground">Check mail server DNS configuration</div>
+            <Shield className={styles.nu_h5} />
+            <div className={styles.nu_textLeft}>
+              <div className={styles.nu_fontMedium}>Server DNS</div>
+              <div className={styles.nu_textSm2}>Check mail server DNS configuration</div>
             </div>
           </button>
         </CardContent>
