@@ -81,7 +81,7 @@ async function verifyDnsRecord(
             const normalizedRecord = normalizeTxtMatch(recordValue);
             const normalizedExpected = normalizeTxtMatch(expectedValue);
             
-            // Extract the mail host from the expected value (e.g., "v=spf1 include:mails.nubcoder.com -all")
+            // Extract the mail host from the expected value if it has an include (legacy support)
             const includeMatch = normalizedExpected.match(/include:([^\s~]+)/);
             if (includeMatch) {
               const expectedHost = includeMatch[1];
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
         value: `nubmail-verification=${domain.verificationToken}`,
       },
       { key: 'mx1', type: 'MX', name: '@', value: mailHost, priority: 10 },
-      { key: 'spf', type: 'TXT', name: '@', value: `v=spf1 include:${mailHost} -all` },
+      { key: 'spf', type: 'TXT', name: '@', value: `v=spf1 mx -all` },
       { key: 'dmarc', type: 'TXT', name: '_dmarc', value: `v=DMARC1; p=quarantine; rua=mailto:dmarc@${normalizedDomain}` },
       { key: 'autodiscover', type: 'CNAME', name: 'autodiscover', value: mailHost },
       { key: 'autoconfig', type: 'CNAME', name: 'autoconfig', value: mailHost },
