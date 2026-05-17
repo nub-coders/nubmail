@@ -29,6 +29,7 @@ yarn-error.log*
 .env*.local
 .env.production
 .env.development
+.env.example
 
 # Vercel
 .vercel
@@ -48,6 +49,7 @@ yarn-error.log*
 # Docker
 Dockerfile
 docker-compose.yml
+docker-compose.override.yml
 .dockerignore
 
 # Documentation
@@ -58,3 +60,12 @@ docs
 # Logs
 logs
 *.log
+sync_certs.log
+build_output.log
+local_build_output.log
+local_build_output2.log
+
+# Scratch / temp files
+scratch
+maildata
+.claude

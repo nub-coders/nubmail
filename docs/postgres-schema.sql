@@ -147,9 +147,12 @@ CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);
 CREATE TABLE IF NOT EXISTS sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  session_token TEXT NOT NULL UNIQUE,
-  expires TIMESTAMPTZ NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  token_hash TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  user_agent TEXT,
+  ip_address TEXT,
+  is_active BOOLEAN DEFAULT TRUE
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);

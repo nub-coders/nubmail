@@ -138,11 +138,11 @@
   @apply text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap break-words leading-relaxed;
 }
 
-.nu_flex12 {
+.nu_flex12b {
   @apply flex flex-col items-end gap-2 flex-shrink-0;
 }
 
-.nu_flex13 {
+.nu_flex13b {
   @apply flex items-center gap-2;
 }
 

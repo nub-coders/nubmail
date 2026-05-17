@@ -380,8 +380,8 @@ export default function InboxPage() {
                       </div>
 
                       {/* Right side - Meta info */}
-                      <div className={styles.nu_flex12}>
-                        <div className={styles.nu_flex13}>
+                      <div className={styles.nu_flex12b}>
+                        <div className={styles.nu_flex13b}>
                           <span className={cn(
                             'text-xs font-medium',
                             !email.read ? 'text-foreground' : 'text-muted-foreground'

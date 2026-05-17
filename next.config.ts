@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone',
   typescript: {
+    // TODO: Fix chart.tsx type errors then set to false
     ignoreBuildErrors: true,
   },
   images: {

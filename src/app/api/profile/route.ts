@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
-import { AUTH_COOKIE_NAME, buildAuthCookieOptions } from '@/lib/auth-token';
+import { AUTH_COOKIE_NAME, buildAuthCookieOptions, getTokenFromRequest, createSession, invalidateSession } from '@/lib/auth-token';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,6 +28,12 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const ip = getClientIP(req.headers);
+    const rl = rateLimit(`profile-patch:${ip}`, 10, 15 * 60 * 1000);
+    if (rl.limited) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.retryAfterMs || 0) / 1000)) } });
+    }
+
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -66,9 +73,21 @@ export async function PATCH(req: NextRequest) {
     let token: string | undefined;
     if (secret) {
       token = sign(
-        { sub: String(updated.id), email: updated.email, emailVerified: !!updated.emailVerified, isAdmin: !!updated.isAdmin },
+        { sub: String(updated.id), email: updated.email, fullName: updated.fullName || null, emailVerified: !!updated.emailVerified, isAdmin: !!updated.isAdmin },
         secret,
         { expiresIn: '7d' }
+      );
+
+      // Invalidate old session and register the new token
+      const oldToken = getTokenFromRequest(req);
+      if (oldToken) {
+        await invalidateSession(oldToken);
+      }
+      await createSession(
+        String(updated.id),
+        token,
+        req.headers.get('user-agent') || undefined,
+        ip || undefined
       );
     }
 
