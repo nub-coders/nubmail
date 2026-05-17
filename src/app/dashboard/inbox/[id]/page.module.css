@@ -26,14 +26,69 @@
   @apply h-4 w-4 mr-2;
 }
 
+/* Main wrapper */
 .nu_flex3 {
-  @apply flex flex-col gap-6 h-full max-w-6xl mx-auto;
+  @apply flex flex-col gap-4 h-full;
 }
 
+/* Compact header row */
 .nu_flex4 {
-  @apply flex items-center justify-between p-6 border-b bg-muted/30 rounded-lg;
+  @apply flex items-start justify-between gap-3 px-4 py-3 border-b bg-muted/30 rounded-lg;
 }
 
+/* Left side of header */
+.nu_headerLeft {
+  @apply flex flex-col gap-1 min-w-0 flex-1;
+}
+
+/* Subject line */
+.nu_text2xl {
+  @apply text-base font-semibold leading-tight truncate;
+}
+
+/* Inline meta row: avatar · sender → recipients · date */
+.nu_metaRow {
+  @apply flex items-center gap-1.5 flex-wrap text-xs text-muted-foreground;
+}
+
+.nu_senderAvatar {
+  @apply h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0;
+}
+
+.nu_avatarLetter {
+  @apply text-[10px] font-medium text-primary;
+}
+
+.nu_senderName {
+  @apply font-medium text-foreground/80 truncate max-w-[180px];
+}
+
+.nu_metaSep {
+  @apply text-muted-foreground/50 flex-shrink-0;
+}
+
+.nu_recipientText {
+  @apply truncate max-w-[180px];
+}
+
+.nu_clockIcon {
+  @apply h-3 w-3 flex-shrink-0;
+}
+
+.nu_dateText {
+  @apply flex-shrink-0;
+}
+
+/* Three-dot button */
+.nu_dotBtn {
+  @apply h-8 w-8 flex-shrink-0;
+}
+
+.nu_dotIcon {
+  @apply h-4 w-4;
+}
+
+/* Kept for compatibility */
 .nu_flex5 {
   @apply flex items-center gap-3;
 }
@@ -56,18 +111,6 @@
 
 .nu_textDestructive {
   @apply text-destructive hover:text-destructive;
-}
-
-.nu_px6 {
-  @apply px-6 py-4 border-b bg-background rounded-lg;
-}
-
-.nu_spaceY4 {
-  @apply space-y-4;
-}
-
-.nu_text2xl {
-  @apply text-2xl font-semibold leading-tight mb-2;
 }
 
 .nu_flex7 {
@@ -111,7 +154,7 @@
 }
 
 .nu_flex1 {
-  @apply flex-1 overflow-auto px-6 py-6 bg-background rounded-lg;
+  @apply flex-1 overflow-auto px-5 py-4 bg-background rounded-lg;
 }
 
 .nu_maxWNone {
@@ -129,7 +172,7 @@
 }
 
 .nu_px62 {
-  @apply px-6 py-4 border-t bg-muted/20 rounded-lg;
+  @apply px-4 py-3 border-t bg-muted/20 rounded-lg;
 }
 
 .nu_flex9 {

@@ -122,7 +122,7 @@ export default function DomainDnsPage() {
     try {
       const res = await fetch(`/api/domains/dns-status?domainId=${domainId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -261,32 +261,44 @@ export default function DomainDnsPage() {
             <ArrowLeft className={styles.h4} />
           </Button>
           <div>
-            <h1 className={styles.text2xl}>Domain DNS Setup</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className={styles.text2xl}>{data?.domainName || 'Domain Setup'}</h1>
+              {data && (
+                <>
+                  <Badge
+                    variant={data.verificationStatus === 'verified' ? 'default' : 'secondary'}
+                    className={data.verificationStatus === 'verified' ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}
+                  >
+                    {data.verificationStatus}
+                  </Badge>
+                  <StatusBadge status={allVerified ? "verified" : hasFailedRecords ? "failed" : "not_checked"} />
+                </>
+              )}
+            </div>
             <p className={styles.textMutedForeground}>
-              Configure DNS records for {data?.domainName || 'your domain'}
+              {data ? `Last checked ${new Date(data.lastChecked).toLocaleString()}` : 'Configure DNS records for your domain'}
             </p>
           </div>
         </div>
         <div className={styles.flex4}>
           <Button variant="outline" onClick={fetchDomainDns} disabled={loading}>
             <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
-            Refresh status
+            Refresh
           </Button>
           {data && (
             <Button variant="outline" onClick={() => downloadBindFile(data.domainName, data.records)}>
               <Download className={styles.mr2} />
-              Download zone file
+              Zone File
             </Button>
           )}
           <Button onClick={verifyDnsRecords} disabled={verifying || loading}>
             <CheckCircle2 className={cn("mr-2 h-4 w-4", verifying && "animate-spin")} />
-            {verifying ? "Verifying..." : "Verify Records"}
+            {verifying ? "Verifying..." : "Verify"}
           </Button>
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={loading || !data}>
-                <Trash2 className={styles.mr2} />
-                Delete
+              <Button variant="destructive" size="icon" disabled={loading || !data} title="Delete Domain">
+                <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -307,43 +319,6 @@ export default function DomainDnsPage() {
         </div>
       </div>
 
-      {data && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Domain overview</CardTitle>
-            <CardDescription>
-              Last checked {new Date(data.lastChecked).toLocaleString()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className={styles.grid}>
-              <div className={styles.roundedLg}>
-                <p className={styles.textSm}>Domain name</p>
-                <div className={styles.mt2}>
-                  <span className={styles.fontMedium}>{data.domainName}</span>
-                </div>
-              </div>
-              <div className={styles.roundedLg}>
-                <p className={styles.textSm}>Verification status</p>
-                <div className={styles.mt22}>
-                  <Badge
-                    variant={data.verificationStatus === 'verified' ? 'default' : 'secondary'}
-                    className={data.verificationStatus === 'verified' ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}
-                  >
-                    {data.verificationStatus}
-                  </Badge>
-                </div>
-              </div>
-              <div className={styles.roundedLg}>
-                <p className={styles.textSm}>Configuration status</p>
-                <div className={styles.mt22}>
-                  <StatusBadge status={allVerified ? "verified" : hasFailedRecords ? "failed" : "not_checked"} />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <Card>
         <CardHeader>
@@ -359,21 +334,37 @@ export default function DomainDnsPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Expected value</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>Observed</TableHead>
-                <TableHead>Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className={styles.h24}>
+                  <TableCell colSpan={4} className={styles.h24}>
                     Loading DNS status...
                   </TableCell>
                 </TableRow>
               ) : data ? (
-                data.records.map((record) => (
-                  <TableRow key={record.key} className={cn(record.optional && "opacity-80")}>
+                data.records.map((record) => {
+                  let rowColor = "";
+                  if (record.observedValues.length === 0) {
+                    rowColor = "bg-amber-500/10 hover:bg-amber-500/20"; // Not found
+                  } else {
+                    const isMatch = record.status === "verified" || record.observedValues.some(val => 
+                      val.trim() === record.expectedValue.trim() || 
+                      val.includes(record.expectedValue.trim()) || 
+                      record.expectedValue.includes(val.trim())
+                    );
+                    rowColor = isMatch 
+                      ? "bg-emerald-500/10 hover:bg-emerald-500/20" 
+                      : "bg-red-500/10 hover:bg-red-500/20"; // Mismatch
+                  }
+
+                  return (
+                  <TableRow 
+                    key={record.key} 
+                    className={cn(record.optional && "opacity-80", rowColor)}
+                  >
                     <TableCell className={styles.fontMedium}>{record.type}</TableCell>
                     <TableCell>
                       <div className={styles.flex5}>
@@ -386,12 +377,17 @@ export default function DomainDnsPage() {
                     </TableCell>
                     <TableCell>
                       <div className={styles.flex6}>
-                        <code className={styles.breakAll}>{record.expectedValue}</code>
+                        <code className={styles.breakAll} title={record.expectedValue}>
+                          {record.expectedValue.length > 60
+                            ? record.expectedValue.slice(0, 60) + '…'
+                            : record.expectedValue}
+                        </code>
                         <Button
                           variant="ghost"
                           size="icon"
                           className={styles.h7}
                           onClick={() => copyToClipboard(record.expectedValue)}
+                          title="Copy full value"
                         >
                           <Copy className={styles.h35} />
                         </Button>
@@ -401,29 +397,35 @@ export default function DomainDnsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <StatusBadge status={record.status} />
-                    </TableCell>
-                    <TableCell>
                       {record.observedValues.length > 0 ? (
                         <div className={styles.flex7}>
                           {record.observedValues.map((value, index) => (
-                            <code key={`${record.key}-${index}`} className={styles.breakAll}>
-                              {value}
-                            </code>
+                            <div key={`${record.key}-${index}`} className={styles.flex6}>
+                              <code className={styles.breakAll} title={value}>
+                                {value.length > 60 ? value.slice(0, 60) + '…' : value}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={styles.h7}
+                                onClick={() => copyToClipboard(value)}
+                                title="Copy full value"
+                              >
+                                <Copy className={styles.h35} />
+                              </Button>
+                            </div>
                           ))}
                         </div>
                       ) : (
                         <span className={styles.textXs}>No records detected</span>
                       )}
                     </TableCell>
-                    <TableCell className={styles.maxWXs}>
-                      {record.message}
-                    </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className={styles.h24}>
+                  <TableCell colSpan={4} className={styles.h24}>
                     Domain DNS data not available.
                   </TableCell>
                 </TableRow>

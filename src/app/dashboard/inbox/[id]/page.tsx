@@ -3,13 +3,19 @@ import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Mail, Clock, Star, Archive, Trash2, Reply, Forward } from 'lucide-react';
+import { Mail, Clock, Star, Archive, Trash2, Reply, Forward, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/hooks/use-toast';
 import { getSafeEmailHtml } from '@/lib/email-body';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Email {
   id: string;
@@ -25,7 +31,7 @@ interface Email {
 export default function EmailViewPage() {
   const router = useRouter();
   const params = useParams();
-  const { user , token} = useAuthClient();
+  const { user, token } = useAuthClient();
   const { toast } = useToast();
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,27 +41,24 @@ export default function EmailViewPage() {
   useEffect(() => {
     const fetchEmail = async () => {
       if (!user || !params.id) return;
-
       setIsLoading(true);
       try {
         const res = await fetch('/api/emails?folder=inbox', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-
         if (res.ok) {
           const foundEmail = data.emails?.find((e: Email) => e.id === params.id);
           if (foundEmail) {
             setEmail(foundEmail);
-
             if (!foundEmail.read) {
               await fetch('/api/emails', {
                 method: 'PATCH',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`
+                  Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ emailId: foundEmail.id, read: true })
+                body: JSON.stringify({ emailId: foundEmail.id, read: true }),
               });
             }
           }
@@ -66,7 +69,6 @@ export default function EmailViewPage() {
         setIsLoading(false);
       }
     };
-
     fetchEmail();
   }, [user, params.id]);
 
@@ -78,9 +80,9 @@ export default function EmailViewPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ emailId: email.id, ...fields })
+        body: JSON.stringify({ emailId: email.id, ...fields }),
       });
       if (!res.ok) throw new Error('Failed to update email');
       return true;
@@ -117,29 +119,27 @@ export default function EmailViewPage() {
 
   const handleReply = () => {
     if (!email) return;
-    const params = new URLSearchParams({
+    const p = new URLSearchParams({
       mode: 'reply',
       to: email.sender,
       subject: email.subject?.startsWith('Re: ') ? email.subject : `Re: ${email.subject || ''}`,
       emailId: email.id,
     });
-    router.push(`/dashboard/compose?${params.toString()}`);
+    router.push(`/dashboard/compose?${p.toString()}`);
   };
 
   const handleForward = () => {
     if (!email) return;
-    const params = new URLSearchParams({
+    const p = new URLSearchParams({
       mode: 'forward',
       subject: email.subject?.startsWith('Fwd: ') ? email.subject : `Fwd: ${email.subject || ''}`,
       emailId: email.id,
     });
-    router.push(`/dashboard/compose?${params.toString()}`);
+    router.push(`/dashboard/compose?${p.toString()}`);
   };
 
   if (!user) {
-    return (
-      <div className={styles.nu_py8}>You must be signed in to view this email.</div>
-    );
+    return <div className={styles.nu_py8}>You must be signed in to view this email.</div>;
   }
 
   if (isLoading) {
@@ -155,101 +155,75 @@ export default function EmailViewPage() {
       <div className={styles.nu_flex2}>
         <Mail className={styles.nu_h16} />
         <h2 className={styles.nu_textXl}>Email not found</h2>
-        <p className={styles.nu_textMutedForeground}>The email you're looking for doesn't exist or has been deleted.</p>
-        <Button onClick={() => router.push('/dashboard/inbox')}>
-          <ArrowLeft className={styles.nu_h4} />
-          Back to Inbox
-        </Button>
+        <p className={styles.nu_textMutedForeground}>
+          The email you&apos;re looking for doesn&apos;t exist or has been deleted.
+        </p>
+        <Button onClick={() => router.push('/dashboard/inbox')}>Back to Inbox</Button>
       </div>
     );
   }
 
   return (
     <div className={styles.nu_flex3}>
-      {/* Header */}
+      {/* Compact header: subject + inline meta + three-dot menu */}
       <div className={styles.nu_flex4}>
-        <div className={styles.nu_flex5}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/dashboard/inbox')}
-            className={styles.nu_hoverBgBackground80}
-          >
-            <ArrowLeft className={styles.nu_h4} />
-            Back to Inbox
-          </Button>
-          <div className={styles.nu_h42} />
-          <Badge variant={email.read ? "secondary" : "default"} className={styles.nu_textXs}>
-            {email.read ? "Read" : "Unread"}
-          </Badge>
-        </div>
-
-        {/* Action Buttons */}
-        <div className={styles.nu_flex6}>
-          <Button variant="outline" size="sm" onClick={handleStar} disabled={actionLoading === 'star'}>
-            <Star className={`h-4 w-4 mr-2 ${email.starred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-            {email.starred ? 'Unstar' : 'Star'}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleArchive} disabled={actionLoading === 'archive'}>
-            <Archive className={styles.nu_h4} />
-            Archive
-          </Button>
-          <Button variant="outline" size="sm" className={styles.nu_textDestructive} onClick={handleDelete} disabled={actionLoading === 'delete'}>
-            <Trash2 className={styles.nu_h4} />
-            Delete
-          </Button>
-        </div>
-      </div>
-
-      {/* Email Details */}
-      <div className={styles.nu_px6}>
-        <div className={styles.nu_spaceY4}>
-          <div>
-            <h1 className={styles.nu_text2xl}>
-              {email.subject || '(No Subject)'}
-            </h1>
-            <div className={styles.nu_flex7}>
-              <span className={styles.nu_flex6}>
-                <Clock className={styles.nu_h43} />
-                {new Date(email.sentAt).toLocaleString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
+        <div className={styles.nu_headerLeft}>
+          <h1 className={styles.nu_text2xl}>{email.subject || '(No Subject)'}</h1>
+          <div className={styles.nu_metaRow}>
+            <div className={styles.nu_senderAvatar}>
+              <span className={styles.nu_avatarLetter}>{email.sender.charAt(0).toUpperCase()}</span>
             </div>
-          </div>
-
-          <div className={styles.nu_grid}>
-            <div>
-              <label className={styles.nu_textXs2}>From</label>
-              <div className={styles.nu_mt1}>
-                <div className={styles.nu_h8}>
-                  <span className={styles.nu_textSm}>
-                    {email.sender.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <span className={styles.nu_fontMedium}>{email.sender}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className={styles.nu_textXs2}>To</label>
-              <div className={styles.nu_mt12}>
-                <div className={styles.nu_flex8}>
-                  {email.recipients.map((recipient, i) => (
-                    <Badge key={i} variant="secondary" className={styles.nu_textXs}>
-                      {recipient}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <span className={styles.nu_senderName}>{email.sender}</span>
+            <span className={styles.nu_metaSep}>→</span>
+            <span className={styles.nu_recipientText}>{email.recipients.join(', ')}</span>
+            <span className={styles.nu_metaSep}>·</span>
+            <Clock className={styles.nu_clockIcon} />
+            <span className={styles.nu_dateText}>
+              {new Date(email.sentAt).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year:
+                  new Date(email.sentAt).getFullYear() !== new Date().getFullYear()
+                    ? 'numeric'
+                    : undefined,
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
           </div>
         </div>
+
+        {/* Three-dot menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className={styles.nu_dotBtn} disabled={!!actionLoading}>
+              <MoreVertical className={styles.nu_dotIcon} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleStar}>
+              <Star className={`h-4 w-4 mr-2 ${email.starred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+              {email.starred ? 'Unstar' : 'Star'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReply}>
+              <Reply className="h-4 w-4 mr-2" />
+              Reply
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleForward}>
+              <Forward className="h-4 w-4 mr-2" />
+              Forward
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4 mr-2" />
+              Archive
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Email Content */}
@@ -257,9 +231,7 @@ export default function EmailViewPage() {
         <div className={styles.nu_maxWNone}>
           <div
             className={styles.nu_prose}
-            dangerouslySetInnerHTML={{
-              __html: safeBodyHtml
-            }}
+            dangerouslySetInnerHTML={{ __html: safeBodyHtml }}
           />
         </div>
       </div>

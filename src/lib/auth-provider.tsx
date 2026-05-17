@@ -128,6 +128,22 @@ export default function AuthClientProvider({ children }: { children: React.React
         if (!cancelled) {
           setUser(data.user);
 
+          // Restore token in memory when session was validated via cookie
+          // (e.g. after app restart where React state was lost but cookie persisted)
+          if (data.token && !tokenState) {
+            setTokenState(data.token);
+
+            // Schedule automatic logout when token expires
+            const msUntilExpiry = getTokenExpiryMs(data.token);
+            if (msUntilExpiry > 0) {
+              clearExpiryTimer();
+              expiryTimerRef.current = window.setTimeout(() => {
+                setTokenInternal(null);
+                toast({ title: 'Session expired', description: 'Please sign in again', variant: 'destructive' });
+              }, msUntilExpiry + 1000);
+            }
+          }
+
           if (data.user && data.user.emailVerified && pathname === '/verify-email') {
             router.push('/dashboard');
           }

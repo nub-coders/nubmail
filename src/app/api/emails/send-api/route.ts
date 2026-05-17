@@ -3,10 +3,17 @@ import { getUserFromApiKey } from '@/lib/api-keys';
 import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
 import { deliverLocal } from '@/utils/local-delivery';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 // API-key based send endpoint
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIP(req.headers);
+    const rl = rateLimit(`email-send-api:${ip}`, 60, 15 * 60 * 1000);
+    if (rl.limited) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.retryAfterMs || 0) / 1000)) } });
+    }
+
     const apiUser = await getUserFromApiKey(req);
     if (!apiUser) return NextResponse.json({ error: 'Unauthorized (API key required)' }, { status: 401 });
 
@@ -107,6 +114,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('API send error', err);
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

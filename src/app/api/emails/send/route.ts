@@ -4,6 +4,7 @@ import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
 import { deliverLocal } from '@/utils/local-delivery';
 import sanitizeHtml from 'sanitize-html';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 function escapeHtml(input: string): string {
   return input
@@ -53,6 +54,12 @@ function sanitizeEmailHtml(input: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIP(req.headers);
+    const rl = rateLimit(`email-send:${ip}`, 30, 15 * 60 * 1000);
+    if (rl.limited) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.retryAfterMs || 0) / 1000)) } });
+    }
+
     const payload = await getUserFromToken(req);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!canPerformImportantAction(payload)) {
@@ -253,33 +260,27 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('Send email error', err);
-    
-    // Handle specific SMTP errors
+
     if (err.code === 'EENVELOPE' && err.response?.includes('554 5.7.1')) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Email delivery rejected by server. This may be due to SMTP relay restrictions or authentication issues. Please check your SMTP server configuration or try a different email provider.',
-        details: err.response 
       }, { status: 500 });
     }
-    
+
     if (err.code === 'EAUTH') {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'SMTP authentication failed. Please check your email account credentials.',
-        details: err.response 
       }, { status: 500 });
     }
-    
+
     if (err.code === 'ECONNECTION') {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Failed to connect to SMTP server. Please check your server configuration.',
-        details: err.response 
       }, { status: 500 });
     }
-    
-    return NextResponse.json({ 
-      error: err.message || 'Failed to send email',
-      code: err.code,
-      details: err.response 
+
+    return NextResponse.json({
+      error: 'Failed to send email',
     }, { status: 500 });
   }
 }

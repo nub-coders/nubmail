@@ -154,7 +154,7 @@ async function verifyDnsRecord(
     } else if (error.message === 'DNS lookup timeout') {
       return { verified: false, message: 'DNS lookup timed out' };
     }
-    return { verified: false, message: `DNS error: ${error.message || 'Unknown error'}` };
+    return { verified: false, message: 'DNS verification failed' };
   }
 }
 
