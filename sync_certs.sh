@@ -14,7 +14,7 @@ if [ "$NGINX_CERTS/fullchain.pem" -nt "$DOVECOT_CERTS/tls.crt" ]; then
     echo "New certificate detected. Updating Dovecot..."
     cp "$NGINX_CERTS/fullchain.pem" "$DOVECOT_CERTS/tls.crt"
     cp "$NGINX_CERTS/key.pem" "$DOVECOT_CERTS/tls.key"
-    chmod 600 "$DOVECOT_CERTS/tls.key"
+    chmod 644 "$DOVECOT_CERTS/tls.key"
     
     cd /root/nubmail && docker compose restart dovecot
     echo "Dovecot certificates updated and service restarted."

@@ -1,10 +1,10 @@
 passdb sql {
-	query = SELECT email_address as user, password_hash as password, '/app/maildata/' || replace(email_address, '@', '_at_') || '/Maildir' as userdb_home, 'maildir:/app/maildata/' || replace(email_address, '@', '_at_') || '/Maildir' as userdb_mail, 1000 AS userdb_uid, 1000 AS userdb_gid FROM email_accounts WHERE email_address = '%{user}' AND password_hash IS NOT NULL
+	query = SELECT email_address as user, password_hash as password, '/app/maildata/' || lower(email_address) as userdb_home, 'maildir:/app/maildata/' || lower(email_address) || '/Maildir' as userdb_mail, 1000 AS userdb_uid, 1000 AS userdb_gid FROM email_accounts WHERE email_address = '%{user}' AND password_hash IS NOT NULL
 }
 
 userdb prefetch {
 }
 
 userdb sql {
-	query = SELECT email_address as user, '/app/maildata/' || replace(email_address, '@', '_at_') || '/Maildir' as home, 'maildir:/app/maildata/' || replace(email_address, '@', '_at_') || '/Maildir' as mail, 1000 AS uid, 1000 AS gid FROM email_accounts WHERE email_address = '%{user}'
+	query = SELECT email_address as user, '/app/maildata/' || lower(email_address) as home, 'maildir:/app/maildata/' || lower(email_address) || '/Maildir' as mail, 1000 AS uid, 1000 AS gid FROM email_accounts WHERE email_address = '%{user}'
 }
