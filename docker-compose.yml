@@ -160,10 +160,23 @@ services:
     ports:
       - "25:25"
 
+  dovecot-init:
+    image: alpine
+    container_name: nubmail-dovecot-init
+    volumes:
+      - ./maildata:/app/maildata
+    command: chown -R 1000:1000 /app/maildata
+    restart: "no"
+
   dovecot:
     image: dovecot/dovecot
     container_name: nubmail-dovecot
     restart: unless-stopped
+    depends_on:
+      dovecot-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
     ports:
       - "143:143"    # IMAP
       - "993:993"    # IMAPS
@@ -187,8 +200,6 @@ services:
       - POSTGRES_USER=nubmail
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nubmail}
       - POSTGRES_HOST=postgres
-    depends_on:
-      - postgres
     networks:
       - web
 
