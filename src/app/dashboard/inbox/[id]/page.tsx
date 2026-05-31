@@ -36,7 +36,13 @@ export default function EmailViewPage() {
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const safeBodyHtml = getSafeEmailHtml(email?.body);
+  // Replace `cid:` references with our attachment API URL so images load for
+  // messages stored in Maildir that reference inline attachments.
+  const processedBody = (email?.body || '').replace(/cid:<?([^"' >]+)>?/gi, (m, p1) => {
+    const cid = encodeURIComponent(p1.replace(/^<|>$/g, ''));
+    return `/api/emails/attachment?emailId=${email?.id}&cid=${cid}`;
+  });
+  const safeBodyHtml = getSafeEmailHtml(processedBody);
 
   useEffect(() => {
     const fetchEmail = async () => {

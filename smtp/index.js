@@ -218,8 +218,32 @@ const server = new SMTPServer({
         const recipients = Array.from(new Set(toAddresses));
 
         const subject = parsed.subject || '';
-        const html = parsed.html ? (typeof parsed.html === 'string' ? parsed.html : String(parsed.html)) : undefined;
+        let html = parsed.html ? (typeof parsed.html === 'string' ? parsed.html : String(parsed.html)) : undefined;
         const text = parsed.text || (html ? '' : '');
+
+        // If the message has attachments with CIDs, replace cid: references in the
+        // HTML with data URLs so web clients can render inline images.
+        if (html && Array.isArray(parsed.attachments) && parsed.attachments.length > 0) {
+          for (const att of parsed.attachments) {
+            try {
+              const cid = att.cid;
+              if (!cid || !att.content) continue;
+              const contentType = att.contentType || 'application/octet-stream';
+              const b64 = Buffer.isBuffer(att.content) ? att.content.toString('base64') : Buffer.from(String(att.content)).toString('base64');
+              const dataUrl = `data:${contentType};base64,${b64}`;
+              // Replace both cid:cid and cid:<cid> usages
+              const cidVariants = [cid, `<${cid}>`].filter(Boolean);
+              for (const v of cidVariants) {
+                const re = new RegExp(`cid:${v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+                html = html.replace(re, dataUrl);
+              }
+            } catch (err) {
+              console.warn('Failed to inline attachment cid', err);
+              continue;
+            }
+          }
+        }
+
         const body = html || text || '';
         const sentAt = parsed.date ? new Date(parsed.date) : new Date();
 
