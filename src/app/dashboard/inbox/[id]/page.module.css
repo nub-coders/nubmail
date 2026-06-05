@@ -169,6 +169,17 @@
                        prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
                        prose-pre:bg-muted prose-pre:border
                        prose-a:text-primary prose-a:no-underline hover:prose-a:underline;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Force visibility on all email body elements that may have inline color styles */
+.nu_prose * {
+  color: hsl(var(--foreground)) !important;
+}
+
+.nu_prose a,
+.nu_prose a * {
+  color: hsl(var(--primary)) !important;
 }
 
 .nu_px62 {
