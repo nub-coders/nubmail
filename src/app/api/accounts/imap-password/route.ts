@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 import bcrypt from 'bcryptjs';
 
 // POST /api/accounts/imap-password - Set IMAP/POP3 password for an email account
@@ -10,6 +11,16 @@ export async function POST(request: NextRequest) {
     if (!payload) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    // Rate limit password changes: 5 attempts per 15 minutes per IP
+    const ip = getClientIP(request.headers);
+    const rl = rateLimit(`imap-password:${ip}`, 5, 15 * 60 * 1000);
+    if (rl.limited) {
+      return NextResponse.json(
+        { error: 'Too many password change attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.retryAfterMs || 0) / 1000)) } }
+      );
+    }
+
     if (!canPerformImportantAction(payload)) {
       return NextResponse.json({ error: 'Please verify your email to perform this action.' }, { status: 403 });
     }
@@ -24,9 +35,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 8) {
+    if (password.length < 12) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
+        { error: 'Password must be at least 12 characters long' },
         { status: 400 }
       );
     }

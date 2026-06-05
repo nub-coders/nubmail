@@ -178,18 +178,18 @@ services:
       postgres:
         condition: service_started
     ports:
-      - "143:143"    # IMAP
-      - "993:993"    # IMAPS
-      - "110:110"    # POP3
-      - "995:995"    # POP3S
+      - "127.0.0.1:143:143"    # IMAP (localhost only — use IMAPS for remote access)
+      - "993:993"              # IMAPS (SSL/TLS)
+      - "127.0.0.1:110:110"    # POP3 (localhost only — use POP3S for remote access)
+      - "995:995"              # POP3S (SSL/TLS)
     volumes:
+      - ./dovecot/entrypoint.sh:/entrypoint.sh:ro
       - ./dovecot/10-protocols.conf:/etc/dovecot/conf.d/10-protocols.conf:ro
       - ./dovecot/10-mail.conf:/etc/dovecot/conf.d/10-mail.conf:ro
-      - ./dovecot/10-sql.conf:/etc/dovecot/conf.d/10-sql.conf:ro
+      - ./dovecot/10-sql.conf:/etc/dovecot/conf.d/10-sql.conf
       - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
       - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
-      - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
-      - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
+      - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext
       - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
       - ./dovecot/10-sasl.conf:/etc/dovecot/conf.d/10-sasl.conf:ro
       - ./dovecot/ssl:/etc/dovecot/ssl:ro
@@ -200,6 +200,7 @@ services:
       - POSTGRES_USER=nubmail
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nubmail}
       - POSTGRES_HOST=postgres
+    command: /bin/sh /entrypoint.sh
     networks:
       - web
 
