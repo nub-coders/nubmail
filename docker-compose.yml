@@ -117,12 +117,12 @@ services:
   # Additional headers for better reputation
       - POSTFIX_smtpd_helo_required=yes
       - POSTFIX_disable_vrfy_command=yes
-      # Wildcard SSL cert
-      - POSTFIX_smtpd_tls_cert_file=/etc/ssl/mail/tls.crt
-      - POSTFIX_smtpd_tls_key_file=/etc/ssl/mail/tls.key
+      # Per-host LE cert mounted from nginx-proxy/acme-companion
+      - POSTFIX_smtpd_tls_cert_file=/etc/ssl/mail/fullchain.pem
+      - POSTFIX_smtpd_tls_key_file=/etc/ssl/mail/key.pem
       - POSTFIX_smtpd_tls_security_level=may
     volumes:
-      - ./dovecot/ssl:/etc/ssl/mail:ro
+      - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/ssl/mail:ro
       - dovecot-sasl:/var/spool/postfix/private/dovecot-sasl
     networks:
       - web
@@ -172,6 +172,10 @@ services:
     image: dovecot/dovecot
     container_name: nubmail-dovecot
     restart: unless-stopped
+    # Run as root so the entrypoint can rewrite the bind-mounted SQL config files
+    # to inject POSTGRES_PASSWORD. Dovecot's master process expects to start as
+    # root and drops privileges to mail_uid/mail_gid (1000/1000) for workers.
+    user: "0:0"
     depends_on:
       dovecot-init:
         condition: service_completed_successfully
@@ -192,7 +196,7 @@ services:
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext
       - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
       - ./dovecot/10-sasl.conf:/etc/dovecot/conf.d/10-sasl.conf:ro
-      - ./dovecot/ssl:/etc/dovecot/ssl:ro
+      - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/dovecot/ssl:ro
       - ./maildata:/app/maildata
       - dovecot-sasl:/var/run/dovecot-sasl
     environment:
@@ -201,18 +205,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nubmail}
       - POSTGRES_HOST=postgres
     command: /bin/sh /entrypoint.sh
-    networks:
-      - web
-
-  # Dummy container to maintain the wildcard certificate for Dovecot and Postfix
-  wildcard-cert-keeper:
-    image: alpine
-    container_name: nubmail-wildcard-cert-keeper
-    command: tail -f /dev/null
-    restart: unless-stopped
-    environment:
-      - LETSENCRYPT_HOST=nubcoder.com,*.nubcoder.com
-      - LETSENCRYPT_EMAIL=dev@nubcoder.com
     networks:
       - web
 
