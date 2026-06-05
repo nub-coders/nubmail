@@ -211,7 +211,7 @@ The application integrates with [jwilder/nginx-proxy](https://github.com/nginx-p
 environment:
   VIRTUAL_HOST: mails.example.com
   VIRTUAL_PORT: 5000
-  LETSENCRYPT_HOST: "*.example.com"
+  LETSENCRYPT_HOST: mails.example.com
   LETSENCRYPT_EMAIL: admin@example.com
 ```
 
@@ -222,19 +222,28 @@ docker network create web
 docker compose up -d  # Connects to 'web' network by default
 ```
 
-#### Wildcard SSL Certificates
+#### Mail TLS Certificate
 
-Wildcard certificates (*.example.com) are managed by [acme-companion](https://github.com/nginxproxy/acme-companion):
+Dovecot (IMAP/POP3) and Postfix (SMTP) share the same per-host Let's Encrypt
+certificate that `acme-companion` issues for the web app. The cert directory is
+bind-mounted directly into both containers — there is no copy step.
 
-**DNS-01 Challenge (Cloudflare):**
-```yaml
-environment:
-  ACME_CHALLENGE: DNS-01
-  ACMESH_DNS_API_CONFIG: '{"DNS_API":"dns_cf","CF_Key":"...","CF_Email":"..."}'
+By default the bind-mount resolves to `/root/nginx-proxy/nginx/certs/${HOST}`.
+Override the base path or hostname via env vars in `.env`:
+
+```bash
+NGINX_CERTS_DIR=/path/to/nginx-proxy/certs   # default: /root/nginx-proxy/nginx/certs
+HOST=mails.example.com                       # default: mails.nubcoder.com
 ```
 
 **Certificate Renewal:**
-Certificates are automatically renewed via your deployment's certificate management process and synced to Dovecot at renewal intervals.
+`acme-companion` renews the cert in place. Dovecot and Postfix only re-read the
+cert on reload, so install `scripts/reload-mail-certs.sh` as a daily cron job
+to detect changes and reload both services:
+
+```bash
+echo "0 3 * * * /root/nubmail/scripts/reload-mail-certs.sh >> /var/log/nubmail-cert-reload.log 2>&1" | crontab -
+```
 
 ### Email Client Configuration
 
@@ -433,7 +442,7 @@ The PostgreSQL container initializes the schema automatically on first boot from
 
 #### SSL/TLS certificate issues
 - **Renew certificates:** follow your deployment's certificate renewal process
-- **Check certificate validity:** `openssl x509 -in dovecot/ssl/tls.crt -text`
+- **Check certificate validity:** `openssl x509 -in /root/nginx-proxy/nginx/certs/${HOST}/fullchain.pem -text`
 - **Update LETSENCRYPT_EMAIL:** Ensure it's a valid email for renewal notifications
 
 ### Debugging
