@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromApiKey } from '@/lib/api-keys';
 import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
+import { decryptField, isEncryptedField } from '@/lib/field-encryption';
 import { deliverLocal } from '@/utils/local-delivery';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
         host: ownedFrom.smtpHost,
         port: ownedFrom.smtpPort,
         user: ownedFrom.smtpUser,
-        pass: ownedFrom.smtpPass,
+        pass: isEncryptedField(ownedFrom.smtpPass) ? decryptField(ownedFrom.smtpPass) : ownedFrom.smtpPass,
       };
     }
 

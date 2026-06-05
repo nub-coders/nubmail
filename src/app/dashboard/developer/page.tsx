@@ -83,6 +83,19 @@ export default function DeveloperPage() {
     ? `${window.location.protocol}//${window.location.host}` 
     : 'https://mails.nubcoder.com';
 
+  // Extract base domain from the current host for mail server settings
+  // e.g., "https://mails.nubcoder.com" → "nubcoder.com"
+  // e.g., "https://mail.example.org:3000" → "example.org"
+  const baseDomain = (() => {
+    try {
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : 'nubcoder.com';
+      // Strip common mail-related subdomain prefixes
+      return hostname.replace(/^(mails?|webmail)\./, '');
+    } catch {
+      return 'nubcoder.com';
+    }
+  })();
+
   const fetchKeys = async () => {
     if (!user) return;
     setIsLoading(true);
@@ -141,11 +154,11 @@ export default function DeveloperPage() {
   const handleSetImapPassword = async () => {
     if (!selectedAccountId) return;
     
-    if (!imapPassword || imapPassword.length < 8) {
+    if (!imapPassword || imapPassword.length < 12) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Password must be at least 8 characters'
+        description: 'Password must be at least 12 characters'
       });
       return;
     }
@@ -199,10 +212,6 @@ export default function DeveloperPage() {
       setIsSettingPassword(false);
     }
   };
-
-  useEffect(() => {
-    fetchKeys();
-  }, [user]);
 
   const handleCreateKey = async () => {
     if (!keyName.trim()) {
@@ -495,7 +504,7 @@ export default function DeveloperPage() {
                 <div className={styles.nu_grid2}>
                   <div className={styles.nu_spaceY2}>
                     <Label className={styles.nu_textSm2}>IMAP Server</Label>
-                    <code className={styles.nu_block}>imap.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                    <code className={styles.nu_block}>imap.{baseDomain}</code>
                   </div>
                   <div className={styles.nu_spaceY2}>
                     <Label className={styles.nu_textSm2}>IMAP Ports</Label>
@@ -503,7 +512,7 @@ export default function DeveloperPage() {
                   </div>
                   <div className={styles.nu_spaceY2}>
                     <Label className={styles.nu_textSm2}>POP3 Server</Label>
-                    <code className={styles.nu_block}>pop3.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                    <code className={styles.nu_block}>pop3.{baseDomain}</code>
                   </div>
                   <div className={styles.nu_spaceY2}>
                     <Label className={styles.nu_textSm2}>POP3 Ports</Label>
@@ -511,7 +520,7 @@ export default function DeveloperPage() {
                   </div>
                   <div className={styles.nu_spaceY2}>
                     <Label className={styles.nu_textSm2}>SMTP Server</Label>
-                    <code className={styles.nu_block}>smtp.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</code>
+                    <code className={styles.nu_block}>smtp.{baseDomain}</code>
                   </div>
                   <div className={styles.nu_spaceY2}>
                     <Label className={styles.nu_textSm2}>SMTP Ports</Label>
@@ -592,8 +601,8 @@ export default function DeveloperPage() {
                   <li>Open Gmail app → Profile → Add another account → Other</li>
                   <li>Enter your email address (e.g., support@yourdomain.com)</li>
                   <li>Select IMAP</li>
-                  <li>Enter incoming server: <strong>imap.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</strong>, Port: <strong>993</strong>, Security: <strong>SSL/TLS</strong></li>
-                  <li>Enter outgoing server: <strong>smtp.{apiHost.replace(/^https?:\/\/(mails\.)?/, '')}</strong>, Port: <strong>587</strong>, Security: <strong>STARTTLS</strong></li>
+                  <li>Enter incoming server: <strong>imap.{baseDomain}</strong>, Port: <strong>993</strong>, Security: <strong>SSL/TLS</strong></li>
+                  <li>Enter outgoing server: <strong>smtp.{baseDomain}</strong>, Port: <strong>587</strong>, Security: <strong>STARTTLS</strong></li>
                   <li>Enter your email account password for both incoming and outgoing</li>
                   <li>Complete setup</li>
                 </ol>

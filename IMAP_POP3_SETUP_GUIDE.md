@@ -131,11 +131,11 @@ docker compose restart dovecot
 ## Current Exported Email Accounts
 
 Based on the export, the following email accounts have emails available:
-- `verify@nubcoder.com` (33 emails) - **Password: air8858@** ✓
+- `verify@nubcoder.com` (33 emails) — Set a password via the Developer dashboard
 - `support@nubcoder.com` (33 emails)
 - `meow@nubcoder.dev` (5 emails)
 
-**Note:** Only `verify@nubcoder.com` has been set up with a test password for IMAP/POP3 access in this environment.
+**Note:** Use the Developer dashboard (IMAP/POP3 tab) to set passwords for each email account.
 
 ## Notes
 

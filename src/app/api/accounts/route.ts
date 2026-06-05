@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canPerformImportantAction, getUserFromToken, getAdminFromToken, isServerDnsVerified } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
+import { encryptField } from '@/lib/field-encryption';
 
 const MAX_ACCOUNTS_PER_USER = Number(process.env.MAX_ACCOUNTS_PER_USER || 100);
 const MAX_ACCOUNTS_PER_DOMAIN_PER_USER = Number(process.env.MAX_ACCOUNTS_PER_DOMAIN_PER_USER || 25);
@@ -164,7 +165,7 @@ export async function POST(req: NextRequest) {
         hasSmtp ? smtpHost : null,
         hasSmtp ? Number(smtpPort) : null,
         hasSmtp ? smtpUser : null,
-        hasSmtp ? smtpPass : null,
+        hasSmtp ? encryptField(smtpPass) : null,
         !hasSmtp
       ]
     );

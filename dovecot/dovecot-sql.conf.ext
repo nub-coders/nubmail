@@ -1,3 +1,6 @@
+# Legacy Dovecot SQL driver configuration (pre-2.4 compatibility)
+# The password placeholder 'nubmail' is replaced at runtime by dovecot/entrypoint.sh
+# with the actual POSTGRES_PASSWORD environment variable value.
 driver = pgsql
 connect = host=postgres dbname=nubmail user=nubmail password=nubmail
 

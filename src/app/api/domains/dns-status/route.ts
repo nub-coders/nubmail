@@ -307,7 +307,7 @@ export async function GET(req: NextRequest) {
       { key: 'webmail', label: 'webmail', lookup: webmailLookup, optional: true },
       { key: 'imap', label: 'imap', lookup: imapLookup },
       { key: 'smtp', label: 'smtp', lookup: smtpLookup },
-      { key: 'pop3', label: 'pop3', lookup: pop3Lookup, optional: true },
+      { key: 'pop3', label: 'pop3', lookup: pop3Lookup },
     ];
 
     cnameRecords.forEach(({ key, label, lookup, optional }) => {
