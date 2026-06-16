@@ -13,13 +13,26 @@ import crypto from 'crypto';
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 
+function getEncryptionSecret(): string {
+  const explicit = process.env.FIELD_ENCRYPTION_SECRET;
+  if (explicit && explicit.length >= 16) return explicit;
+  const jwt = process.env.JWT_SECRET;
+  if (jwt && jwt.length >= 16) return jwt;
+  throw new Error('FIELD_ENCRYPTION_SECRET (or JWT_SECRET) is required for data encryption');
+}
+
 function getEncryptionKey(): Buffer {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET environment variable is required for data encryption');
-  }
-  // Derive a 32-byte key from JWT_SECRET via SHA-256
-  return crypto.createHash('sha256').update(secret).digest();
+  const secret = getEncryptionSecret();
+  // HKDF-SHA256 → 32-byte AES key
+  return Buffer.from(
+    crypto.hkdfSync(
+      'sha256',
+      Buffer.from(secret, 'utf8'),
+      Buffer.from('nubmail.field-encryption.v1', 'utf8'),
+      Buffer.from('aes-256-gcm:field:v1', 'utf8'),
+      32,
+    ),
+  );
 }
 
 /**

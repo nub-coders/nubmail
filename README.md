@@ -131,7 +131,7 @@ npx web-push generate-vapid-keys
 - ✅ bcryptjs password hashing
 - ✅ Optional Microsoft Graph / Outlook integration
 - ✅ SSL/TLS encryption for all protocols
-- ✅ Wildcard certificate support
+- ✅ Per-host Let's Encrypt cert (auto-managed by nginx-proxy/acme-companion)
 
 ## Technology Stack
 

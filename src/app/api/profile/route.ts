@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
 import { getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
 import { AUTH_COOKIE_NAME, buildAuthCookieOptions, getTokenFromRequest, createSession, invalidateSession } from '@/lib/auth-token';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
+import { signSessionToken } from '@/lib/jwt-server';
 
 export async function GET(req: NextRequest) {
   try {
@@ -60,6 +60,11 @@ export async function PATCH(req: NextRequest) {
 
       const hashed = await bcrypt.hash(newPassword, 10);
       await pgQuery('UPDATE users SET password_hash = $1 WHERE id = $2', [hashed, payload.sub]);
+      // Invalidate all sessions; current session will be re-established below
+      await pgQuery(
+        'UPDATE sessions SET is_active = FALSE WHERE user_id = $1 AND is_active = TRUE',
+        [payload.sub]
+      );
     }
 
     const { rows: [updated] } = await pgQuery(
@@ -69,15 +74,14 @@ export async function PATCH(req: NextRequest) {
       [payload.sub]
     );
 
-    const secret = process.env.JWT_SECRET;
-    let token: string | undefined;
-    if (secret) {
-      token = sign(
-        { sub: String(updated.id), email: updated.email, fullName: updated.fullName || null, emailVerified: !!updated.emailVerified, isAdmin: !!updated.isAdmin },
-        secret,
-        { expiresIn: '7d' }
-      );
-
+    const token = signSessionToken({
+      sub: String(updated.id),
+      email: updated.email,
+      fullName: updated.fullName || null,
+      emailVerified: !!updated.emailVerified,
+      isAdmin: !!updated.isAdmin,
+    });
+    if (token) {
       // Invalidate old session and register the new token
       const oldToken = getTokenFromRequest(req);
       if (oldToken) {
@@ -91,7 +95,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const response = NextResponse.json({ user: updated, token });
+    const response = NextResponse.json({ user: updated });
     if (token) {
       response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());
     }

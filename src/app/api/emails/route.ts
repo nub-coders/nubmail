@@ -255,8 +255,8 @@ export async function DELETE(req: NextRequest) {
     const allEmails = userEmailAccounts.map(a => (a.email_address || '').toLowerCase());
     allEmails.push((user.email || '').toLowerCase());
 
-    const { rows: emails } = await pgQuery<{ sender: string; recipients: string[] }>(
-      'SELECT sender, recipients FROM email_messages WHERE id = $1',
+    const { rows: emails } = await pgQuery<{ sender: string; recipients: string[]; user_id: string | null }>(
+      'SELECT sender, recipients, user_id FROM email_messages WHERE id = $1',
       [emailId]
     );
     const email = emails[0];
@@ -273,10 +273,34 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    await pgQuery('DELETE FROM email_reads WHERE email_id = $1 AND user_id = $2', [emailId, payload.sub]);
-    await pgQuery('DELETE FROM email_messages WHERE id = $1', [emailId]);
+    // Soft-delete: mark per-user row only. Never globally remove email_messages —
+    // other recipients/senders share the row.
+    await pgQuery(
+      `INSERT INTO email_reads (email_id, user_id, deleted_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (email_id, user_id) DO UPDATE SET deleted_at = NOW()`,
+      [emailId, payload.sub]
+    );
 
-    return NextResponse.json({ message: 'Email permanently deleted' });
+    // If this user is the only stakeholder (sole owner via user_id and not in
+    // recipients/sender for any other account), purge the message row.
+    const isOnlyOwner =
+      String(email.user_id || '') === String(payload.sub) &&
+      msgRecipients.every((r) => allEmails.includes(r)) &&
+      (!msgSender || allEmails.includes(msgSender));
+
+    if (isOnlyOwner) {
+      const { rows: otherReads } = await pgQuery<{ count: string }>(
+        'SELECT COUNT(*)::text AS count FROM email_reads WHERE email_id = $1 AND user_id <> $2 AND deleted_at IS NULL',
+        [emailId, payload.sub]
+      );
+      if (Number(otherReads[0]?.count || 0) === 0) {
+        await pgQuery('DELETE FROM email_reads WHERE email_id = $1', [emailId]);
+        await pgQuery('DELETE FROM email_messages WHERE id = $1 AND user_id = $2', [emailId, payload.sub]);
+      }
+    }
+
+    return NextResponse.json({ message: 'Email moved to trash' });
   } catch (err) {
     console.error('Email DELETE error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

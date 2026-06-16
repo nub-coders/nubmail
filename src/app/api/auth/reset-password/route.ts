@@ -22,11 +22,9 @@ export async function POST(req: NextRequest) {
 
     const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
 
-    // Check if token exists and is not expired.
-    // Support plaintext token rows for a short migration window.
     const { rows } = await pgQuery<{ id: string; verification_code_expiry: Date }>(
-      'SELECT id, verification_code_expiry FROM users WHERE verification_code = $1 OR verification_code = $2',
-      [hashedToken, String(token)]
+      'SELECT id, verification_code_expiry FROM users WHERE verification_code = $1',
+      [hashedToken]
     );
 
     if (rows.length === 0) {
@@ -49,6 +47,12 @@ export async function POST(req: NextRequest) {
     await pgQuery(
       'UPDATE users SET password_hash = $1, verification_code = NULL, verification_code_expiry = NULL WHERE id = $2',
       [passwordHash, user.id]
+    );
+
+    // Invalidate all active sessions for this user
+    await pgQuery(
+      'UPDATE sessions SET is_active = FALSE WHERE user_id = $1 AND is_active = TRUE',
+      [user.id]
     );
 
     return NextResponse.json({ message: 'Password reset successfully' });

@@ -91,7 +91,7 @@ export default function LoginPage() {
             <h1 className={styles.nu_text2xl2}>Welcome back</h1>
             <p className={styles.nu_textSm}>Enter your credentials to sign in</p>
           </div>
-          <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+          <form onSubmit={handleSubmit} method="post" action="/api/auth/login" className={styles.nu_grid} autoComplete="on">
             <div className={styles.nu_grid2}>
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" name="email" autoComplete="username" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />

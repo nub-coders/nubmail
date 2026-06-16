@@ -7,15 +7,23 @@ function sha256(input: string): string {
 }
 
 function getApiKeyEncryptionSecret(): string {
-  return process.env.API_KEY_ENCRYPTION_SECRET || process.env.JWT_SECRET || '';
+  const explicit = process.env.API_KEY_ENCRYPTION_SECRET;
+  if (explicit && explicit.length >= 16) return explicit;
+  throw new Error('API_KEY_ENCRYPTION_SECRET is not configured (must be set, distinct from JWT_SECRET, length >= 16)');
 }
 
 function getEncryptionKey(): Buffer {
   const secret = getApiKeyEncryptionSecret();
-  if (!secret) {
-    throw new Error('API key encryption secret is not configured');
-  }
-  return crypto.createHash('sha256').update(secret).digest();
+  // HKDF-SHA256 derive a 32-byte key from the configured secret + fixed app salt + context.
+  return Buffer.from(
+    crypto.hkdfSync(
+      'sha256',
+      Buffer.from(secret, 'utf8'),
+      Buffer.from('nubmail.api-key.v1', 'utf8'),
+      Buffer.from('aes-256-gcm:api-key:v1', 'utf8'),
+      32,
+    ),
+  );
 }
 
 function encryptApiKey(plaintext: string): string {
@@ -44,10 +52,6 @@ export async function createApiKey(userId: string, name: string): Promise<{ key:
   const raw = `nm_live_${crypto.randomBytes(32).toString('hex')}`;
   const hash = sha256(raw);
   const encryptedKey = encryptApiKey(raw);
-  await pgQuery(`
-    ALTER TABLE api_keys
-      ADD COLUMN IF NOT EXISTS encrypted_key TEXT;
-  `);
   const { rows } = await pgQuery<{ id: string }>(
     `INSERT INTO api_keys (user_id, name, key_hash, encrypted_key)
      VALUES ($1, $2, $3, $4)
@@ -69,7 +73,7 @@ export async function revealApiKey(userId: string, id: string): Promise<string |
 
 export async function revokeApiKey(userId: string, id: string): Promise<boolean> {
   const { rowCount } = await pgQuery('DELETE FROM api_keys WHERE id = $1 AND user_id = $2', [id, userId]);
-  return rowCount > 0;
+  return (rowCount ?? 0) > 0;
 }
 
 export async function listApiKeys(userId: string) {

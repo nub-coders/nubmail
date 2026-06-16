@@ -102,7 +102,7 @@ export default function RegisterPage() {
             <h1 className={styles.nu_text2xl2}>Create your account</h1>
             <p className={styles.nu_textSm}>Get started with NubMail for free</p>
           </div>
-          <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+          <form onSubmit={handleSubmit} method="post" action="/api/auth/register" className={styles.nu_grid} autoComplete="on">
             <div className={styles.nu_grid2}>
               <Label htmlFor="full-name">Full name</Label>
               <Input id="full-name" name="fullName" autoComplete="name" placeholder="Max Robinson" required value={fullName} onChange={(e) => setFullName(e.target.value)} />

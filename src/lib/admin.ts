@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
 import dns from 'dns/promises';
 import { getTokenFromRequest } from '@/lib/auth-token';
+import { verifyJwt } from '@/lib/jwt-server';
 
 export interface AuthenticatedUser {
   sub: string;
@@ -71,12 +71,11 @@ export async function isServerDnsVerified(): Promise<boolean> {
 export async function getAdminFromToken(req: NextRequest) {
   const token = getTokenFromRequest(req);
   if (!token) return null;
-  
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
-  
+
+  const payload = verifyJwt(token);
+  if (!payload?.sub) return null;
+
   try {
-    const payload = verify(token, secret) as any;
     const { rows } = await pgQuery<{ id: string; email: string; is_admin: boolean }>(
       'SELECT id, email, is_admin FROM users WHERE id = $1',
       [payload.sub]
@@ -92,14 +91,11 @@ export async function getAdminFromToken(req: NextRequest) {
 export async function getUserFromToken(req: NextRequest) {
   const token = getTokenFromRequest(req);
   if (!token) return null;
-  
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
-  
-  try {
-    const payload = verify(token, secret) as any;
-    if (!payload?.sub) return null;
 
+  const payload = verifyJwt(token);
+  if (!payload?.sub) return null;
+
+  try {
     const { rows } = await pgQuery<{
       id: string;
       email: string;
@@ -125,7 +121,6 @@ export async function getUserFromToken(req: NextRequest) {
     return null;
   }
 }
-
 export function canPerformImportantAction(user: AuthenticatedUser): boolean {
   return user.isAdmin || user.emailVerified;
 }

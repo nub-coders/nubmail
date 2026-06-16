@@ -229,7 +229,7 @@ function ResetPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+          <form onSubmit={handleSubmit} method="post" className={styles.nu_grid} autoComplete="on">
             <div className={styles.nu_grid2}>
               <Label htmlFor="password">New Password</Label>
               <div className={styles.nu_relative}>

@@ -9,7 +9,11 @@ const fs = require('fs');
 const path = require('path');
 
 const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 25; // container port
-const POSTGRES_URL = process.env.POSTGRES_URL || 'postgres://nubmail:nubmail@postgres:5432/nubmail';
+const POSTGRES_URL = process.env.POSTGRES_URL;
+if (!POSTGRES_URL) {
+  console.error('FATAL: POSTGRES_URL must be set');
+  process.exit(1);
+}
 const MAILDIR_BASE = process.env.MAILDIR_BASE || '/app/maildata';
 const SMTP_BANNER_HOST = process.env.SMTP_BANNER_HOST || 'mails.nubcoder.com';
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';

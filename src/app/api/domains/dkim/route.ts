@@ -3,16 +3,8 @@ import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
 
 async function ensureTable() {
-  await pgQuery(`
-    CREATE TABLE IF NOT EXISTS domain_dkim (
-      id SERIAL PRIMARY KEY,
-      domain_name TEXT UNIQUE NOT NULL,
-      selector TEXT NOT NULL,
-      public_key TEXT NOT NULL,
-      private_key TEXT NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-  `);
+  // Schema is authoritative (docs/postgres-schema.sql). No runtime DDL.
+  return;
 }
 
 function normalizeDomain(d: string) {

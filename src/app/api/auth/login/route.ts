@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
 import { AUTH_COOKIE_NAME, buildAuthCookieOptions, createSession } from '@/lib/auth-token';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
+import { signSessionToken } from '@/lib/jwt-server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,10 +27,12 @@ export async function POST(req: NextRequest) {
     );
     let user = rows[0];
 
-    if (!user) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-
-    const ok = await bcrypt.compare(password, user.password_hash);
-    if (!ok) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    // Constant-time guard against user enumeration: always run bcrypt.
+    const dummyHash = '$2b$10$CwTycUXWue0Thq9StjUM0uJ8JZSxEU8vsIfYxIdvROGv6mFHWkQVa';
+    const passwordOk = await bcrypt.compare(password, user ? user.password_hash : dummyHash);
+    if (!user || !passwordOk) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
 
     // Mark admin users as verified on login
     if (user.is_admin && !user.email_verified) {
@@ -43,20 +45,22 @@ export async function POST(req: NextRequest) {
       user = updatedRows[0];
     }
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
+    const token = signSessionToken({
+      sub: String(user.id),
+      email: user.email,
+      emailVerified: !!user.email_verified,
+      isAdmin: !!user.is_admin,
+    });
+    if (!token) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
-    
-    const payload = { sub: String(user.id), email: user.email, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin };
-    const token = sign(payload, secret, { expiresIn: '7d' });
 
     // Create a database-backed session for revocation and tracking
     const userAgent = req.headers.get('user-agent') || undefined;
     const ipAddress = getClientIP(req.headers);
     await createSession(String(user.id), token, userAgent, ipAddress);
 
-    const response = NextResponse.json({ token, user: { id: String(user.id), email: user.email, fullName: user.full_name, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin } });
+    const response = NextResponse.json({ user: { id: String(user.id), email: user.email, fullName: user.full_name, emailVerified: !!user.email_verified, isAdmin: !!user.is_admin } });
     response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());
     return response;
   } catch (err) {

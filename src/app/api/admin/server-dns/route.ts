@@ -130,16 +130,7 @@ async function safeResolveA(host: string): Promise<{ values: string[]; error?: s
 }
 
 async function ensureDkimTable(): Promise<void> {
-  await pgQuery(`
-    CREATE TABLE IF NOT EXISTS domain_dkim (
-      id SERIAL PRIMARY KEY,
-      domain_name TEXT UNIQUE NOT NULL,
-      selector TEXT NOT NULL,
-      public_key TEXT NOT NULL,
-      private_key TEXT NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-  `);
+  /* schema-managed: domain_dkim */
 }
 
 function exportPublicKeyPemToDns(pubKeyPem: string): string {

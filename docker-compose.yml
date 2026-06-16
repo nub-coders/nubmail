@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: nubmail
       POSTGRES_USER: nubmail
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nubmail}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -33,6 +33,8 @@ services:
       PORT: 5000
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      API_KEY_ENCRYPTION_SECRET: ${API_KEY_ENCRYPTION_SECRET:?API_KEY_ENCRYPTION_SECRET must be set}
+      FIELD_ENCRYPTION_SECRET: ${FIELD_ENCRYPTION_SECRET:-${JWT_SECRET}}
       USE_POSTGRES: ${USE_POSTGRES:-true}
       POSTGRES_URL: ${POSTGRES_URL:?POSTGRES_URL must be set}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
@@ -82,19 +84,22 @@ services:
     environment:
       - POSTFIX_myhostname=${SMTP_HOSTNAME:-mails.nubcoder.com}
       - POSTFIX_smtpd_banner=${SMTP_HOSTNAME:-mails.nubcoder.com} ESMTP
-      - ALLOWED_SENDER_DOMAINS=*
-      - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
-      - POSTFIX_smtp_tls_security_level=may
+      - ALLOWED_SENDER_DOMAINS=${ALLOWED_SENDER_DOMAINS:-${DOMAIN:-nubcoder.com}}
+      # Restrict to local loopback inside the container; relay relies on SASL.
+      - POSTFIX_mynetworks=127.0.0.0/8 [::1]/128
+      - POSTFIX_smtp_tls_security_level=encrypt
       - POSTFIX_inet_protocols=ipv4
-      # Allow relay for authenticated users and local networks
-      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination
-      - POSTFIX_smtpd_sender_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
-      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination,reject_unknown_recipient_domain
+      # Allow relay only for SASL-authenticated users.
+      - POSTFIX_smtpd_relay_restrictions=permit_sasl_authenticated,reject_unauth_destination
+      - POSTFIX_smtpd_sender_restrictions=permit_sasl_authenticated,reject
+      - POSTFIX_smtpd_recipient_restrictions=permit_sasl_authenticated,reject_unauth_destination,reject_unknown_recipient_domain
       # SASL Authentication via Dovecot
       - POSTFIX_smtpd_sasl_type=dovecot
       - POSTFIX_smtpd_sasl_path=private/dovecot-sasl/auth
       - POSTFIX_smtpd_sasl_auth_enable=yes
-      - POSTFIX_smtpd_sasl_security_options=noanonymous
+      # Block anonymous + plaintext SASL on cleartext channels.
+      - POSTFIX_smtpd_sasl_security_options=noanonymous,noplaintext
+      - POSTFIX_smtpd_sasl_tls_security_options=noanonymous
       - POSTFIX_smtpd_tls_auth_only=yes
       # Brute-force resistance and connection throttling
       - POSTFIX_anvil_rate_time_unit=60s
@@ -120,7 +125,11 @@ services:
       # Per-host LE cert mounted from nginx-proxy/acme-companion
       - POSTFIX_smtpd_tls_cert_file=/etc/ssl/mail/fullchain.pem
       - POSTFIX_smtpd_tls_key_file=/etc/ssl/mail/key.pem
-      - POSTFIX_smtpd_tls_security_level=may
+      - POSTFIX_smtpd_tls_protocols=>=TLSv1.2
+      - POSTFIX_smtpd_tls_mandatory_protocols=>=TLSv1.2
+      - POSTFIX_smtpd_tls_mandatory_ciphers=high
+      - POSTFIX_smtpd_tls_exclude_ciphers=aNULL,MD5,DES,3DES,RC4
+      - POSTFIX_smtpd_tls_loglevel=1
     volumes:
       - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/ssl/mail:ro
       - dovecot-sasl:/var/spool/postfix/private/dovecot-sasl
@@ -194,7 +203,7 @@ services:
       - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
       - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext
-      - ./dovecot/10-ssl.conf:/etc/dovecot/conf.d/10-ssl.conf:ro
+      - ./dovecot/ssl.conf:/etc/dovecot/conf.d/ssl.conf:ro
       - ./dovecot/10-sasl.conf:/etc/dovecot/conf.d/10-sasl.conf:ro
       - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/dovecot/ssl:ro
       - ./maildata:/app/maildata
@@ -202,7 +211,7 @@ services:
     environment:
       - POSTGRES_DB=nubmail
       - POSTGRES_USER=nubmail
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nubmail}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       - POSTGRES_HOST=postgres
     command: /bin/sh /entrypoint.sh
     networks:

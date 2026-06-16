@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
 import { pgQuery } from '@/lib/postgres';
 import { AUTH_COOKIE_NAME, buildAuthCookieOptions, createSession } from '@/lib/auth-token';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
+import { signSessionToken } from '@/lib/jwt-server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,20 +38,17 @@ export async function POST(req: NextRequest) {
       [email.toLowerCase(), hashed, fullName || null]
     );
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
+    const userId = String(inserted.rows[0].id);
+    const token = signSessionToken({ sub: userId, email });
+    if (!token) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
-    
-    const userId = String(inserted.rows[0].id);
-    const payload = { sub: userId, email };
-    const token = sign(payload, secret, { expiresIn: '7d' });
 
     // Create a database-backed session
     const userAgent = req.headers.get('user-agent') || undefined;
     await createSession(userId, token, userAgent, ip);
 
-    const response = NextResponse.json({ token, user: { id: userId, email, fullName } });
+    const response = NextResponse.json({ user: { id: userId, email, fullName } });
     response.cookies.set(AUTH_COOKIE_NAME, token, buildAuthCookieOptions());
     return response;
   } catch (err) {

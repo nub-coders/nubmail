@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
-import { verify } from 'jsonwebtoken';
 import { getTokenFromRequest } from '@/lib/auth-token';
+import { verifyJwt } from '@/lib/jwt-server';
 
 export async function POST(req: NextRequest) {
   try {
     const token = getTokenFromRequest(req);
     if (!token) return NextResponse.json({ error: 'No token provided' }, { status: 401 });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    let payload: any;
-    try {
-      payload = verify(token, secret) as any;
-    } catch (e) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const payload = verifyJwt(token);
+    if (!payload?.sub) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
 
     const body = await req.json();
     const { code } = body;
