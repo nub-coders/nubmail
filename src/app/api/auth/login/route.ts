@@ -17,8 +17,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { email, password } = body;
+    const contentType = req.headers.get('content-type') || '';
+    let email: string | undefined;
+    let password: string | undefined;
+    try {
+      if (contentType.includes('application/json')) {
+        const body = await req.json();
+        email = body?.email;
+        password = body?.password;
+      } else if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+        const form = await req.formData();
+        email = form.get('email')?.toString();
+        password = form.get('password')?.toString();
+      } else {
+        return NextResponse.json({ error: 'Unsupported content type' }, { status: 415 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
     if (!email || !password) return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
 
     const { rows } = await pgQuery<{ id: string; email: string; password_hash: string; full_name: string | null; email_verified: boolean | null; is_admin: boolean | null }>(

@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user, setToken, isLoading: authLoading } = useAuthClient();
+  const { user, refresh, isLoading: authLoading } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
       }
 
       toast({ title: 'Signing in...', description: 'Please wait...' });
-      await setToken(data?.token ?? null);
+      await refresh();
       toast({ title: 'Signed in', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
@@ -91,7 +91,7 @@ export default function LoginPage() {
             <h1 className={styles.nu_text2xl2}>Welcome back</h1>
             <p className={styles.nu_textSm}>Enter your credentials to sign in</p>
           </div>
-          <form onSubmit={handleSubmit} method="post" action="/api/auth/login" className={styles.nu_grid} autoComplete="on">
+          <form onSubmit={handleSubmit} method="post" className={styles.nu_grid} autoComplete="on">
             <div className={styles.nu_grid2}>
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" name="email" autoComplete="username" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
