@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/hooks/use-toast';
 import { getSafeEmailHtml } from '@/lib/email-body';
+import { EmailBodyFrame } from '@/components/email-body-frame';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,24 +50,22 @@ export default function EmailViewPage() {
       if (!user || !params.id) return;
       setIsLoading(true);
       try {
-        const res = await fetch('/api/emails?folder=inbox', {
+        const res = await fetch(`/api/emails/${encodeURIComponent(String(params.id))}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (res.ok) {
-          const foundEmail = data.emails?.find((e: Email) => e.id === params.id);
-          if (foundEmail) {
-            setEmail(foundEmail);
-            if (!foundEmail.read) {
-              await fetch('/api/emails', {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ emailId: foundEmail.id, read: true }),
-              });
-            }
+        if (res.ok && data.email) {
+          const foundEmail: Email = data.email;
+          setEmail(foundEmail);
+          if (!foundEmail.read) {
+            await fetch('/api/emails', {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ emailId: foundEmail.id, read: true }),
+            });
           }
         }
       } catch (error) {
@@ -76,7 +75,7 @@ export default function EmailViewPage() {
       }
     };
     fetchEmail();
-  }, [user, params.id]);
+  }, [user, params.id, token]);
 
   const patchEmail = async (fields: Record<string, unknown>, actionName: string) => {
     if (!email) return;
@@ -235,10 +234,7 @@ export default function EmailViewPage() {
       {/* Email Content */}
       <div className={styles.nu_flex1}>
         <div className={styles.nu_maxWNone}>
-          <div
-            className={styles.nu_prose}
-            dangerouslySetInnerHTML={{ __html: safeBodyHtml }}
-          />
+          <EmailBodyFrame html={safeBodyHtml} className={styles.nu_prose} />
         </div>
       </div>
 

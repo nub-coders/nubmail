@@ -162,24 +162,7 @@
 }
 
 .nu_prose {
-  @apply prose prose-sm dark:prose-invert max-w-none
-                       prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed
-                       prose-strong:text-foreground prose-em:text-foreground
-                       prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:p-4 prose-blockquote:rounded-r-lg
-                       prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
-                       prose-pre:bg-muted prose-pre:border
-                       prose-a:text-primary prose-a:no-underline hover:prose-a:underline;
-  color: hsl(var(--foreground)) !important;
-}
-
-/* Force visibility on all email body elements that may have inline color styles */
-.nu_prose * {
-  color: hsl(var(--foreground)) !important;
-}
-
-.nu_prose a,
-.nu_prose a * {
-  color: hsl(var(--primary)) !important;
+  @apply prose prose-sm dark:prose-invert max-w-none;
 }
 
 .nu_px62 {
