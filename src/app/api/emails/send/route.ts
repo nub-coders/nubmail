@@ -121,17 +121,6 @@ export async function POST(req: NextRequest) {
     try {
       const senderDomain = String(from).split('@')[1]?.toLowerCase();
       if (senderDomain) {
-        // Ensure table exists in case migrations haven't created it yet
-        await pgQuery(`
-          CREATE TABLE IF NOT EXISTS domain_dkim (
-            id SERIAL PRIMARY KEY,
-            domain_name TEXT UNIQUE NOT NULL,
-            selector TEXT NOT NULL,
-            public_key TEXT NOT NULL,
-            private_key TEXT NOT NULL,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `);
         let { rows: dkim } = await pgQuery<{ selector: string; private_key: string }>(
           `SELECT selector, private_key FROM domain_dkim WHERE domain_name = $1`,
           [senderDomain]

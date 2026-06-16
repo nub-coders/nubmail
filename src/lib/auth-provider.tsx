@@ -1,176 +1,96 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
-import { parseJwt, isTokenExpired, getTokenExpiryMs } from '@/lib/jwt';
 
 interface User { id: string; email: string; fullName?: string | null; emailVerified?: boolean; isAdmin?: boolean }
 
-const AuthContext = createContext<{
+type AuthCtx = {
   user: User | null;
-  token: string | null;
+  token: string | null; // Always null. Kept for back-compat with older call sites.
   loading: boolean;
-  // setToken returns a promise for compatibility with callers that await it
+  refresh: () => Promise<void>;
+  logout: () => Promise<void>;
+  setUser: (u: User | null) => void;
+  // Legacy: no-op token setter. Triggers session refetch via cookie when called with a value.
   setToken: (t: string | null) => Promise<void>;
   isLoading?: boolean;
-}>({
+};
+
+const AuthContext = createContext<AuthCtx>({
   user: null,
   token: null,
   loading: true,
+  refresh: async () => {},
+  logout: async () => {},
+  setUser: () => {},
   setToken: async () => {},
-  isLoading: undefined
+  isLoading: undefined,
 });
 
 export default function AuthClientProvider({ children }: { children: React.ReactNode }) {
-  const [tokenState, setTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
-  const expiryTimerRef = useRef<number | null>(null);
 
-  // Helper to clear expiry timer
-  const clearExpiryTimer = () => {
-    if (expiryTimerRef.current) {
-      window.clearTimeout(expiryTimerRef.current);
-      expiryTimerRef.current = null;
-    }
-  };
-
-  // Internal setter that manages localStorage and expiry timer
-  const setTokenInternal = async (t: string | null) => {
-    // Clear any existing timer
-    clearExpiryTimer();
-
-    if (!t) {
-      setTokenState(null);
-      setUser(null);
-      try {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'include',
-          cache: 'no-store',
-        });
-      } catch {
-      }
-      if (pathname !== '/') {
-        router.replace('/');
-      }
-      return;
-    }
-
-    // If token immediately appears expired, remove it
-    if (isTokenExpired(t)) {
-      setTokenState(null);
-      setUser(null);
-      return;
-    }
-
-    // Keep token in memory only; server-side auth is cookie-based.
-    setTokenState(t);
-
-    // Optimistically set user from JWT payload (reduces perceived login delay)
-    const payload = parseJwt(t);
-    if (payload && payload.sub && payload.email) {
-      const fullName = typeof payload.fullName === 'string' ? payload.fullName : null;
-      setUser({
-        id: String(payload.sub),
-        email: String(payload.email),
-        fullName,
-        emailVerified: typeof payload.emailVerified === 'boolean' ? payload.emailVerified : undefined,
-        isAdmin: typeof payload.isAdmin === 'boolean' ? payload.isAdmin : undefined,
-      });
-    }
-
-    // Schedule automatic logout when token expires
-    const msUntilExpiry = getTokenExpiryMs(t);
-    if (msUntilExpiry > 0) {
-      expiryTimerRef.current = window.setTimeout(() => {
-        setTokenInternal(null);
-        toast({ title: 'Session expired', description: 'Please sign in again', variant: 'destructive' });
-      }, msUntilExpiry + 1000); // +1s buffer
-    }
-  };
-
-  // Fetch current user data from cookie-based session, with optional Bearer fallback.
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-
-      try {
-        const headers: HeadersInit = {};
-        if (tokenState) {
-          headers.Authorization = `Bearer ${tokenState}`;
-        }
-        const res = await fetch('/api/auth/me', {
-          headers,
-          cache: 'no-store'
-        });
-
-        if (!res.ok) {
-          // Session invalid; clear in-memory token and user state.
-          if (!cancelled) setTokenState(null);
-          setUser(null);
-
-          // Redirect to login if trying to access protected route
-          const protectedPrefixes = ['/dashboard', '/accounts'];
-          const publicPaths = ['/', '/register', '/verify-email'];
-          if (pathname && protectedPrefixes.some((prefix) => pathname.startsWith(prefix)) && !publicPaths.includes(pathname)) {
-            router.push('/');
-          }
-          return;
-        }
-
-        const data = await res.json();
-        if (!cancelled) {
-          setUser(data.user);
-
-          // Restore token in memory when session was validated via cookie
-          // (e.g. after app restart where React state was lost but cookie persisted)
-          if (data.token && !tokenState) {
-            setTokenState(data.token);
-
-            // Schedule automatic logout when token expires
-            const msUntilExpiry = getTokenExpiryMs(data.token);
-            if (msUntilExpiry > 0) {
-              clearExpiryTimer();
-              expiryTimerRef.current = window.setTimeout(() => {
-                setTokenInternal(null);
-                toast({ title: 'Session expired', description: 'Please sign in again', variant: 'destructive' });
-              }, msUntilExpiry + 1000);
-            }
-          }
-
-          if (data.user && data.user.emailVerified && pathname === '/verify-email') {
-            router.push('/dashboard');
-          }
-        }
-      } catch (err) {
-        console.error('Auth load failed', err);
-        toast({ title: 'Auth error', description: 'Could not verify session', variant: 'destructive' });
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
+      if (!res.ok) {
         setUser(null);
-      } finally {
-        if (!cancelled) setLoading(false);
+        const protectedPrefixes = ['/dashboard', '/accounts'];
+        const publicPaths = ['/', '/register', '/verify-email'];
+        if (pathname && protectedPrefixes.some((p) => pathname.startsWith(p)) && !publicPaths.includes(pathname)) {
+          router.push('/');
+        }
+        return;
       }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [tokenState, pathname, router]);
-
-  // Public setToken function (returns promise to allow `await setToken(...)` usage)
-  const setTokenPublic = async (t: string | null) => {
-    await setTokenInternal(t);
+      const data = await res.json();
+      setUser(data.user || null);
+      if (data.user && data.user.emailVerified && pathname === '/verify-email') {
+        router.push('/dashboard');
+      }
+    } catch (err) {
+      console.error('Auth load failed', err);
+      toast({ title: 'Auth error', description: 'Could not verify session', variant: 'destructive' });
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', cache: 'no-store' });
+    } catch {
+      // ignore
+    }
+    setUser(null);
+    if (pathname !== '/') router.replace('/');
+  };
+
+  // Back-compat shim: callers pass null to log out, or a value to mean "session changed"
+  // (which we satisfy by re-fetching /api/auth/me using the cookie). We deliberately do
+  // not persist the token in JS state.
+  const setToken = async (t: string | null) => {
+    if (t === null) {
+      await logout();
+      return;
+    }
+    await refresh();
+  };
+
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
-    <AuthContext.Provider value={{ user, token: tokenState, loading, setToken: setTokenPublic, isLoading: loading }}>
+    <AuthContext.Provider value={{ user, token: null, loading, refresh, logout, setUser, setToken, isLoading: loading }}>
       {children}
     </AuthContext.Provider>
   );

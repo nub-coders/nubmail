@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
         </CardHeader>
         <CardContent>
           {!sent ? (
-            <form onSubmit={handleSubmit} className={styles.nu_grid} autoComplete="on">
+            <form onSubmit={handleSubmit} method="post" className={styles.nu_grid} autoComplete="on">
               <div className={styles.nu_grid2}>
                 <Label htmlFor="email">Email</Label>
                 <Input 

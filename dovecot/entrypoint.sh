@@ -9,7 +9,10 @@
 
 set -e
 
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-nubmail}"
+if [ -z "${POSTGRES_PASSWORD:-}" ]; then
+  echo "FATAL: POSTGRES_PASSWORD is not set" >&2
+  exit 1
+fi
 
 # Replace "password = nubmail" / "password=nubmail" placeholder with the real password
 # using shell parameter expansion.

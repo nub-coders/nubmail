@@ -32,17 +32,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Initialize default email accounts on startup (client side)
-  // Only runs once per session, safe for idempotent setup
-  if (typeof window !== 'undefined') {
-    import('@/lib/init-email-accounts').then(mod => {
-      const domain = process.env.NEXT_PUBLIC_DOMAIN || process.env.DOMAIN || '';
-      mod.initEmailAccounts(domain);
-    });
-    import('@/lib/verify-admins').then(mod => {
-      mod.verifyAdminUsers();
-    });
-  }
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>

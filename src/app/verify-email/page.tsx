@@ -27,8 +27,36 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (searchParams.get('verified') === '1') {
       setVerified(true);
+      return;
     }
-  }, [searchParams]);
+    const tokenFromUrl = searchParams.get('token');
+    if (!tokenFromUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: tokenFromUrl }),
+          credentials: 'include',
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          setVerified(true);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          toast({ title: 'Verification failed', description: data?.error || 'Invalid or expired link', variant: 'destructive' });
+        }
+      } catch {
+        if (!cancelled) {
+          toast({ title: 'Verification failed', description: 'Network error', variant: 'destructive' });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, toast]);
 
   useEffect(() => {
     if (verified) {

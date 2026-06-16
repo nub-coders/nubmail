@@ -258,16 +258,7 @@ export async function GET(req: NextRequest) {
       });
     } else {
       // Auto-generate DKIM for this domain
-      await pgQuery(`
-        CREATE TABLE IF NOT EXISTS domain_dkim (
-          id SERIAL PRIMARY KEY,
-          domain_name TEXT UNIQUE NOT NULL,
-          selector TEXT NOT NULL,
-          public_key TEXT NOT NULL,
-          private_key TEXT NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-      `);
+      /* schema-managed: domain_dkim */
       const { generateKeyPair } = await import('crypto');
       const keyPair = await new Promise<{ publicKeyPem: string; privateKeyPem: string }>((resolve, reject) => {
         generateKeyPair('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } }, (err, pub, priv) => {

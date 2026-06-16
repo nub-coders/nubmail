@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { pgQuery } from './postgres';
+import { verifyJwt } from './jwt-server';
 
 export const AUTH_COOKIE_NAME = 'nubmail_auth';
 
@@ -49,13 +49,10 @@ export async function createSession(userId: string, token: string, userAgent?: s
 }
 
 export async function verifySession(token: string) {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
+  const payload = verifyJwt(token);
+  if (!payload?.sub) return null;
 
   try {
-    const payload = verify(token, secret) as any;
-    if (!payload || !payload.sub) return null;
-
     const tokenHash = hashToken(token);
     const { rows } = await pgQuery(
       'SELECT s.id as "sessionId", u.id as "id", u.email, u.full_name as "fullName", u.email_verified as "emailVerified", u.is_admin as "isAdmin" FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token_hash = $1 AND s.expires_at > NOW() AND s.is_active = TRUE',
@@ -64,7 +61,7 @@ export async function verifySession(token: string) {
 
     if (rows.length === 0) return null;
     return rows[0];
-  } catch (err) {
+  } catch {
     return null;
   }
 }

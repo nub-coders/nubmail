@@ -13,11 +13,9 @@ export async function POST(req: NextRequest) {
 
     const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
 
-    // Check if token exists and is not expired.
-    // Support plaintext token rows for a short migration window.
     const { rows } = await pgQuery<{ id: string; verification_code_expiry: Date }>(
-      'SELECT id, verification_code_expiry FROM users WHERE verification_code = $1 OR verification_code = $2',
-      [hashedToken, String(token)]
+      'SELECT id, verification_code_expiry FROM users WHERE verification_code = $1',
+      [hashedToken]
     );
 
     if (rows.length === 0) {

@@ -1,24 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
-import { sign, verify } from 'jsonwebtoken';
 import { sendSmtpEmail } from '@/utils/smtp';
 import { getTokenFromRequest } from '@/lib/auth-token';
+import { signVerifyToken, verifyJwt } from '@/lib/jwt-server';
 
 export async function POST(req: NextRequest) {
   try {
     const token = getTokenFromRequest(req);
     if (!token) return NextResponse.json({ error: 'No token provided' }, { status: 401 });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    let payload: any;
-    try {
-      payload = verify(token, secret) as any;
-    } catch (e) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const payload = verifyJwt(token);
+    if (!payload?.sub) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
 
     const { rows } = await pgQuery<{ id: string; email: string; email_verified: boolean | null }>(
       'SELECT id, email, email_verified FROM users WHERE id = $1',
@@ -31,11 +23,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Email is already verified' });
     }
 
-    const verifyToken = sign(
-      { sub: String(user.id), type: 'verify' },
-      secret,
-      { expiresIn: '30m' }
-    );
+    const verifyToken = signVerifyToken(String(user.id));
+    if (!verifyToken) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
 
     const protocol = process.env.PROTOCOL || 'https';
     const host = process.env.HOST || process.env.VIRTUAL_HOST || 'localhost:5000';
