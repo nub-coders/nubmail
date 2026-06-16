@@ -154,15 +154,15 @@
 }
 
 .nu_flex1 {
-  @apply flex-1 overflow-auto px-5 py-4 bg-background rounded-lg;
+  @apply flex-1 overflow-auto px-5 py-4 bg-background rounded-lg min-w-0;
 }
 
 .nu_maxWNone {
-  @apply max-w-none;
+  @apply max-w-none w-full min-w-0;
 }
 
 .nu_prose {
-  @apply prose prose-sm dark:prose-invert max-w-none;
+  @apply prose prose-sm dark:prose-invert max-w-none w-full;
 }
 
 .nu_px62 {
