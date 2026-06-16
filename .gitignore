@@ -61,3 +61,7 @@ smtp-certs/
 
 # temporary files
 scratch_doveconf.txt
+
+# logs
+/logs
+
