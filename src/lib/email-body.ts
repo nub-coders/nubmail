@@ -1,13 +1,18 @@
 import DOMPurify from 'dompurify';
+import sanitizeHtmlLib from 'sanitize-html';
 
-function decodeHtmlEntities(input: string): string {
-  if (typeof document === 'undefined') {
-    return input;
-  }
-
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = input;
-  return textarea.value;
+let hookInstalled = false;
+function ensureHook() {
+  if (hookInstalled) return;
+  if (typeof window === 'undefined') return;
+  if (typeof (DOMPurify as unknown as { addHook?: unknown }).addHook !== 'function') return;
+  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName === 'A') {
+      node.setAttribute('target', '_blank');
+      node.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+  hookInstalled = true;
 }
 
 function normalizeNewlines(input: string): string {
@@ -37,8 +42,31 @@ function htmlToText(input: string): string {
     .replace(/<[^>]+>/g, '');
 }
 
+function sanitizeServer(input: string): string {
+  return sanitizeHtmlLib(input, {
+    allowedTags: sanitizeHtmlLib.defaults.allowedTags.concat(['img']),
+    allowedAttributes: {
+      ...sanitizeHtmlLib.defaults.allowedAttributes,
+      a: ['href', 'name', 'target', 'rel'],
+      img: ['src', 'alt', 'width', 'height'],
+    },
+    transformTags: {
+      a: sanitizeHtmlLib.simpleTransform('a', { target: '_blank', rel: 'noopener noreferrer' }),
+    },
+    disallowedTagsMode: 'discard',
+  });
+}
+
 function sanitizeEmailHtml(input: string): string {
-  return DOMPurify.sanitize(input, { USE_PROFILES: { html: true } });
+  if (typeof window === 'undefined') {
+    return sanitizeServer(input);
+  }
+  ensureHook();
+  return DOMPurify.sanitize(input, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ['style'],
+    ADD_ATTR: ['target'],
+  });
 }
 
 export function getSafeEmailHtml(body: string | undefined): string {
@@ -46,13 +74,13 @@ export function getSafeEmailHtml(body: string | undefined): string {
     return '<p class="text-muted-foreground italic">No content available</p>';
   }
 
-  const decodedBody = decodeHtmlEntities(normalizeNewlines(body));
+  const normalized = normalizeNewlines(body);
 
-  if (looksLikeHtml(decodedBody)) {
-    return sanitizeEmailHtml(decodedBody);
+  if (looksLikeHtml(normalized)) {
+    return sanitizeEmailHtml(normalized);
   }
 
-  return escapeHtml(decodedBody).replace(/\n/g, '<br>');
+  return escapeHtml(normalized).replace(/\n/g, '<br>');
 }
 
 export function getEmailPreviewText(body: string | undefined): string {
@@ -60,8 +88,8 @@ export function getEmailPreviewText(body: string | undefined): string {
     return 'No content preview available';
   }
 
-  const decodedBody = decodeHtmlEntities(normalizeNewlines(body));
-  const plainText = looksLikeHtml(decodedBody) ? htmlToText(decodedBody) : decodedBody;
+  const normalized = normalizeNewlines(body);
+  const plainText = looksLikeHtml(normalized) ? htmlToText(normalized) : normalized;
 
   return plainText.replace(/\n{3,}/g, '\n\n').trim() || 'No content preview available';
 }

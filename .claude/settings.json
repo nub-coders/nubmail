@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /root/nubmail/src/app/api/emails/\\\\[id\\\\])",
+      "Bash(npm view *)"
+    ],
+    "additionalDirectories": [
+      "/root/nubmail/src/app/api/emails"
+    ]
+  }
+}

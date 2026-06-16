@@ -132,14 +132,4 @@
 
 .nu_prose {
   @apply prose max-w-none dark:prose-invert;
-  color: hsl(var(--foreground)) !important;
-}
-
-.nu_prose * {
-  color: hsl(var(--foreground)) !important;
-}
-
-.nu_prose a,
-.nu_prose a * {
-  color: hsl(var(--primary)) !important;
 }

@@ -15,6 +15,7 @@ import { useEmailSelection } from '@/hooks/use-email-selection';
 import { BulkActionBar } from '@/components/bulk-action-bar';
 import { bulkPatchEmails } from '@/lib/bulk-email-actions';
 import { getEmailPreviewText, getSafeEmailHtml } from '@/lib/email-body';
+import { EmailBodyFrame } from '@/components/email-body-frame';
 
 interface Email {
   id: string;
@@ -221,11 +222,9 @@ export default function SentPage() {
                 </div>
               </div>
               <div className={styles.nu_flex13}>
-                <div
+                <EmailBodyFrame
                   className={styles.nu_prose}
-                  dangerouslySetInnerHTML={{
-                    __html: getSafeEmailHtml(selectedEmail.body)
-                  }}
+                  html={getSafeEmailHtml(selectedEmail.body)}
                 />
               </div>
             </div>
