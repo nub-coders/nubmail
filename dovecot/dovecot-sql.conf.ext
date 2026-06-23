@@ -2,7 +2,7 @@
 # The password placeholder 'nubmail' is replaced at runtime by dovecot/entrypoint.sh
 # with the actual POSTGRES_PASSWORD environment variable value.
 driver = pgsql
-connect = host=postgres dbname=nubmail user=nubmail password=nubmail
+connect = host=nubmail-db dbname=nubmail user=nubmail password=nubmail
 
 # Query to fetch email account credentials (not user login credentials)
 # Users authenticate with their email_address and email account password
