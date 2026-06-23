@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(mkdir -p /root/nubmail/src/app/api/emails/\\\\[id\\\\])",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(gh pr *)",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(git fetch *)",
+      "WebFetch(domain:github.com)"
     ],
     "additionalDirectories": [
       "/root/nubmail/src/app/api/emails"
