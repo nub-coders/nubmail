@@ -47,10 +47,6 @@ services:
       PROTOCOL: ${PROTOCOL:-http}
       ADMIN_PASS: ${ADMIN_PASS:?ADMIN_PASS must be set}
       ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL must be set}
-      VIRTUAL_HOST: ${HOST:-mails.nubcoder.com}
-      VIRTUAL_PORT: 5000
-      LETSENCRYPT_HOST: mails.nubcoder.com
-      LETSENCRYPT_EMAIL: dev@nubcoder.com
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
@@ -69,6 +65,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nubmail.rule=Host(`mails.nubcoder.com`)"
+      - "traefik.http.routers.nubmail.entrypoints=websecure"
+      - "traefik.http.routers.nubmail.tls.certresolver=letsencrypt"
+      - "traefik.http.services.nubmail.loadbalancer.server.port=5000"
     networks:
       - web
     # Use Dockerfile CMD which now runs migrations and init-admin before starting the server
