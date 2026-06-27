@@ -51,7 +51,16 @@ export function verifyJwt(token: string, opts?: { type?: string }): SessionToken
       audience: JWT_AUDIENCE,
     }) as SessionTokenPayload;
     if (!decoded || typeof decoded !== 'object' || !decoded.sub) return null;
-    if (opts?.type && decoded.type !== opts.type) return null;
+    if (opts?.type) {
+      // Caller requires a specific purpose-scoped token (e.g. 'verify').
+      if (decoded.type !== opts.type) return null;
+    } else {
+      // Default: only accept session tokens. A session token carries no
+      // purpose `type` claim (or an explicit 'session'); reject anything
+      // else (e.g. short-lived 'verify' tokens) so they can never be
+      // presented as a full session credential.
+      if (decoded.type && decoded.type !== 'session') return null;
+    }
     return decoded;
   } catch {
     return null;
