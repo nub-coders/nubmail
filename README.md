@@ -462,6 +462,76 @@ docker compose logs -f dovecot
 docker compose logs -f
 ```
 
+## Backups
+
+### Automatic Daily Backups
+
+Database backups run nightly via cron. The pipeline: `pg_dump → gzip → AES-256 encrypt → upload to B2 + R2`.
+
+**Setup** (already done on the current VPS):
+```bash
+# Add to crontab
+30 2 * * * /root/nubmail/scripts/backup-pg.sh >> /var/log/nubmail-backup.log 2>&1
+```
+
+Requires `BACKUP_ENCRYPTION_KEY` in `.env` and `rclone` configured with `b2:` and `r2:` remotes.
+
+Backups are stored at `b2:nubs-backups-b2/nubmail/daily/` with 30-day retention.
+
+### Manual Backup
+
+```bash
+bash scripts/backup-pg.sh
+```
+
+### Restore
+
+```bash
+# Restore latest backup
+bash scripts/restore-pg.sh
+
+# Restore a specific backup
+bash scripts/restore-pg.sh nubmail-pg-20260702_033208
+```
+
+You will be prompted to confirm before any data is overwritten.
+
+## VPS Migration
+
+1. **On the new VPS — install dependencies**
+   ```bash
+   apt update && apt install -y docker.io docker-compose rclone
+   ```
+
+2. **Clone the repo**
+   ```bash
+   git clone https://github.com/nub-coders/nubmail.git /root/nubmail
+   ```
+
+3. **Copy config from old VPS**
+   - `.env` — `scp root@old-vps:/root/nubmail/.env /root/nubmail/.env`
+   - rclone config — `scp root@old-vps:$(rclone config file | tail -1) $(rclone config file | tail -1)`
+
+4. **Start Postgres and restore the database**
+   ```bash
+   docker compose up -d postgres
+   bash scripts/restore-pg.sh
+   ```
+
+5. **Start all services**
+   ```bash
+   docker compose up -d --build
+   ```
+
+6. **Update DNS** — point your domain's A/MX records to the new VPS IP
+
+7. **Set up cron jobs**
+   ```bash
+   (crontab -l 2>/dev/null; echo "30 2 * * * /root/nubmail/scripts/backup-pg.sh >> /var/log/nubmail-backup.log 2>&1"; echo "0 3 * * * /root/nubmail/scripts/reload-mail-certs.sh >> /var/log/nubmail-cert-reload.log 2>&1") | crontab -
+   ```
+
+8. **Verify** — test login, send/receive a test email, confirm backups run
+
 ## Support & Documentation
 
 - **Issues & Bugs:** Report on GitHub Issues
