@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
@@ -33,7 +33,7 @@ interface Domain {
 }
 
 export default function AdminDomainsPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
@@ -45,8 +45,8 @@ export default function AdminDomainsPage() {
     setLoading(true);
     try {
       const [usersRes, domainsRes] = await Promise.all([
-        fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/admin/domains', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/admin/users', { credentials: 'include' }),
+        fetch('/api/admin/domains', { credentials: 'include' }),
       ]);
 
       if (usersRes.status === 403 || domainsRes.status === 403) {

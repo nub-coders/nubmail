@@ -1,9 +1,15 @@
+@reference "../globals.css";
 .nu_flex {
   @apply flex min-h-screen;
 }
 
 .nu_hidden {
-  @apply hidden lg:flex lg:w-1/2 items-center justify-center gradient-primary relative overflow-hidden;
+  @apply hidden items-center justify-center gradient-primary relative overflow-hidden;
+  @media (min-width: 1024px) {
+    & {
+      @apply flex w-1/2;
+    }
+  }
 }
 
 .nu_absolute {
@@ -39,7 +45,17 @@
 }
 
 .nu_flex3 {
-  @apply flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-8 bg-background;
+  @apply flex w-full items-center justify-center p-6 bg-background;
+  @media (min-width: 1024px) {
+    & {
+      @apply w-1/2;
+    }
+  }
+  @media (min-width: 640px) {
+    & {
+      @apply p-8;
+    }
+  }
 }
 
 .nu_wFull {
@@ -47,7 +63,12 @@
 }
 
 .nu_mb8 {
-  @apply mb-8 lg:hidden flex items-center justify-center gap-2;
+  @apply mb-8 flex items-center justify-center gap-2;
+  @media (min-width: 1024px) {
+    & {
+      @apply hidden;
+    }
+  }
 }
 
 .nu_h7 {
@@ -83,7 +104,8 @@
 }
 
 .nu_absolute2 {
-  @apply absolute right-0 top-0 h-full px-3 hover:bg-transparent;
+  @apply absolute right-0 top-0 h-full px-3;
+  &:hover { @apply bg-transparent; }
 }
 
 .nu_h4 {
@@ -107,5 +129,6 @@
 }
 
 .nu_textPrimary {
-  @apply text-primary hover:underline font-medium;
+  @apply text-primary font-medium;
+  &:hover { @apply underline; }
 }

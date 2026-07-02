@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { cn, downloadBindFile } from '@/lib/utils';
 import { useAuthClient } from '@/lib/auth-provider';
 
@@ -70,7 +70,7 @@ export default function AdminDomainDetailPage() {
   const params = useParams();
   const router = useRouter();
   const domainId = params.id as string;
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [data, setData] = useState<AdminDomainDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,7 +83,7 @@ export default function AdminDomainDetailPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/domains/dns-status?domainId=${domainId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
 
       if (res.status === 403) {

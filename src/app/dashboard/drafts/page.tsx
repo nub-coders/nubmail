@@ -28,7 +28,7 @@ interface Draft {
 
 export default function DraftsPage() {
   const router = useRouter();
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function DraftsPage() {
     setIsLoading(true);
     try {
       const res = await fetch('/api/drafts', {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const data = await res.json();
       if (res.ok) setDrafts(data.drafts || []);
@@ -65,7 +65,7 @@ export default function DraftsPage() {
     try {
       const res = await fetch(`/api/drafts?id=${draftId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!res.ok) throw new Error();
       setDrafts(prev => prev.filter(d => d.id !== draftId));
@@ -81,7 +81,7 @@ export default function DraftsPage() {
   const handleBulkDelete = async () => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkDeleteDrafts(selection.selectedArray, token);
+      const { success, failed } = await bulkDeleteDrafts(selection.selectedArray);
       if (success > 0) {
         setDrafts(prev => prev.filter(d => !selection.isSelected(d.id)));
         selection.clearSelection();

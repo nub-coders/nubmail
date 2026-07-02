@@ -11,18 +11,18 @@ import { useAuthClient } from '@/lib/auth-provider';
 type Result = { check: string; ok: boolean; details?: string };
 
 export default function AdminServerPage() {
-  const { token } = useAuthClient();
+  const { user } = useAuthClient();
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<any>(null);
 
   async function load() {
-    if (!token) return;
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/server/dns', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+      const res = await fetch('/api/admin/server/dns', { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
       setResults(data.results || []);
@@ -34,7 +34,7 @@ export default function AdminServerPage() {
     }
   }
 
-  useEffect(() => { load(); }, [token]);
+  useEffect(() => { load(); }, [user]);
 
   const domain = config?.mailHostname || '';
   const apex = config?.rootDomain || '';

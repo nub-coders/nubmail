@@ -1,3 +1,4 @@
+@reference "../globals.css";
 .nu_flex {
   @apply flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4;
 }

@@ -1,135 +1,140 @@
-"use client";
 import styles from './page.module.css';
-
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Mail, Eye, EyeOff } from 'lucide-react';
-
+import { Mail, Shield, Globe, Key, Zap, Code, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuthClient } from '@/lib/auth-provider';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user, refresh, isLoading: authLoading } = useAuthClient();
-  const router = useRouter();
-  const { toast } = useToast();
+const features = [
+  {
+    icon: Globe,
+    title: 'Custom Domains',
+    desc: 'Use your own domain names for professional email addresses. Full DNS management with automated verification.',
+  },
+  {
+    icon: Shield,
+    title: 'DKIM Signing',
+    desc: 'Every outgoing email is signed with DKIM to ensure deliverability and protect against spoofing.',
+  },
+  {
+    icon: Send,
+    title: 'Built-in SMTP',
+    desc: 'Fully managed SMTP server. Send and receive emails without any third-party dependencies.',
+  },
+  {
+    icon: Key,
+    title: 'API Access',
+    desc: 'Scoped API keys with granular permissions. Control which domains and accounts each key can access.',
+  },
+  {
+    icon: Zap,
+    title: 'Fast & Reliable',
+    desc: 'Lightweight architecture built for speed. Your emails are delivered quickly and reliably.',
+  },
+  {
+    icon: Code,
+    title: 'Developer Friendly',
+    desc: 'RESTful API for sending, reading, and managing emails programmatically. Perfect for automations.',
+  },
+];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-      let data: any = null;
-      try {
-        data = await res.json();
-      } catch (e) {
-        console.warn('Failed to parse JSON response', e);
-      }
-      if (!res.ok) {
-        const message = 'Invalid email or password. Please try again.';
-        setErrorMessage(message);
-        toast({ title: 'Sign in failed', description: message, variant: 'destructive' });
-        return;
-      }
-
-      toast({ title: 'Signing in...', description: 'Please wait...' });
-      await refresh();
-      toast({ title: 'Signed in', description: 'Redirecting to dashboard...' });
-      router.push('/dashboard');
-    } catch (err: any) {
-      console.error('Login error', err);
-      const message = err?.message ?? 'Network error';
-      setErrorMessage(message);
-      toast({ title: 'Sign in failed', description: message, variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user) router.push('/dashboard');
-  }, [user, router]);
-
+export default function LandingPage() {
   return (
-    <div className={styles.nu_flex}>
-      {/* Left panel - Branding */}
-      <div className={styles.nu_hidden}>
-        <div className={styles.nu_absolute} style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-        <div className={styles.nu_relative}>
-          <div className={styles.nu_flex2}>
-            <div className={styles.nu_h12}>
-              <Mail className={styles.nu_h6} />
+    <div className={styles.page}>
+      <nav className={styles.nav}>
+        <div className={styles.navInner}>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>
+              <Mail className={styles.logoIconSvg} />
             </div>
-            <span className={styles.nu_text2xl}>NubMail</span>
+            <span className={styles.logoText}>NubMail</span>
           </div>
-          <h2 className={styles.nu_text3xl}>
-            Professional email for your custom domains
-          </h2>
-          <p className={styles.nu_textWhite70}>
-            Send, receive, and manage emails with your own domain. Built-in SMTP, DKIM signing, and API access included.
-          </p>
+          <div className={styles.navLinks}>
+            <Button variant="ghost" asChild>
+              <Link href="/login">Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/register">Get started</Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Right panel - Form */}
-      <div className={styles.nu_flex3}>
-        <div className={styles.nu_wFull}>
-          <div className={styles.nu_mb8}>
-            <Mail className={styles.nu_h7} />
-            <span className={styles.nu_text2xl}>NubMail</span>
+      <section className={styles.hero}>
+        <div className={styles.heroBg} />
+        <div className={styles.heroGlow} />
+        <div className={styles.heroInner}>
+          <div className={styles.badge}>
+            <Mail className="h-4 w-4" />
+            Self-hosted email made simple
           </div>
-          <div className={styles.nu_spaceY2}>
-            <h1 className={styles.nu_text2xl2}>Welcome back</h1>
-            <p className={styles.nu_textSm}>Enter your credentials to sign in</p>
-          </div>
-          <form onSubmit={handleSubmit} method="post" className={styles.nu_grid} autoComplete="on">
-            <div className={styles.nu_grid2}>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" name="email" autoComplete="username" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className={styles.nu_grid2}>
-              <div className={styles.nu_flex4}>
-                <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" className={styles.nu_mlAuto}>Forgot password?</Link>
-              </div>
-              <div className={styles.nu_relative2}>
-                <Input id="password" type={showPassword ? "text" : "password"} name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className={styles.nu_pr10} />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={styles.nu_absolute2}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className={styles.nu_h4} />
-                  ) : (
-                    <Eye className={styles.nu_h4} />
-                  )}
-                </Button>
-              </div>
-            </div>
-            {errorMessage && (
-              <div role="alert" aria-live="polite" className={styles.nu_textSm2}>
-                {errorMessage}
-              </div>
-            )}
-            <Button type="submit" className={styles.nu_wFull2} disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
-          </form>
-          <div className={styles.nu_mt6}>
-            Don&apos;t have an account? <Link href="/register" className={styles.nu_textPrimary}>Sign up</Link>
+          <h1 className={styles.heroTitle}>
+            Professional email for{' '}
+            <span className={styles.heroGradient}>your custom domains</span>
+          </h1>
+          <p className={styles.heroDesc}>
+            Send, receive, and manage emails with your own domain. Built-in SMTP server, DKIM signing, granular API access, and a clean dashboard — all in one self-hosted package.
+          </p>
+          <div className={styles.heroCta}>
+            <Button size="lg" className={styles.ctaPrimary} asChild>
+              <Link href="/register">Start for free</Link>
+            </Button>
+            <Button size="lg" variant="outline" className={styles.ctaSecondary} asChild>
+              <Link href="/login">Sign in</Link>
+            </Button>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className={styles.features}>
+        <div className={styles.featuresInner}>
+          <div className={styles.featuresHeader}>
+            <p className={styles.featuresLabel}>Features</p>
+            <h2 className={styles.featuresTitle}>Everything you need for email</h2>
+            <p className={styles.featuresDesc}>
+              A complete email solution with domain management, SMTP, and developer tools built in.
+            </p>
+          </div>
+          <div className={styles.featuresGrid}>
+            {features.map((f) => (
+              <div key={f.title} className={styles.featureCard}>
+                <div className={styles.featureIcon}>
+                  <f.icon className={styles.featureIconSvg} />
+                </div>
+                <h3 className={styles.featureTitle}>{f.title}</h3>
+                <p className={styles.featureDesc}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.ctaSection}>
+        <div className={styles.ctaInner}>
+          <h2 className={styles.ctaTitle}>Ready to take control of your email?</h2>
+          <p className={styles.ctaDesc}>
+            Create an account and add your first domain in minutes.
+          </p>
+          <div className={styles.ctaButtons}>
+            <Button size="lg" className={styles.ctaPrimary} asChild>
+              <Link href="/register">Get started</Link>
+            </Button>
+            <Button size="lg" variant="outline" className={styles.ctaSecondary} asChild>
+              <Link href="/login">Sign in</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <p className={styles.footerText}>
+            &copy; {new Date().getFullYear()} NubMail. All rights reserved.
+          </p>
+          <div className={styles.footerLinks}>
+            <Link href="/login" className={styles.footerLink}>Sign in</Link>
+            <Link href="/register" className={styles.footerLink}>Register</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

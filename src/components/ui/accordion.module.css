@@ -1,3 +1,4 @@
+@reference "../../app/globals.css";
 .nu_flex {
   @apply flex;
 }
@@ -7,5 +8,6 @@
 }
 
 .nu_overflowHidden {
-  @apply overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down;
+  @apply overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up;
+  &[data-state="open"] { @apply animate-accordion-down; }
 }

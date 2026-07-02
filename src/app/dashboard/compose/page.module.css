@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_flex {
   @apply flex flex-col gap-6 h-full max-w-4xl mx-auto;
 }
@@ -47,7 +48,9 @@
 }
 
 .nu_border0 {
-  @apply border-0 bg-transparent hover:bg-muted/50 focus:bg-background;
+  @apply border-0 bg-transparent;
+  &:hover { @apply bg-muted/50; }
+  &:focus { @apply bg-background; }
 }
 
 .nu_flex6 {
@@ -67,7 +70,8 @@
 }
 
 .nu_flex13 {
-  @apply flex-1 border-0 bg-transparent resize-none focus:ring-0 text-base leading-relaxed p-6 min-h-[400px];
+  @apply flex-1 border-0 bg-transparent resize-none text-base leading-relaxed p-6 min-h-[400px];
+  &:focus { @apply ring-0; }
 }
 
 .nu_flex7 {
@@ -91,7 +95,8 @@
 }
 
 .nu_ml1 {
-  @apply ml-1 hover:text-destructive;
+  @apply ml-1;
+  &:hover { @apply text-destructive; }
 }
 
 .nu_h32 {
@@ -115,7 +120,7 @@
 }
 
 .nu_hoverBgDestructive10 {
-  @apply hover:bg-destructive/10 hover:text-destructive;
+  &:hover { @apply bg-destructive/10 text-destructive; }
 }
 
 .nu_mr2 {
@@ -123,7 +128,8 @@
 }
 
 .nu_minW100px {
-  @apply min-w-[100px] gradient-primary hover:opacity-90 text-white;
+  @apply min-w-[100px] gradient-primary text-white;
+  &:hover { @apply opacity-90; }
 }
 
 .nu_animateSpin {

@@ -21,6 +21,11 @@ export async function POST(req: NextRequest) {
     const { email, password, fullName } = body;
     if (!email || !password) return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email address format' }, { status: 400 });
+    }
+
     // Password policy: at least 8 characters, includes uppercase, lowercase, digit and symbol
     const pwRe = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
     if (!pwRe.test(password)) {

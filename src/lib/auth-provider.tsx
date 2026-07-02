@@ -1,31 +1,26 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
 
 interface User { id: string; email: string; fullName?: string | null; emailVerified?: boolean; isAdmin?: boolean }
 
 type AuthCtx = {
   user: User | null;
-  token: string | null; // Always null. Kept for back-compat with older call sites.
   loading: boolean;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
   setUser: (u: User | null) => void;
-  // Legacy: no-op token setter. Triggers session refetch via cookie when called with a value.
-  setToken: (t: string | null) => Promise<void>;
   isLoading?: boolean;
 };
 
 const AuthContext = createContext<AuthCtx>({
   user: null,
-  token: null,
   loading: true,
   refresh: async () => {},
   logout: async () => {},
   setUser: () => {},
-  setToken: async () => {},
   isLoading: undefined,
 });
 
@@ -35,18 +30,26 @@ export default function AuthClientProvider({ children }: { children: React.React
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
+  const didInitialLoad = useRef(false);
+
+  const redirectToLogin = async () => {
+    const protectedPrefixes = ['/dashboard', '/accounts'];
+    const publicPaths = ['/', '/login', '/register', '/verify-email'];
+    if (pathname && protectedPrefixes.some((p) => pathname.startsWith(p)) && !publicPaths.includes(pathname)) {
+      window.location.href = '/login';
+    }
+  };
 
   const refresh = async () => {
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     try {
-      const res = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
+      const res = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include', signal: controller.signal });
+      clearTimeout(timeout);
       if (!res.ok) {
         setUser(null);
-        const protectedPrefixes = ['/dashboard', '/accounts'];
-        const publicPaths = ['/', '/register', '/verify-email'];
-        if (pathname && protectedPrefixes.some((p) => pathname.startsWith(p)) && !publicPaths.includes(pathname)) {
-          router.push('/');
-        }
+        await redirectToLogin();
         return;
       }
       const data = await res.json();
@@ -55,9 +58,10 @@ export default function AuthClientProvider({ children }: { children: React.React
         router.push('/dashboard');
       }
     } catch (err) {
+      clearTimeout(timeout);
       console.error('Auth load failed', err);
-      toast({ title: 'Auth error', description: 'Could not verify session', variant: 'destructive' });
       setUser(null);
+      await redirectToLogin();
     } finally {
       setLoading(false);
     }
@@ -70,27 +74,19 @@ export default function AuthClientProvider({ children }: { children: React.React
       // ignore
     }
     setUser(null);
-    if (pathname !== '/') router.replace('/');
-  };
-
-  // Back-compat shim: callers pass null to log out, or a value to mean "session changed"
-  // (which we satisfy by re-fetching /api/auth/me using the cookie). We deliberately do
-  // not persist the token in JS state.
-  const setToken = async (t: string | null) => {
-    if (t === null) {
-      await logout();
-      return;
-    }
-    await refresh();
+    if (pathname !== '/login') router.replace('/login');
   };
 
   useEffect(() => {
-    refresh();
+    if (!didInitialLoad.current) {
+      didInitialLoad.current = true;
+      refresh();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token: null, loading, refresh, logout, setUser, setToken, isLoading: loading }}>
+    <AuthContext.Provider value={{ user, loading, refresh, logout, setUser, isLoading: loading }}>
       {children}
     </AuthContext.Provider>
   );

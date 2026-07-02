@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_py8 {
   @apply py-8 text-center;
 }
@@ -75,5 +76,6 @@
 }
 
 .nu_bgDestructive {
-  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  @apply bg-destructive text-destructive-foreground;
+  &:hover { @apply bg-destructive/90; }
 }

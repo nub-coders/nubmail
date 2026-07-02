@@ -1,115 +1,231 @@
-.nu_flex {
-  @apply flex min-h-screen;
+@reference "./globals.css";
+.page {
+  @apply min-h-screen bg-background;
 }
 
-.nu_hidden {
-  @apply hidden lg:flex lg:w-1/2 items-center justify-center gradient-primary relative overflow-hidden;
+/* Nav */
+.nav {
+  @apply sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md;
 }
 
-.nu_absolute {
-  @apply absolute inset-0 opacity-10;
+.navInner {
+  @apply max-w-6xl mx-auto px-6 h-16 flex items-center justify-between;
 }
 
-.nu_relative {
-  @apply relative z-10 max-w-md px-8 text-white;
+.logo {
+  @apply flex items-center gap-2;
 }
 
-.nu_flex2 {
-  @apply flex items-center gap-3 mb-8;
+.logoIcon {
+  @apply h-8 w-8 rounded-lg gradient-primary flex items-center justify-center;
 }
 
-.nu_h12 {
-  @apply h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center;
+.logoIconSvg {
+  @apply h-4 w-4 text-white;
 }
 
-.nu_h6 {
-  @apply h-6 w-6;
+.logoText {
+  @apply text-xl font-bold tracking-tight;
 }
 
-.nu_text2xl {
-  @apply text-2xl font-bold;
+.navLinks {
+  @apply flex items-center gap-3;
 }
 
-.nu_text3xl {
-  @apply text-3xl font-bold leading-tight mb-4;
+/* Hero */
+.hero {
+  @apply relative overflow-hidden;
 }
 
-.nu_textWhite70 {
-  @apply text-white/70 text-lg leading-relaxed;
+.heroBg {
+  @apply absolute inset-0 opacity-[0.03];
+  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
+  background-size: 32px 32px;
 }
 
-.nu_flex3 {
-  @apply flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-8 bg-background;
+.heroGlow {
+  @apply absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full opacity-20 blur-3xl pointer-events-none;
+  background: radial-gradient(ellipse, hsl(239 84% 67% / 0.3) 0%, transparent 70%);
 }
 
-.nu_wFull {
-  @apply w-full max-w-sm;
+.heroInner {
+  @apply relative max-w-4xl mx-auto px-6 pt-24 pb-20 text-center;
 }
 
-.nu_mb8 {
-  @apply mb-8 lg:hidden flex items-center justify-center gap-2;
+.badge {
+  @apply inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-8;
+  @apply bg-primary/10 text-primary border border-primary/20;
 }
 
-.nu_h7 {
-  @apply h-7 w-7 text-primary;
+.heroTitle {
+  @apply text-4xl font-bold tracking-tight leading-[1.1] mb-6;
+  @media (min-width: 640px) {
+    & {
+      @apply text-5xl;
+    }
+  }
+  @media (min-width: 1024px) {
+    & {
+      @apply text-6xl;
+    }
+  }
 }
 
-.nu_spaceY2 {
-  @apply space-y-2 mb-8;
+.heroGradient {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(262 83% 58%) 100%);
 }
 
-.nu_text2xl2 {
-  @apply text-2xl font-semibold tracking-tight;
+.heroDesc {
+  @apply text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed;
+  @media (min-width: 640px) {
+    & {
+      @apply text-xl;
+    }
+  }
 }
 
-.nu_textSm {
+.heroCta {
+  @apply flex flex-col items-center justify-center gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply flex-row;
+    }
+  }
+}
+
+.ctaPrimary {
+  @apply h-12 px-8 text-base font-medium;
+}
+
+.ctaSecondary {
+  @apply h-12 px-8 text-base font-medium;
+}
+
+/* Features */
+.features {
+  @apply py-24 border-t border-border/50;
+}
+
+.featuresInner {
+  @apply max-w-6xl mx-auto px-6;
+}
+
+.featuresHeader {
+  @apply text-center mb-16;
+}
+
+.featuresLabel {
+  @apply text-sm font-semibold uppercase tracking-wider text-primary mb-3;
+}
+
+.featuresTitle {
+  @apply text-3xl font-bold tracking-tight mb-4;
+  @media (min-width: 640px) {
+    & {
+      @apply text-4xl;
+    }
+  }
+}
+
+.featuresDesc {
+  @apply text-muted-foreground text-lg max-w-2xl mx-auto;
+}
+
+.featuresGrid {
+  @apply grid gap-8;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
+  @media (min-width: 1024px) {
+    & {
+      @apply grid-cols-3;
+    }
+  }
+}
+
+.featureCard {
+  @apply p-6 rounded-xl border border-border/50 bg-card;
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.featureCard:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.featureIcon {
+  @apply h-10 w-10 rounded-lg gradient-primary flex items-center justify-center mb-4;
+}
+
+.featureIconSvg {
+  @apply h-5 w-5 text-white;
+}
+
+.featureTitle {
+  @apply text-lg font-semibold mb-2;
+}
+
+.featureDesc {
+  @apply text-sm text-muted-foreground leading-relaxed;
+}
+
+/* CTA Section */
+.ctaSection {
+  @apply py-24 border-t border-border/50;
+}
+
+.ctaInner {
+  @apply max-w-3xl mx-auto px-6 text-center;
+}
+
+.ctaTitle {
+  @apply text-3xl font-bold tracking-tight mb-4;
+  @media (min-width: 640px) {
+    & {
+      @apply text-4xl;
+    }
+  }
+}
+
+.ctaDesc {
+  @apply text-lg text-muted-foreground mb-8;
+}
+
+.ctaButtons {
+  @apply flex flex-col items-center justify-center gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply flex-row;
+    }
+  }
+}
+
+/* Footer */
+.footer {
+  @apply border-t border-border/50 py-8;
+}
+
+.footerInner {
+  @apply max-w-6xl mx-auto px-6 flex flex-col items-center justify-between gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply flex-row;
+    }
+  }
+}
+
+.footerText {
   @apply text-sm text-muted-foreground;
 }
 
-.nu_grid {
-  @apply grid gap-4;
+.footerLinks {
+  @apply flex items-center gap-6;
 }
 
-.nu_grid2 {
-  @apply grid gap-2;
-}
-
-.nu_flex4 {
-  @apply flex items-center;
-}
-
-.nu_mlAuto {
-  @apply ml-auto inline-block text-sm text-muted-foreground hover:text-foreground transition-colors;
-}
-
-.nu_relative2 {
-  @apply relative;
-}
-
-.nu_pr10 {
-  @apply pr-10;
-}
-
-.nu_absolute2 {
-  @apply absolute right-0 top-0 h-full px-3 hover:bg-transparent;
-}
-
-.nu_h4 {
-  @apply h-4 w-4 text-muted-foreground;
-}
-
-.nu_textSm2 {
-  @apply text-sm text-destructive;
-}
-
-.nu_wFull2 {
-  @apply w-full;
-}
-
-.nu_mt6 {
-  @apply mt-6 text-center text-sm text-muted-foreground;
-}
-
-.nu_textPrimary {
-  @apply text-primary hover:underline font-medium;
+.footerLink {
+  @apply text-sm text-muted-foreground transition-colors;
+  &:hover { @apply text-foreground; }
 }

@@ -1,3 +1,4 @@
+@reference "../../../globals.css";
 .nu_gap1 {
   @apply gap-1;
 }
@@ -23,7 +24,12 @@
 }
 
 .nu_grid {
-  @apply grid gap-4 md:grid-cols-2 xl:grid-cols-4;
+  @apply grid gap-4 xl:grid-cols-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
 }
 
 .nu_flex3 {
@@ -47,7 +53,12 @@
 }
 
 .nu_grid2 {
-  @apply grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)];
+  @apply grid gap-6;
+  @media (min-width: 1024px) {
+    & {
+      @apply grid-cols-[320px_minmax(0,1fr)];
+    }
+  }
 }
 
 .nu_hFit {
@@ -91,9 +102,11 @@
 }
 
 .nu_flex7 {
-  @apply flex items-center gap-2 text-primary hover:underline;
+  @apply flex items-center gap-2 text-primary;
+  &:hover { @apply underline; }
 }
 
 .nu_textLeft {
-  @apply text-left text-sm text-primary hover:underline;
+  @apply text-left text-sm text-primary;
+  &:hover { @apply underline; }
 }

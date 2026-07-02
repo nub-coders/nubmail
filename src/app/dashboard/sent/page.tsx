@@ -28,7 +28,7 @@ interface Email {
 }
 
 export default function SentPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function SentPage() {
       setIsLoading(true);
       try {
         const res = await fetch('/api/emails?folder=sent', {
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) setEmails(data.emails || []);
@@ -72,7 +72,7 @@ export default function SentPage() {
   const handleBulkAction = async (fields: Record<string, unknown>, label: string) => {
     setBulkLoading(true);
     try {
-      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields, token);
+      const { success, failed } = await bulkPatchEmails(selection.selectedArray, fields);
       if (success > 0) {
         setEmails(prev => prev.filter(e => !selection.isSelected(e.id)));
         selection.clearSelection();

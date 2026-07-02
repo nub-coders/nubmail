@@ -43,7 +43,13 @@ export async function createSession(userId: string, token: string, userAgent?: s
   const expiresAt = new Date(Date.now() + 60 * 60 * 24 * 7 * 1000);
   const tokenHash = hashToken(token);
   await pgQuery(
-    'INSERT INTO sessions (user_id, token_hash, expires_at, user_agent, ip_address) VALUES ($1, $2, $3, $4, $5)',
+    `INSERT INTO sessions (user_id, token_hash, expires_at, user_agent, ip_address)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (token_hash) DO UPDATE SET
+       expires_at = EXCLUDED.expires_at,
+       user_agent = EXCLUDED.user_agent,
+       ip_address = EXCLUDED.ip_address,
+       is_active = TRUE`,
     [userId, tokenHash, expiresAt, userAgent, ipAddress]
   );
 }
@@ -60,6 +66,7 @@ export async function verifySession(token: string) {
     );
 
     if (rows.length === 0) return null;
+    cleanupExpiredSessions().catch(() => {});
     return rows[0];
   } catch {
     return null;
@@ -69,4 +76,21 @@ export async function verifySession(token: string) {
 export async function invalidateSession(token: string) {
   const tokenHash = hashToken(token);
   await pgQuery('UPDATE sessions SET is_active = FALSE WHERE token_hash = $1', [tokenHash]);
+}
+
+let lastCleanup = 0;
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+
+export async function cleanupExpiredSessions() {
+  const now = Date.now();
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+  lastCleanup = now;
+  try {
+    await pgQuery(
+      'DELETE FROM sessions WHERE expires_at < NOW() OR (is_active = FALSE AND created_at < NOW() - INTERVAL \'1 day\')',
+      []
+    );
+  } catch {
+    // best-effort cleanup
+  }
 }

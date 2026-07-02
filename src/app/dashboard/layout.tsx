@@ -1,6 +1,7 @@
 import { Edit } from 'lucide-react';
 import Link from 'next/link';
 
+import { AuthGuard } from '@/components/auth-guard';
 import { MainNav } from '@/components/main-nav';
 import { PushRegistration } from '@/components/push-registration';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -37,7 +38,7 @@ export default function DashboardLayout({
         </SidebarHeader>
         <SidebarContent className="px-2">
            <div className="p-3">
-            <Button asChild className="w-full gradient-primary hover:opacity-90 text-white shadow-sm rounded-lg">
+            <Button asChild className="w-full gradient-primary hover:opacity-90 text-white shadow-xs rounded-lg">
               <Link href="/dashboard/compose">
                 <Edit className="mr-2 h-4 w-4" />
                 Compose
@@ -54,7 +55,9 @@ export default function DashboardLayout({
             <UserNav />
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6 lg:p-8 animate-fade-in">{children}</main>
+        <main className="flex-1 overflow-auto p-6 lg:p-8 animate-fade-in">
+          <AuthGuard>{children}</AuthGuard>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,3 +1,4 @@
+@reference "../app/globals.css";
 .nu_flex {
   @apply flex items-center justify-between gap-4 px-4 py-2 bg-muted/80 border border-border/40 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200;
 }
@@ -15,7 +16,8 @@
 }
 
 .nu_textSm2 {
-  @apply text-sm text-primary hover:underline;
+  @apply text-sm text-primary;
+  &:hover { @apply underline; }
 }
 
 .nu_flex3 {

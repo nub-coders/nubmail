@@ -2,7 +2,7 @@
 import styles from './page.module.css';
 
 import { useEffect, useState } from 'react';
-import { Key, Plus, Trash2, Copy, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
+import { Key, Plus, Trash2, Copy, Eye, EyeOff, CheckCircle, Mail, Globe, Send, BookOpen, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -43,6 +44,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface ApiKey {
   id: string;
   name: string;
+  permissions: string[];
+  domainIds: string[];
+  accountIds: string[];
   createdAt: string;
   lastUsed: string | null;
 }
@@ -51,17 +55,35 @@ interface EmailAccount {
   id: string;
   email_address: string;
   has_imap_password: boolean;
+  domainId?: string;
 }
 
+interface Domain {
+  id: string;
+  domainName: string;
+  verificationStatus: string;
+}
+
+const PERMISSION_LABELS: Record<string, { label: string; description: string; icon: React.ReactNode }> = {
+  send: { label: 'Send Emails', description: 'Send emails via API', icon: <Send className="h-4 w-4" /> },
+  read: { label: 'Read Emails', description: 'Read inbox and sent emails via API', icon: <BookOpen className="h-4 w-4" /> },
+  create_accounts: { label: 'Create Accounts', description: 'Create new email accounts via API', icon: <UserPlus className="h-4 w-4" /> },
+};
+
 export default function DeveloperPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+  const [isLoadingDomains, setIsLoadingDomains] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [keyName, setKeyName] = useState('');
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>(['send']);
+  const [selectedDomainIds, setSelectedDomainIds] = useState<string[]>([]);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
   const [showNewKey, setShowNewKey] = useState(false);
@@ -70,26 +92,21 @@ export default function DeveloperPage() {
   const [revealingKeyId, setRevealingKeyId] = useState<string | null>(null);
   const [deleteKeyId, setDeleteKeyId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // IMAP/POP3 password setup
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [selectedImapAccountId, setSelectedImapAccountId] = useState<string | null>(null);
   const [imapPassword, setImapPassword] = useState('');
   const [confirmImapPassword, setConfirmImapPassword] = useState('');
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [showImapPassword, setShowImapPassword] = useState(false);
-  
-  // Get the current host dynamically
-  const apiHost = typeof window !== 'undefined' 
-    ? `${window.location.protocol}//${window.location.host}` 
+
+  const apiHost = typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.host}`
     : 'https://mails.nubcoder.com';
 
-  // Extract base domain from the current host for mail server settings
-  // e.g., "https://mails.nubcoder.com" → "nubcoder.com"
-  // e.g., "https://mail.example.org:3000" → "example.org"
   const baseDomain = (() => {
     try {
       const hostname = typeof window !== 'undefined' ? window.location.hostname : 'nubcoder.com';
-      // Strip common mail-related subdomain prefixes
       return hostname.replace(/^(mails?|webmail)\./, '');
     } catch {
       return 'nubcoder.com';
@@ -100,19 +117,13 @@ export default function DeveloperPage() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/auth/api-keys', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch('/api/auth/api-keys', { credentials: 'include' });
       const data = await res.json();
       if (res.ok) {
         setKeys(data.keys || []);
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load API keys'
-      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to load API keys' });
     } finally {
       setIsLoading(false);
     }
@@ -122,53 +133,56 @@ export default function DeveloperPage() {
     if (!user) return;
     setIsLoadingAccounts(true);
     try {
-      const res = await fetch('/api/accounts', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch('/api/accounts', { credentials: 'include' });
       const data = await res.json();
       if (res.ok) {
-        // Map API response to local interface
         const mappedAccounts = data.accounts.map((account: any) => ({
           id: account.id,
           email_address: account.emailAddress,
-          has_imap_password: account.hasImapPassword
+          has_imap_password: account.hasImapPassword,
+          domainId: account.domainId,
         }));
         setEmailAccounts(mappedAccounts);
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load email accounts'
-      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to load email accounts' });
     } finally {
       setIsLoadingAccounts(false);
+    }
+  };
+
+  const fetchDomains = async () => {
+    if (!user) return;
+    setIsLoadingDomains(true);
+    try {
+      const res = await fetch('/api/domains', { credentials: 'include' });
+      const data = await res.json();
+      if (res.ok) {
+        setDomains((data.domains || []).filter((d: Domain) => d.verificationStatus === 'verified'));
+      }
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to load domains' });
+    } finally {
+      setIsLoadingDomains(false);
     }
   };
 
   useEffect(() => {
     fetchKeys();
     fetchEmailAccounts();
+    fetchDomains();
   }, [user]);
 
   const handleSetImapPassword = async () => {
-    if (!selectedAccountId) return;
-    
+    if (!selectedImapAccountId) return;
+
     if (!imapPassword || imapPassword.length < 12) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Password must be at least 12 characters'
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'Password must be at least 12 characters' });
       return;
     }
 
     if (imapPassword !== confirmImapPassword) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Passwords do not match'
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'Passwords do not match' });
       return;
     }
 
@@ -176,50 +190,55 @@ export default function DeveloperPage() {
     try {
       const res = await fetch('/api/accounts/imap-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          accountId: selectedAccountId,
-          password: imapPassword 
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: selectedImapAccountId, password: imapPassword })
       });
       const data = await res.json();
       if (res.ok) {
-        toast({
-          title: 'Success',
-          description: 'IMAP/POP3 password set successfully'
-        });
-        setSelectedAccountId(null);
+        toast({ title: 'Success', description: 'IMAP/POP3 password set successfully' });
+        setSelectedImapAccountId(null);
         setImapPassword('');
         setConfirmImapPassword('');
         fetchEmailAccounts();
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data.error || 'Failed to set password'
-        });
+        toast({ variant: 'destructive', title: 'Error', description: data.error || 'Failed to set password' });
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to set password'
-      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to set password' });
     } finally {
       setIsSettingPassword(false);
     }
   };
 
+  const togglePermission = (perm: string) => {
+    setSelectedPermissions(prev =>
+      prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]
+    );
+  };
+
+  const toggleDomain = (domainId: string) => {
+    setSelectedDomainIds(prev =>
+      prev.includes(domainId) ? prev.filter(d => d !== domainId) : [...prev, domainId]
+    );
+  };
+
+  const toggleAccount = (accountId: string) => {
+    setSelectedAccountIds(prev =>
+      prev.includes(accountId) ? prev.filter(a => a !== accountId) : [...prev, accountId]
+    );
+  };
+
+  const filteredAccounts = selectedDomainIds.length > 0
+    ? emailAccounts.filter(a => a.domainId && selectedDomainIds.includes(a.domainId))
+    : emailAccounts;
+
   const handleCreateKey = async () => {
     if (!keyName.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please enter a key name'
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'Please enter a key name' });
+      return;
+    }
+    if (selectedPermissions.length === 0) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Select at least one permission' });
       return;
     }
 
@@ -227,35 +246,29 @@ export default function DeveloperPage() {
     try {
       const res = await fetch('/api/auth/api-keys', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ name: keyName })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: keyName,
+          permissions: selectedPermissions,
+          domainIds: selectedDomainIds,
+          accountIds: selectedAccountIds,
+        })
       });
       const data = await res.json();
       if (res.ok) {
         setNewKey(data.key);
         setShowNewKey(true);
         setKeyName('');
+        setSelectedPermissions(['send']);
+        setSelectedDomainIds([]);
+        setSelectedAccountIds([]);
         fetchKeys();
-        toast({
-          title: 'Success',
-          description: 'API key created successfully'
-        });
+        toast({ title: 'Success', description: 'API key created successfully' });
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data.error || 'Failed to create API key'
-        });
+        toast({ variant: 'destructive', title: 'Error', description: data.error || 'Failed to create API key' });
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to create API key'
-      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to create API key' });
     } finally {
       setIsCreating(false);
     }
@@ -264,30 +277,16 @@ export default function DeveloperPage() {
   const handleDeleteKey = async (id: string) => {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/auth/api-keys?id=${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/auth/api-keys?id=${id}`, { method: 'DELETE', credentials: 'include' });
       if (res.ok) {
         fetchKeys();
-        toast({
-          title: 'Success',
-          description: 'API key deleted successfully'
-        });
+        toast({ title: 'Success', description: 'API key deleted successfully' });
       } else {
         const data = await res.json();
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data.error || 'Failed to delete API key'
-        });
+        toast({ variant: 'destructive', title: 'Error', description: data.error || 'Failed to delete API key' });
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to delete API key'
-      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete API key' });
     } finally {
       setIsDeleting(false);
       setDeleteKeyId(null);
@@ -296,35 +295,22 @@ export default function DeveloperPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied',
-      description: 'API key copied to clipboard'
-    });
+    toast({ title: 'Copied', description: 'API key copied to clipboard' });
   };
 
   const handleRevealKey = async (id: string) => {
     setRevealingKeyId(id);
     try {
-      const res = await fetch(`/api/auth/api-keys?id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/auth/api-keys?id=${id}`, { credentials: 'include' });
       const data = await res.json();
       if (res.ok) {
         setRevealedKey(data.key);
         setShowRevealedKey(true);
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data.error || 'Failed to load API key'
-        });
+        toast({ variant: 'destructive', title: 'Error', description: data.error || 'Failed to load API key' });
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load API key'
-      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to load API key' });
     } finally {
       setRevealingKeyId(null);
     }
@@ -335,6 +321,9 @@ export default function DeveloperPage() {
     setShowNewKey(false);
     setIsCreateDialogOpen(false);
   };
+
+  const getDomainName = (domainId: string) => domains.find(d => d.id === domainId)?.domainName || domainId;
+  const getAccountEmail = (accountId: string) => emailAccounts.find(a => a.id === accountId)?.email_address || accountId;
 
   if (!user) {
     return (
@@ -378,31 +367,48 @@ export default function DeveloperPage() {
       <Card>
         <CardHeader>
           <CardTitle>API Documentation</CardTitle>
-          <CardDescription>Use API keys to send emails programmatically</CardDescription>
+          <CardDescription>Use API keys to send emails, read emails, and create accounts programmatically</CardDescription>
         </CardHeader>
         <CardContent className={styles.nu_spaceY4}>
           <div>
-            <h3 className={styles.nu_fontSemibold}>Endpoint</h3>
+            <h3 className={styles.nu_fontSemibold}>Authentication</h3>
             <code className={styles.nu_block}>
-              POST /api/emails/send-api
+              X-Api-Key: nm_live_...
             </code>
           </div>
           <div>
-            <h3 className={styles.nu_fontSemibold}>Headers</h3>
-            <code className={styles.nu_block}>
-              X-Api-Key: nm_live_...{'\n'}
-              Content-Type: application/json
-            </code>
-          </div>
-          <div>
-            <h3 className={styles.nu_fontSemibold}>Request Body</h3>
+            <h3 className={styles.nu_fontSemibold}>Send Email</h3>
             <code className={styles.nu_block2}>
-{`{
+{`POST /api/emails/send-api
+Requires: send permission
+
+{
   "from": "support@yourdomain.com",
   "to": "user@example.com",
   "subject": "Test Email",
   "text": "Plain text content",
   "html": "<p>HTML content</p>"
+}`}
+            </code>
+          </div>
+          <div>
+            <h3 className={styles.nu_fontSemibold}>Read Emails</h3>
+            <code className={styles.nu_block2}>
+{`GET /api/emails/read-api?folder=inbox&limit=50
+Requires: read permission
+
+Folders: inbox, sent, trash`}
+            </code>
+          </div>
+          <div>
+            <h3 className={styles.nu_fontSemibold}>Create Email Account</h3>
+            <code className={styles.nu_block2}>
+{`POST /api/accounts/create-api
+Requires: create_accounts permission
+
+{
+  "emailAddress": "new@yourdomain.com",
+  "domainId": "uuid-of-verified-domain"
 }`}
             </code>
           </div>
@@ -446,6 +452,8 @@ export default function DeveloperPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  <TableHead>Scope</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Last Used</TableHead>
                   <TableHead className={styles.nu_textRight}>Actions</TableHead>
@@ -455,6 +463,37 @@ export default function DeveloperPage() {
                 {keys.map((key) => (
                   <TableRow key={key.id}>
                     <TableCell className={styles.nu_fontMedium}>{key.name}</TableCell>
+                    <TableCell>
+                      <div className={styles.nu_badgeWrap}>
+                        {(key.permissions || ['send']).map(p => (
+                          <Badge key={p} variant="secondary" className={styles.nu_badgeSmall}>
+                            {PERMISSION_LABELS[p]?.label || p}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className={styles.nu_badgeWrap}>
+                        {key.domainIds.length === 0 && key.accountIds.length === 0 ? (
+                          <span className={styles.nu_textSm}>All</span>
+                        ) : (
+                          <>
+                            {key.domainIds.map(id => (
+                              <Badge key={id} variant="outline" className={styles.nu_badgeSmall}>
+                                <Globe className="h-3 w-3 mr-1" />
+                                {getDomainName(id)}
+                              </Badge>
+                            ))}
+                            {key.accountIds.map(id => (
+                              <Badge key={id} variant="outline" className={styles.nu_badgeSmall}>
+                                <Mail className="h-3 w-3 mr-1" />
+                                {getAccountEmail(id)}
+                              </Badge>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className={styles.nu_textSm}>
                       {new Date(key.createdAt).toLocaleDateString()}
                     </TableCell>
@@ -569,7 +608,7 @@ export default function DeveloperPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setSelectedAccountId(account.id)}
+                              onClick={() => setSelectedImapAccountId(account.id)}
                             >
                               {account.has_imap_password ? 'Change Password' : 'Set Password'}
                             </Button>
@@ -636,14 +675,15 @@ export default function DeveloperPage() {
 
       {/* Create API Key Dialog */}
       <Dialog open={isCreateDialogOpen && !newKey} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className={styles.nu_dialogWide}>
           <DialogHeader>
             <DialogTitle>Create API Key</DialogTitle>
             <DialogDescription>
-              Give your API key a descriptive name to help identify it later.
+              Configure permissions and scope for your new API key.
             </DialogDescription>
           </DialogHeader>
-          <div className={styles.nu_spaceY42}>
+          <div className={styles.nu_createForm}>
+            {/* Key Name */}
             <div className={styles.nu_spaceY2}>
               <Label htmlFor="keyName">Key Name</Label>
               <Input
@@ -651,12 +691,79 @@ export default function DeveloperPage() {
                 placeholder="e.g., Production Server, Marketing Automation"
                 value={keyName}
                 onChange={(e) => setKeyName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !isCreating) {
-                    handleCreateKey();
-                  }
-                }}
               />
+            </div>
+
+            {/* Permissions */}
+            <div className={styles.nu_spaceY2}>
+              <Label>Permissions</Label>
+              <div className={styles.nu_permGrid}>
+                {Object.entries(PERMISSION_LABELS).map(([key, { label, description, icon }]) => (
+                  <label key={key} className={styles.nu_permItem}>
+                    <Checkbox
+                      checked={selectedPermissions.includes(key)}
+                      onCheckedChange={() => togglePermission(key)}
+                    />
+                    <div className={styles.nu_permLabel}>
+                      <div className={styles.nu_flex3}>
+                        {icon}
+                        <span className={styles.nu_fontMedium}>{label}</span>
+                      </div>
+                      <span className={styles.nu_permDesc}>{description}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Domain Scope */}
+            <div className={styles.nu_spaceY2}>
+              <Label>Domain Scope <span className={styles.nu_permDesc}>(leave empty for all domains)</span></Label>
+              {isLoadingDomains ? (
+                <LoadingSpinner size="sm" text="Loading domains..." />
+              ) : domains.length === 0 ? (
+                <p className={styles.nu_permDesc}>No verified domains found.</p>
+              ) : (
+                <div className={styles.nu_scopeList}>
+                  {domains.map((domain) => (
+                    <label key={domain.id} className={styles.nu_scopeItem}>
+                      <Checkbox
+                        checked={selectedDomainIds.includes(domain.id)}
+                        onCheckedChange={() => toggleDomain(domain.id)}
+                      />
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span>{domain.domainName}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Account Scope */}
+            <div className={styles.nu_spaceY2}>
+              <Label>Email Account Scope <span className={styles.nu_permDesc}>(leave empty for all accounts)</span></Label>
+              {isLoadingAccounts ? (
+                <LoadingSpinner size="sm" text="Loading accounts..." />
+              ) : filteredAccounts.length === 0 ? (
+                <p className={styles.nu_permDesc}>
+                  {selectedDomainIds.length > 0
+                    ? 'No accounts found for the selected domains.'
+                    : 'No email accounts found.'}
+                </p>
+              ) : (
+                <div className={styles.nu_scopeList}>
+                  {filteredAccounts.map((account) => (
+                    <label key={account.id} className={styles.nu_scopeItem}>
+                      <Checkbox
+                        checked={selectedAccountIds.includes(account.id)}
+                        onCheckedChange={() => toggleAccount(account.id)}
+                      />
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>{account.email_address}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -803,11 +910,11 @@ export default function DeveloperPage() {
       </AlertDialog>
 
       {/* Set IMAP Password Dialog */}
-      <Dialog 
-        open={!!selectedAccountId} 
+      <Dialog
+        open={!!selectedImapAccountId}
         onOpenChange={(open) => {
           if (!open) {
-            setSelectedAccountId(null);
+            setSelectedImapAccountId(null);
             setImapPassword('');
             setConfirmImapPassword('');
             setShowImapPassword(false);
@@ -819,7 +926,7 @@ export default function DeveloperPage() {
             <DialogTitle>Set IMAP/POP3 Password</DialogTitle>
             <DialogDescription>
               Set a password for IMAP/POP3 access to{' '}
-              <strong>{emailAccounts.find(a => a.id === selectedAccountId)?.email_address}</strong>
+              <strong>{emailAccounts.find(a => a.id === selectedImapAccountId)?.email_address}</strong>
             </DialogDescription>
           </DialogHeader>
           <div className={styles.nu_spaceY42}>
@@ -868,7 +975,7 @@ export default function DeveloperPage() {
             <Button
               variant="outline"
               onClick={() => {
-                setSelectedAccountId(null);
+                setSelectedImapAccountId(null);
                 setImapPassword('');
                 setConfirmImapPassword('');
               }}

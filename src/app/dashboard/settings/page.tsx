@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, setToken , token} = useAuthClient();
+  const { user, logout } = useAuthClient();
   const { toast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +44,7 @@ export default function SettingsPage() {
       if (!user) return;
       try {
         const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) setProfile(data.user);
@@ -66,14 +66,14 @@ export default function SettingsPage() {
     try {
       const res = await fetch('/api/profile', {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error);
       }
-      setToken(null);
-      router.push('/');
+      await logout();
+      router.push('/login');
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to delete account', variant: 'destructive' });
       setDeleting(false);

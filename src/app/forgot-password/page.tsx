@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -94,7 +94,7 @@ export default function ForgotPasswordPage() {
               <Button type="submit" className={styles.nu_wFull} disabled={loading}>
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </Button>
-              <Link href="/" className={styles.nu_flex2}>
+              <Link href="/login" className={styles.nu_flex2}>
                 <ArrowLeft className={styles.nu_h4} />
                 Back to login
               </Link>
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
                   If an account exists with <strong>{email}</strong>, you will receive a password reset link shortly.
                 </p>
               </div>
-              <Link href="/" className={styles.nu_flex2}>
+              <Link href="/login" className={styles.nu_flex2}>
                 <ArrowLeft className={styles.nu_h4} />
                 Back to login
               </Link>

@@ -9,7 +9,7 @@ import { Mail, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuthClient } from '@/lib/auth-provider';
 
 export default function RegisterPage() {
@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user, setToken } = useAuthClient();
+  const { user, refresh } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -54,7 +54,7 @@ export default function RegisterPage() {
         toast({ title: 'Registration failed', description: message, variant: 'destructive' });
         return;
       }
-      setToken(data?.token ?? null);
+      await refresh();
       toast({ title: 'Account created', description: 'Redirecting to dashboard...' });
       router.push('/dashboard');
     } catch (err: any) {
@@ -139,7 +139,7 @@ export default function RegisterPage() {
             <Button type="submit" className={styles.nu_wFull2} disabled={loading}>{loading ? 'Creating...' : 'Create account'}</Button>
           </form>
           <div className={styles.nu_mt6}>
-            Already have an account? <Link href="/" className={styles.nu_textPrimary}>Sign in</Link>
+            Already have an account? <Link href="/login" className={styles.nu_textPrimary}>Sign in</Link>
           </div>
         </div>
       </div>

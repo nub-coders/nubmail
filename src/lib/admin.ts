@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
 import dns from 'dns/promises';
-import { getTokenFromRequest } from '@/lib/auth-token';
+import { getTokenFromRequest, verifySession } from '@/lib/auth-token';
 import { verifyJwt } from '@/lib/jwt-server';
 
 export interface AuthenticatedUser {
@@ -72,54 +72,27 @@ export async function getAdminFromToken(req: NextRequest) {
   const token = getTokenFromRequest(req);
   if (!token) return null;
 
-  const payload = verifyJwt(token);
-  if (!payload?.sub) return null;
+  const session = await verifySession(token);
+  if (!session) return null;
+  if (!session.isAdmin) return null;
 
-  try {
-    const { rows } = await pgQuery<{ id: string; email: string; is_admin: boolean }>(
-      'SELECT id, email, is_admin FROM users WHERE id = $1',
-      [payload.sub]
-    );
-    const user = rows[0];
-    if (!user || !user.is_admin) return null;
-    return { id: String(user.id), email: user.email, isAdmin: true };
-  } catch {
-    return null;
-  }
+  return { id: String(session.id), email: session.email, isAdmin: true };
 }
 
 export async function getUserFromToken(req: NextRequest) {
   const token = getTokenFromRequest(req);
   if (!token) return null;
 
-  const payload = verifyJwt(token);
-  if (!payload?.sub) return null;
+  const session = await verifySession(token);
+  if (!session) return null;
 
-  try {
-    const { rows } = await pgQuery<{
-      id: string;
-      email: string;
-      full_name: string | null;
-      email_verified: boolean | null;
-      is_admin: boolean | null;
-    }>(
-      'SELECT id, email, full_name, email_verified, is_admin FROM users WHERE id = $1',
-      [payload.sub]
-    );
-
-    const user = rows[0];
-    if (!user) return null;
-
-    return {
-      sub: String(user.id),
-      email: user.email,
-      fullName: user.full_name,
-      emailVerified: !!user.email_verified,
-      isAdmin: !!user.is_admin,
-    } satisfies AuthenticatedUser;
-  } catch {
-    return null;
-  }
+  return {
+    sub: String(session.id),
+    email: session.email,
+    fullName: session.fullName,
+    emailVerified: !!session.emailVerified,
+    isAdmin: !!session.isAdmin,
+  } satisfies AuthenticatedUser;
 }
 export function canPerformImportantAction(user: AuthenticatedUser): boolean {
   return user.isAdmin || user.emailVerified;

@@ -5,8 +5,8 @@ import { pgQuery } from '@/lib/postgres';
 import { decryptField, isEncryptedField } from '@/lib/field-encryption';
 import { deliverLocal } from '@/utils/local-delivery';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
+import sanitizeHtml from 'sanitize-html';
 
-// API-key based send endpoint
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIP(req.headers);
@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
 
     const apiUser = await getUserFromApiKey(req);
     if (!apiUser) return NextResponse.json({ error: 'Unauthorized (API key required)' }, { status: 401 });
+
+    if (!apiUser.permissions.includes('send')) {
+      return NextResponse.json({ error: 'This API key does not have send permission' }, { status: 403 });
+    }
 
     const { rows: ownerRows } = await pgQuery<{ email_verified: boolean | null; is_admin: boolean | null }>(
       'SELECT email_verified, is_admin FROM users WHERE id = $1',
@@ -34,15 +38,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Required: from, to, subject, and text or html' }, { status: 400 });
     }
 
-    // Validate sender ownership
-    const { rows } = await pgQuery(
-      `SELECT email_address AS "emailAddress", smtp_host AS "smtpHost", smtp_port AS "smtpPort",
-              smtp_user AS "smtpUser", smtp_pass AS "smtpPass", use_built_in_smtp AS "useBuiltInSmtp"
-       FROM email_accounts WHERE email_address = $1 AND user_id = $2`,
-      [String(from).toLowerCase(), apiUser.id]
-    );
+    let accountQuery = `SELECT ea.id, ea.email_address AS "emailAddress", ea.smtp_host AS "smtpHost", ea.smtp_port AS "smtpPort",
+            ea.smtp_user AS "smtpUser", ea.smtp_pass AS "smtpPass", ea.use_built_in_smtp AS "useBuiltInSmtp"
+     FROM email_accounts ea WHERE ea.email_address = $1 AND ea.user_id = $2`;
+    const accountParams: any[] = [String(from).toLowerCase(), apiUser.id];
+
+    if (apiUser.scopedAccountIds.length > 0) {
+      accountQuery += ' AND ea.id = ANY($3)';
+      accountParams.push(apiUser.scopedAccountIds);
+    }
+
+    const { rows } = await pgQuery(accountQuery, accountParams);
     const ownedFrom = rows[0];
-    if (!ownedFrom) return NextResponse.json({ error: 'Sender not owned by API key user' }, { status: 403 });
+    if (!ownedFrom) {
+      return NextResponse.json({ error: 'Sender not owned by API key user or not in API key scope' }, { status: 403 });
+    }
+
+    if (apiUser.scopedDomainIds.length > 0) {
+      const senderDomain = String(from).toLowerCase().split('@')[1];
+      const { rows: domainRows } = await pgQuery<{ id: string }>(
+        'SELECT id FROM domains WHERE id = ANY($1) AND domain_name = $2',
+        [apiUser.scopedDomainIds, senderDomain]
+      );
+      if (domainRows.length === 0) {
+        return NextResponse.json({ error: 'Sender domain not in API key scope' }, { status: 403 });
+      }
+    }
 
     let smtpConfig;
     if (ownedFrom.useBuiltInSmtp) {
@@ -65,7 +86,24 @@ export async function POST(req: NextRequest) {
     }
 
     const allRecipients = Array.isArray(to) ? to : [to];
-    const messageBody = html || text || '';
+    const sanitizedHtml = typeof html === 'string' && html.trim().length > 0
+      ? sanitizeHtml(html, {
+          allowedTags: [
+            ...sanitizeHtml.defaults.allowedTags,
+            'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'span',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+          ],
+          allowedAttributes: {
+            ...sanitizeHtml.defaults.allowedAttributes,
+            a: ['href', 'name', 'target', 'rel'],
+            img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
+            '*': ['style'],
+          },
+          allowedSchemes: ['http', 'https', 'mailto'],
+          allowedSchemesByTag: { img: ['http', 'https', 'data'] },
+        })
+      : '';
+    const messageBody = sanitizedHtml || text || '';
 
     const { localRecipients, externalRecipients } = await deliverLocal({
       recipients: allRecipients,

@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_py8 {
   @apply py-8 text-center;
 }
@@ -103,7 +104,12 @@
 }
 
 .nu_grid2 {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  @apply grid grid-cols-1 gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
 }
 
 .nu_spaceY2 {
@@ -179,7 +185,8 @@
 }
 
 .nu_bgDestructive {
-  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  @apply bg-destructive text-destructive-foreground;
+  &:hover { @apply bg-destructive/90; }
 }
 
 .nu_relative {
@@ -192,4 +199,46 @@
 
 .nu_bgPrimary52 {
   @apply bg-primary/5 border border-primary/10 rounded-lg p-3;
+}
+
+.nu_badgeWrap {
+  @apply flex flex-wrap gap-1;
+}
+
+.nu_badgeSmall {
+  @apply text-xs;
+}
+
+.nu_dialogWide {
+  @apply max-w-xl max-h-[85vh] overflow-y-auto;
+}
+
+.nu_createForm {
+  @apply space-y-5 py-4;
+}
+
+.nu_permGrid {
+  @apply space-y-2;
+}
+
+.nu_permItem {
+  @apply flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors;
+  &:hover { @apply bg-muted/50; }
+}
+
+.nu_permLabel {
+  @apply flex flex-col gap-0.5;
+}
+
+.nu_permDesc {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_scopeList {
+  @apply space-y-1 max-h-40 overflow-y-auto rounded-lg border p-2;
+}
+
+.nu_scopeItem {
+  @apply flex items-center gap-2 p-2 rounded cursor-pointer text-sm;
+  &:hover { @apply bg-muted/50; }
 }

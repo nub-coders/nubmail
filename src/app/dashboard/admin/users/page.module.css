@@ -1,3 +1,4 @@
+@reference "../../../globals.css";
 .nu_flex {
   @apply flex flex-col gap-4;
 }

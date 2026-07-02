@@ -1,3 +1,4 @@
+@reference "../../app/globals.css";
 .nu_flex {
   @apply flex items-center justify-center;
 }

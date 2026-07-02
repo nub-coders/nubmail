@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_py8 {
   @apply py-8 text-center;
 }
@@ -7,7 +8,12 @@
 }
 
 .nu_flex2 {
-  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4;
+  @apply flex flex-col justify-between gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply flex-row items-center;
+    }
+  }
 }
 
 .nu_spaceY2 {
@@ -31,7 +37,8 @@
 }
 
 .nu_bgPrimary10 {
-  @apply bg-primary/10 text-primary hover:bg-primary/20;
+  @apply bg-primary/10 text-primary;
+  &:hover { @apply bg-primary/20; }
 }
 
 .nu_h3 {
@@ -47,7 +54,12 @@
 }
 
 .nu_relative {
-  @apply relative w-full sm:w-80;
+  @apply relative w-full;
+  @media (min-width: 640px) {
+    & {
+      @apply w-80;
+    }
+  }
 }
 
 .nu_absolute {
@@ -55,7 +67,8 @@
 }
 
 .nu_pl10 {
-  @apply pl-10 bg-muted/40 border-transparent focus:bg-background focus:border-border/60 placeholder:text-muted-foreground/50;
+  @apply pl-10 bg-muted/40 border-transparent placeholder:text-muted-foreground/50;
+  &:focus { @apply bg-background border-border/60; }
 }
 
 .nu_h4 {
@@ -99,7 +112,8 @@
 }
 
 .nu_flex12 {
-  @apply flex-1 p-4 pl-1 text-left focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-inset;
+  @apply flex-1 p-4 pl-1 text-left;
+  &:focus { @apply outline-none ring-2 ring-primary/20 ring-inset; }
 }
 
 .nu_flex9 {
@@ -151,11 +165,13 @@
 }
 
 .nu_flex14 {
-  @apply flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity;
+  @apply flex gap-1 opacity-0 transition-opacity;
+  &:is(:where(.group):hover *) { @apply opacity-100; }
 }
 
 .nu_h62 {
-  @apply h-6 w-6 p-0 hover:bg-primary/20;
+  @apply h-6 w-6 p-0;
+  &:hover { @apply bg-primary/20; }
 }
 
 .nu_h33 {
@@ -163,5 +179,6 @@
 }
 
 .nu_h63 {
-  @apply h-6 w-6 p-0 hover:bg-destructive/20;
+  @apply h-6 w-6 p-0;
+  &:hover { @apply bg-destructive/20; }
 }

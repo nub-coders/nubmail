@@ -3,23 +3,14 @@ import type { NextRequest } from 'next/server';
 
 const AUTH_COOKIE_NAME = 'nubmail_auth';
 const PROTECTED_ROUTES = ['/dashboard', '/accounts'];
-const PUBLIC_ONLY_ROUTES = ['/']; // Login page
-
-function generateNonce(): string {
-  const bytes = new Uint8Array(16);
-  // Web Crypto is available in the edge runtime; node:crypto is NOT.
-  (globalThis.crypto as Crypto).getRandomValues(bytes);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
-}
+const PUBLIC_ONLY_ROUTES = ['/login']; // Login page
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
   if (PROTECTED_ROUTES.some(route => pathname.startsWith(route)) && !token) {
-    const url = new URL('/', request.url);
+    const url = new URL('/login', request.url);
     return NextResponse.redirect(url);
   }
 
@@ -29,18 +20,25 @@ export function proxy(request: NextRequest) {
 
   const isStateChanging = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method);
   if (isStateChanging) {
-    const origin = request.headers.get('origin');
-    const referer = request.headers.get('referer');
-    const host = request.headers.get('host');
+    const hasApiKey = request.headers.has('x-api-key') ||
+      (request.headers.get('authorization') || '').startsWith('ApiKey ');
+    const hasCookie = !!request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-    let candidateHost: string | null = null;
-    if (origin) {
-      try { candidateHost = new URL(origin).host; } catch { return new NextResponse('Invalid Origin', { status: 403 }); }
-    } else if (referer) {
-      try { candidateHost = new URL(referer).host; } catch { return new NextResponse('Invalid Referer', { status: 403 }); }
-    }
-    if (!candidateHost || candidateHost !== host) {
-      return new NextResponse('CSRF check failed', { status: 403 });
+    // Skip CSRF for API-key-only requests (no session cookie present)
+    if (!(hasApiKey && !hasCookie)) {
+      const origin = request.headers.get('origin');
+      const referer = request.headers.get('referer');
+      const host = request.headers.get('host');
+
+      let candidateHost: string | null = null;
+      if (origin) {
+        try { candidateHost = new URL(origin).host; } catch { return new NextResponse('Invalid Origin', { status: 403 }); }
+      } else if (referer) {
+        try { candidateHost = new URL(referer).host; } catch { return new NextResponse('Invalid Referer', { status: 403 }); }
+      }
+      if (!candidateHost || candidateHost !== host) {
+        return new NextResponse('CSRF check failed', { status: 403 });
+      }
     }
   }
 
@@ -59,13 +57,10 @@ export function proxy(request: NextRequest) {
     'max-age=63072000; includeSubDomains; preload'
   );
 
-  const nonce = generateNonce();
-  response.headers.set('x-csp-nonce', nonce);
-
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob:",

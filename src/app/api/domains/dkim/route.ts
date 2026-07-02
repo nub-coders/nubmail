@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { pgQuery } from '@/lib/postgres';
+import { encryptField, decryptField, isEncryptedField } from '@/lib/field-encryption';
 
 async function ensureTable() {
   // Schema is authoritative (docs/postgres-schema.sql). No runtime DDL.
@@ -129,13 +130,13 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: 'Provided private key does not match the DKIM TXT record in DNS for this selector.' }, { status: 400 });
         }
 
-        // Store in DB
+        // Store in DB (encrypt private key at rest)
         await pgQuery(
           `INSERT INTO domain_dkim(domain_name, selector, public_key, private_key)
            VALUES ($1, $2, $3, $4)
            ON CONFLICT (domain_name)
            DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
-          [normalizedDomain, selector, publicKeyPem, privateKeyPem]
+          [normalizedDomain, selector, publicKeyPem, encryptField(privateKeyPem)]
         );
 
         return NextResponse.json({
@@ -158,7 +159,7 @@ export async function POST(req: NextRequest) {
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (domain_name)
        DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
-      [normalizedDomain, selector, publicKeyPem, newPrivateKeyPem]
+      [normalizedDomain, selector, publicKeyPem, encryptField(newPrivateKeyPem)]
     );
 
     return NextResponse.json({

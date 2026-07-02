@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_py8 {
   @apply py-8 text-center;
 }
@@ -7,7 +8,12 @@
 }
 
 .nu_flex2 {
-  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4;
+  @apply flex flex-col justify-between gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply flex-row items-center;
+    }
+  }
 }
 
 .nu_spaceY2 {
@@ -115,5 +121,5 @@
 }
 
 .nu_hoverBgDestructive20 {
-  @apply hover:bg-destructive/20;
+  &:hover { @apply bg-destructive/20; }
 }

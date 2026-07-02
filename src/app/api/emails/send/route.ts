@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
 import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
-import { decryptField, isEncryptedField } from '@/lib/field-encryption';
+import { decryptField, isEncryptedField, encryptField } from '@/lib/field-encryption';
 import { deliverLocal } from '@/utils/local-delivery';
 import sanitizeHtml from 'sanitize-html';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
                VALUES ($1, $2, $3, $4)
                ON CONFLICT (domain_name)
                DO UPDATE SET selector = EXCLUDED.selector, public_key = EXCLUDED.public_key, private_key = EXCLUDED.private_key, created_at = NOW()`,
-              [senderDomain, selector, pair.publicKeyPem, pair.privateKeyPem]
+              [senderDomain, selector, pair.publicKeyPem, encryptField(pair.privateKeyPem)]
             );
             // Re-read
             dkim = (
@@ -161,10 +161,11 @@ export async function POST(req: NextRequest) {
           }
         }
         if (dkim[0]) {
+          const rawKey = dkim[0].private_key;
           dkimConfig = {
             domainName: senderDomain,
             keySelector: dkim[0].selector,
-            privateKey: dkim[0].private_key,
+            privateKey: isEncryptedField(rawKey) ? decryptField(rawKey) : rawKey,
           };
         }
       }

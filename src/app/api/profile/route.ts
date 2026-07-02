@@ -45,8 +45,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (currentPassword && newPassword) {
-      if (newPassword.length < 6) {
-        return NextResponse.json({ error: 'New password must be at least 6 characters' }, { status: 400 });
+      const pwRe = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+      if (!pwRe.test(newPassword)) {
+        return NextResponse.json({ error: 'Password must be at least 8 characters with uppercase, lowercase, digit and symbol' }, { status: 400 });
       }
 
       const { rows: [user] } = await pgQuery(

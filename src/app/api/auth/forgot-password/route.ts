@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
                   <p style="margin-bottom: 10px; color: #e74c3c; font-weight: 600;">This link will expire in 1 hour.</p>
                   <p style="margin-bottom: 20px; color: #666; font-size: 14px;">If you didn't request this password reset, please ignore this email or contact support if you have concerns.</p>
                   <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 12px;">
-                    <p>© 2025 NubMail. All rights reserved.</p>
+                    <p>© NubMail. All rights reserved.</p>
                   </div>
                 </div>
               </div>
@@ -111,7 +111,7 @@ This link will expire in 1 hour.
 
 If you didn't request this password reset, please ignore this email or contact support if you have concerns.
 
-© 2025 NubMail. All rights reserved.`
+© NubMail. All rights reserved.`
       });
 
       return NextResponse.json({ message: 'If an account exists with this email, you will receive a password reset link' });

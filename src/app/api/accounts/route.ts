@@ -110,11 +110,21 @@ export async function POST(req: NextRequest) {
     }
 
     const { rows } = await pgQuery(
-      'SELECT id, domain_name FROM domains WHERE id = $1 AND verification_status = $2',
-      [actualDomainId, 'verified']
+      'SELECT id, domain_name FROM domains WHERE id = $1 AND verification_status = $2 AND user_id = $3',
+      [actualDomainId, 'verified', payload.sub]
     );
     if (rows.length === 0) {
       return NextResponse.json({ error: 'Domain not found or not verified' }, { status: 404 });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailAddress)) {
+      return NextResponse.json({ error: 'Invalid email address format' }, { status: 400 });
+    }
+
+    const emailDomain = emailAddress.toLowerCase().split('@')[1];
+    if (emailDomain !== rows[0].domain_name.toLowerCase()) {
+      return NextResponse.json({ error: 'Email address must match the selected domain' }, { status: 400 });
     }
 
     const existing = await pgQuery('SELECT 1 FROM email_accounts WHERE email_address = $1', [emailAddress.toLowerCase()]);

@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_flex {
   @apply flex flex-col items-center gap-4 py-6;
 }
@@ -43,7 +44,8 @@
 }
 
 .nu_cursorPointer {
-  @apply cursor-pointer hover:bg-muted/50 transition-colors;
+  @apply cursor-pointer transition-colors;
+  &:hover { @apply bg-muted/50; }
 }
 
 .nu_fontMedium {

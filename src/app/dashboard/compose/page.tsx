@@ -10,11 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuthClient } from '@/lib/auth-provider';
 
 function ComposeForm() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -59,7 +59,7 @@ function ComposeForm() {
     const loadAccounts = async () => {
       if (!user) return;
       try {
-        const res = await fetch('/api/accounts', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/accounts', { credentials: 'include' });
         const data = await res.json();
         if (res.ok && Array.isArray(data.accounts)) {
           setAccounts(data.accounts.map((a: any) => ({ id: a.id, emailAddress: a.emailAddress })));
@@ -77,7 +77,7 @@ function ComposeForm() {
       const loadDraft = async () => {
         try {
           const res = await fetch('/api/drafts', {
-            headers: { Authorization: `Bearer ${token}` }
+            credentials: 'include'
           });
           const data = await res.json();
           if (res.ok) {
@@ -101,7 +101,7 @@ function ComposeForm() {
       const loadOriginalEmail = async () => {
         try {
           const res = await fetch('/api/emails?folder=inbox', {
-            headers: { Authorization: `Bearer ${token}` }
+            credentials: 'include'
           });
           const data = await res.json();
           if (res.ok) {
@@ -200,13 +200,13 @@ function ComposeForm() {
       if (draftId) {
         res = await fetch('/api/drafts', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: draftId, ...payload })
         });
       } else {
         res = await fetch('/api/drafts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       }
@@ -246,7 +246,7 @@ function ComposeForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          
         },
         body: JSON.stringify({
           from, to, subject, text: body,
@@ -269,7 +269,7 @@ function ComposeForm() {
       if (draftId) {
         await fetch(`/api/drafts?id=${draftId}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include'
         }).catch(() => {});
       }
 

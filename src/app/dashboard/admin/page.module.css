@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_flex {
   @apply flex flex-col gap-8;
 }
@@ -11,7 +12,17 @@
 }
 
 .nu_grid {
-  @apply grid gap-4 md:grid-cols-2 lg:grid-cols-4;
+  @apply grid gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
+  @media (min-width: 1024px) {
+    & {
+      @apply grid-cols-4;
+    }
+  }
 }
 
 .nu_flex2 {
@@ -35,11 +46,17 @@
 }
 
 .nu_grid2 {
-  @apply grid gap-4 md:grid-cols-2;
+  @apply grid gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
 }
 
 .nu_flex3 {
-  @apply flex items-center gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors;
+  @apply flex items-center gap-2 p-4 border rounded-lg transition-colors;
+  &:hover { @apply bg-muted/50; }
 }
 
 .nu_h5 {

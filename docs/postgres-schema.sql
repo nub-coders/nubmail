@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS email_messages (
   sent_at TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_email_messages_user_sent ON email_messages(user_id, sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_email_messages_recipients ON email_messages USING GIN(recipients);
+CREATE INDEX IF NOT EXISTS idx_email_messages_sender ON email_messages(sender);
 
 -- Web push subscriptions for message notifications
 CREATE TABLE IF NOT EXISTS push_subscriptions (
@@ -116,11 +118,28 @@ CREATE TABLE IF NOT EXISTS api_keys (
   name TEXT NOT NULL,
   key_hash TEXT NOT NULL UNIQUE,
   encrypted_key TEXT,
+  permissions TEXT[] NOT NULL DEFAULT '{send}',
   created_at TIMESTAMPTZ DEFAULT now(),
   last_used TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id);
 CREATE INDEX IF NOT EXISTS idx_api_keys_last_used ON api_keys(last_used DESC);
+
+-- Scoped domain access for API keys (empty = all user domains)
+CREATE TABLE IF NOT EXISTS api_key_domains (
+  api_key_id UUID NOT NULL REFERENCES api_keys(id) ON DELETE CASCADE,
+  domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+  PRIMARY KEY (api_key_id, domain_id)
+);
+CREATE INDEX IF NOT EXISTS idx_api_key_domains_key ON api_key_domains(api_key_id);
+
+-- Scoped email account access for API keys (empty = all user accounts)
+CREATE TABLE IF NOT EXISTS api_key_accounts (
+  api_key_id UUID NOT NULL REFERENCES api_keys(id) ON DELETE CASCADE,
+  account_id UUID NOT NULL REFERENCES email_accounts(id) ON DELETE CASCADE,
+  PRIMARY KEY (api_key_id, account_id)
+);
+CREATE INDEX IF NOT EXISTS idx_api_key_accounts_key ON api_key_accounts(api_key_id);
 
 -- Teams
 CREATE TABLE IF NOT EXISTS teams (
@@ -156,3 +175,4 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);

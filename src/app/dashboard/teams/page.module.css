@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_h3 {
   @apply h-3 w-3;
 }
@@ -55,7 +56,7 @@
 }
 
 .nu_hoverBgDestructive10 {
-  @apply hover:bg-destructive/10;
+  &:hover { @apply bg-destructive/10; }
 }
 
 .nu_h42 {
@@ -63,7 +64,8 @@
 }
 
 .nu_bgDestructive {
-  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  @apply bg-destructive text-destructive-foreground;
+  &:hover { @apply bg-destructive/90; }
 }
 
 .nu_pt0 {
@@ -103,7 +105,8 @@
 }
 
 .nu_h7 {
-  @apply h-7 w-7 p-0 hover:bg-destructive/10;
+  @apply h-7 w-7 p-0;
+  &:hover { @apply bg-destructive/10; }
 }
 
 .nu_h32 {

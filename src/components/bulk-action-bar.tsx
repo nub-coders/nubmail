@@ -10,7 +10,7 @@ export interface BulkAction {
   label: string;
   icon: ReactNode;
   onClick: () => void;
-  variant?: 'default' | 'destructive' | 'outline' | 'ghost';
+  variant?: 'default' | 'destructive' | 'outline-solid' | 'ghost';
 }
 
 interface BulkActionBarProps {
@@ -56,7 +56,7 @@ export function BulkActionBar({
           <Button
             key={action.label}
             size="sm"
-            variant={action.variant || 'outline'}
+            variant={action.variant || 'outline-solid'}
             onClick={action.onClick}
             disabled={loading}
             className={cn(action.variant === 'destructive' && 'hover:bg-destructive/90')}

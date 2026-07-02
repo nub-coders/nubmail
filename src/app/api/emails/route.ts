@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canPerformImportantAction, getUserFromToken } from '@/lib/admin';
-import { pgQuery } from '@/lib/postgres';
+import { pgQuery, pgTransaction } from '@/lib/postgres';
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const folder = url.searchParams.get('folder') || 'inbox';
+    const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 50, 1), 100);
+    const cursor = url.searchParams.get('cursor') || null;
 
     const { rows: users } = await pgQuery<{ email: string }>('SELECT email FROM users WHERE id = $1', [payload.sub]);
     const user = users[0];
@@ -39,29 +41,33 @@ export async function GET(req: NextRequest) {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.sender = $1
           AND (r.deleted_at IS NULL)
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [user.email, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.sender = ANY($1)
           AND NOT (m.recipients && $1)
           AND (r.deleted_at IS NULL)
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [ownedEmails, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
       }
     } else if (folder === 'trash') {
       if (ownedEmails.length === 0) {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE ($1 = ANY(m.recipients) OR m.sender = $1)
           AND r.deleted_at IS NOT NULL
-          ORDER BY r.deleted_at DESC LIMIT 100`;
-        params = [user.email, payload.sub];
+          ${cursor ? 'AND r.deleted_at < $3' : ''}
+          ORDER BY r.deleted_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE (m.recipients && $1 OR m.sender = ANY($1))
           AND r.deleted_at IS NOT NULL
-          ORDER BY r.deleted_at DESC LIMIT 100`;
-        params = [ownedEmails, payload.sub];
+          ${cursor ? 'AND r.deleted_at < $3' : ''}
+          ORDER BY r.deleted_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
       }
     } else if (folder === 'spam') {
       if (ownedEmails.length === 0) {
@@ -69,15 +75,17 @@ export async function GET(req: NextRequest) {
           WHERE $1 = ANY(m.recipients)
           AND COALESCE(r.is_spam, false) = true
           AND r.deleted_at IS NULL
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [user.email, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.recipients && $1
           AND COALESCE(r.is_spam, false) = true
           AND r.deleted_at IS NULL
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [ownedEmails, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
       }
     } else if (folder === 'archive') {
       if (ownedEmails.length === 0) {
@@ -85,15 +93,17 @@ export async function GET(req: NextRequest) {
           WHERE ($1 = ANY(m.recipients) OR m.sender = $1)
           AND COALESCE(r.archived, false) = true
           AND r.deleted_at IS NULL
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [user.email, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE (m.recipients && $1 OR m.sender = ANY($1))
           AND COALESCE(r.archived, false) = true
           AND r.deleted_at IS NULL
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [ownedEmails, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
       }
     } else {
       // inbox (default)
@@ -103,8 +113,9 @@ export async function GET(req: NextRequest) {
           AND (r.deleted_at IS NULL)
           AND COALESCE(r.archived, false) = false
           AND COALESCE(r.is_spam, false) = false
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [user.email, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.recipients && $1
@@ -112,13 +123,17 @@ export async function GET(req: NextRequest) {
           AND (r.deleted_at IS NULL)
           AND COALESCE(r.archived, false) = false
           AND COALESCE(r.is_spam, false) = false
-          ORDER BY m.sent_at DESC LIMIT 100`;
-        params = [ownedEmails, payload.sub];
+          ${cursor ? 'AND m.sent_at < $3' : ''}
+          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
       }
     }
 
     const { rows: emails } = await pgQuery(query, params);
-    return NextResponse.json({ emails });
+    const hasMore = emails.length > limit;
+    if (hasMore) emails.pop();
+    const nextCursor = hasMore && emails.length > 0 ? emails[emails.length - 1].sentAt || emails[emails.length - 1].deletedAt : null;
+    return NextResponse.json({ emails, nextCursor });
   } catch (err) {
     console.error('Emails GET error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -134,10 +149,14 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { emailId, read, starred, archived, deleted, spam } = body;
+    const { emailId, emailIds, read, starred, archived, deleted, spam } = body;
 
-    if (!emailId) {
-      return NextResponse.json({ error: 'emailId is required' }, { status: 400 });
+    const ids: string[] = Array.isArray(emailIds) ? emailIds : emailId ? [emailId] : [];
+    if (ids.length === 0) {
+      return NextResponse.json({ error: 'emailId or emailIds is required' }, { status: 400 });
+    }
+    if (ids.length > 100) {
+      return NextResponse.json({ error: 'Maximum 100 emails per batch' }, { status: 400 });
     }
 
     const hasUpdate = typeof read === 'boolean' || typeof starred === 'boolean' ||
@@ -157,50 +176,32 @@ export async function PATCH(req: NextRequest) {
     const allEmails = userEmailAccounts.map(a => (a.email_address || '').toLowerCase());
     allEmails.push((user.email || '').toLowerCase());
 
-    const { rows: emails } = await pgQuery<{ sender: string; recipients: string[] }>(
-      'SELECT sender, recipients FROM email_messages WHERE id = $1',
-      [emailId]
-    );
-    const email = emails[0];
-    if (!email) {
-      return NextResponse.json({ error: 'Email not found' }, { status: 404 });
-    }
-
-    const msgSender = (email.sender || '').toLowerCase();
-    const msgRecipients = Array.isArray(email.recipients) ? email.recipients.map(r => (r || '').toLowerCase()) : [];
-
-    const isRecipient = msgRecipients && allEmails.some(e => msgRecipients.includes(e));
-    const isSender = allEmails.includes(msgSender);
-    if (!isRecipient && !isSender) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
-    const setClauses: string[] = [];
+    // Build the upsert template once (field values are the same for all emails)
     const insertCols = ['email_id', 'user_id'];
     const insertVals = ['$1', '$2'];
     const conflictSets: string[] = [];
     let paramIdx = 3;
-    const queryParams: any[] = [emailId, payload.sub];
+    const fieldParams: any[] = [];
 
     if (typeof read === 'boolean') {
       insertCols.push('read', 'read_at');
       insertVals.push(`$${paramIdx}`, `CASE WHEN $${paramIdx} THEN NOW() ELSE NULL END`);
       conflictSets.push(`read = $${paramIdx}`, `read_at = CASE WHEN $${paramIdx} THEN NOW() ELSE NULL END`);
-      queryParams.push(read);
+      fieldParams.push(read);
       paramIdx++;
     }
     if (typeof starred === 'boolean') {
       insertCols.push('starred');
       insertVals.push(`$${paramIdx}`);
       conflictSets.push(`starred = $${paramIdx}`);
-      queryParams.push(starred);
+      fieldParams.push(starred);
       paramIdx++;
     }
     if (typeof archived === 'boolean') {
       insertCols.push('archived');
       insertVals.push(`$${paramIdx}`);
       conflictSets.push(`archived = $${paramIdx}`);
-      queryParams.push(archived);
+      fieldParams.push(archived);
       paramIdx++;
     }
     if (typeof deleted === 'boolean') {
@@ -212,7 +213,7 @@ export async function PATCH(req: NextRequest) {
       insertCols.push('is_spam');
       insertVals.push(`$${paramIdx}`);
       conflictSets.push(`is_spam = $${paramIdx}`);
-      queryParams.push(spam);
+      fieldParams.push(spam);
       paramIdx++;
     }
 
@@ -221,9 +222,27 @@ export async function PATCH(req: NextRequest) {
       ON CONFLICT (email_id, user_id)
       DO UPDATE SET ${conflictSets.join(', ')}`;
 
-    await pgQuery(upsertQuery, queryParams);
+    let success = 0;
+    let failed = 0;
+    for (const id of ids) {
+      const { rows: emails } = await pgQuery<{ sender: string; recipients: string[] }>(
+        'SELECT sender, recipients FROM email_messages WHERE id = $1',
+        [id]
+      );
+      const email = emails[0];
+      if (!email) { failed++; continue; }
 
-    return NextResponse.json({ message: 'Email updated successfully' });
+      const msgSender = (email.sender || '').toLowerCase();
+      const msgRecipients = Array.isArray(email.recipients) ? email.recipients.map(r => (r || '').toLowerCase()) : [];
+      const isRecipient = msgRecipients && allEmails.some(e => msgRecipients.includes(e));
+      const isSender = allEmails.includes(msgSender);
+      if (!isRecipient && !isSender) { failed++; continue; }
+
+      await pgQuery(upsertQuery, [id, payload.sub, ...fieldParams]);
+      success++;
+    }
+
+    return NextResponse.json({ message: 'Emails updated successfully', success, failed });
   } catch (err) {
     console.error('Email PATCH error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -290,14 +309,16 @@ export async function DELETE(req: NextRequest) {
       (!msgSender || allEmails.includes(msgSender));
 
     if (isOnlyOwner) {
-      const { rows: otherReads } = await pgQuery<{ count: string }>(
-        'SELECT COUNT(*)::text AS count FROM email_reads WHERE email_id = $1 AND user_id <> $2 AND deleted_at IS NULL',
-        [emailId, payload.sub]
-      );
-      if (Number(otherReads[0]?.count || 0) === 0) {
-        await pgQuery('DELETE FROM email_reads WHERE email_id = $1', [emailId]);
-        await pgQuery('DELETE FROM email_messages WHERE id = $1 AND user_id = $2', [emailId, payload.sub]);
-      }
+      await pgTransaction(async (query) => {
+        const { rows: otherReads } = await query<{ count: string }>(
+          'SELECT COUNT(*)::text AS count FROM email_reads WHERE email_id = $1 AND user_id <> $2 AND deleted_at IS NULL',
+          [emailId, payload.sub]
+        );
+        if (Number(otherReads[0]?.count || 0) === 0) {
+          await query('DELETE FROM email_reads WHERE email_id = $1', [emailId]);
+          await query('DELETE FROM email_messages WHERE id = $1 AND user_id = $2', [emailId, payload.sub]);
+        }
+      });
     }
 
     return NextResponse.json({ message: 'Email moved to trash' });

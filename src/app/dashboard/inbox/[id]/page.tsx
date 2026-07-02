@@ -32,7 +32,7 @@ interface Email {
 export default function EmailViewPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, token } = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function EmailViewPage() {
       setIsLoading(true);
       try {
         const res = await fetch(`/api/emails/${encodeURIComponent(String(params.id))}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
         const data = await res.json();
         if (res.ok && data.email) {
@@ -62,7 +62,7 @@ export default function EmailViewPage() {
               method: 'PATCH',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
+                
               },
               body: JSON.stringify({ emailId: foundEmail.id, read: true }),
             });
@@ -75,7 +75,7 @@ export default function EmailViewPage() {
       }
     };
     fetchEmail();
-  }, [user, params.id, token]);
+  }, [user, params.id]);
 
   const patchEmail = async (fields: Record<string, unknown>, actionName: string) => {
     if (!email) return;
@@ -85,7 +85,7 @@ export default function EmailViewPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          
         },
         body: JSON.stringify({ emailId: email.id, ...fields }),
       });

@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { cn, downloadBindFile } from "@/lib/utils";
 import { useAuthClient } from "@/lib/auth-provider";
 
@@ -112,7 +112,7 @@ function StatusBadge({ status }: { status: ServerDnsRecord["status"] }) {
 }
 
 export default function AdminServerDnsPage() {
-  const { user, token } = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [data, setData] = useState<ServerDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -135,13 +135,7 @@ export default function AdminServerDnsPage() {
     setLoading(true);
     setLoadError(null);
     try {
-      const headers: HeadersInit = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
       const res = await fetch("/api/admin/server-dns", {
-        headers,
         credentials: "include",
         cache: "no-store",
       });

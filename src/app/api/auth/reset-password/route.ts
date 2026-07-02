@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pgQuery } from '@/lib/postgres';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIP(req.headers);
+    const { limited, retryAfterMs } = rateLimit(`reset-password:${ip}`, 5, 15 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: 'Too many password reset attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((retryAfterMs || 900000) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
     const { token, password } = body;
 

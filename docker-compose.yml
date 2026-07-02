@@ -36,7 +36,7 @@ services:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       API_KEY_ENCRYPTION_SECRET: ${API_KEY_ENCRYPTION_SECRET:?API_KEY_ENCRYPTION_SECRET must be set}
-      FIELD_ENCRYPTION_SECRET: ${FIELD_ENCRYPTION_SECRET:-${JWT_SECRET}}
+      FIELD_ENCRYPTION_SECRET: ${FIELD_ENCRYPTION_SECRET:?FIELD_ENCRYPTION_SECRET must be set}
       USE_POSTGRES: ${USE_POSTGRES:-true}
       POSTGRES_URL: ${POSTGRES_URL:?POSTGRES_URL must be set}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
@@ -44,6 +44,7 @@ services:
       SMTP_USER: ${SMTP_USER:?SMTP_USER must be set}
       SMTP_PASS: ${SMTP_PASS:?SMTP_PASS must be set}
       DOMAIN: ${DOMAIN:-localhost:5000}
+      HOST: ${HOST:-mails.${DOMAIN:-localhost:5000}}
       PROTOCOL: ${PROTOCOL:-http}
       ADMIN_PASS: ${ADMIN_PASS:?ADMIN_PASS must be set}
       ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL must be set}

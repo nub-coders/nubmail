@@ -22,7 +22,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
-  const { user, setToken , token} = useAuthClient();
+  const { user, refresh } = useAuthClient();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function ProfilePage() {
       if (!user) return;
       try {
         const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -59,13 +59,13 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setProfile(prev => prev ? { ...prev, fullName: data.user.fullName } : null);
-      if (data.token) setToken(data.token);
+      if (data.token) await refresh();
       toast({ title: 'Saved', description: 'Display name updated' });
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' });
@@ -87,12 +87,12 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      if (data.token) setToken(data.token);
+      if (data.token) await refresh();
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -109,7 +109,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch('/api/auth/send-verification', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send verification email');

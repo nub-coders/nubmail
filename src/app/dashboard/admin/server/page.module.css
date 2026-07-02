@@ -1,3 +1,4 @@
+@reference "../../../globals.css";
 .nu_spaceY6 {
   @apply space-y-6;
 }

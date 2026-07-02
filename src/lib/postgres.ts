@@ -75,3 +75,18 @@ export async function pgQuery<T extends QueryResultRow = any>(text: string, para
   }
   return client.query<T>(text, params);
 }
+
+export async function pgTransaction<T>(fn: (query: <R extends QueryResultRow = any>(text: string, params?: any[]) => Promise<QueryResult<R>>) => Promise<T>): Promise<T> {
+  const client = await getPgPool().connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(<R extends QueryResultRow = any>(text: string, params: any[] = []) => client.query<R>(text, params));
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}

@@ -248,6 +248,19 @@ const server = new SMTPServer({
           }
         }
 
+        // Sanitize HTML at ingestion — untrusted external content must never
+        // be stored raw, even if the client also sanitizes on render.
+        if (html) {
+          html = html
+            .replace(/<script[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[\s\S]*?<\/style>/gi, '')
+            .replace(/\bon\w+\s*=\s*"[^"]*"/gi, '')
+            .replace(/\bon\w+\s*=\s*'[^']*'/gi, '')
+            .replace(/\bon\w+\s*=[^\s>]*/gi, '')
+            .replace(/javascript\s*:/gi, 'blocked:')
+            .replace(/vbscript\s*:/gi, 'blocked:')
+            .replace(/data\s*:\s*text\/html/gi, 'blocked:text/html');
+        }
         const body = html || text || '';
         const sentAt = parsed.date ? new Date(parsed.date) : new Date();
 

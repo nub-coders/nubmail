@@ -25,7 +25,7 @@ import {
 import { useAuthClient } from '@/lib/auth-provider';
 
 export function UserNav() {
-  const { user, setToken } = useAuthClient();
+  const { user, logout } = useAuthClient();
   const router = useRouter();
 
   const getInitial = () => {
@@ -35,8 +35,8 @@ export function UserNav() {
   };
 
   const handleLogout = async () => {
-    await setToken(null);
-    router.push('/');
+    await logout();
+    router.push('/login');
   };
 
   return (

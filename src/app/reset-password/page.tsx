@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState('');
@@ -131,7 +131,7 @@ function ResetPasswordForm() {
       });
 
       setTimeout(() => {
-        router.push('/');
+        router.push('/login');
       }, 2000);
     } catch (err) {
       toast({
@@ -178,7 +178,7 @@ function ResetPasswordForm() {
               <Link href="/forgot-password">
                 <Button className={styles.nu_wFull}>Request New Reset Link</Button>
               </Link>
-              <Link href="/" className={styles.nu_flex3}>
+              <Link href="/login" className={styles.nu_flex3}>
                 <ArrowLeft className={styles.nu_h4} />
                 Back to login
               </Link>
@@ -292,7 +292,7 @@ function ResetPasswordForm() {
             <Button type="submit" className={styles.nu_wFull} disabled={loading}>
               {loading ? 'Resetting...' : 'Reset Password'}
             </Button>
-            <Link href="/" className={styles.nu_flex3}>
+            <Link href="/login" className={styles.nu_flex3}>
               <ArrowLeft className={styles.nu_h4} />
               Back to login
             </Link>

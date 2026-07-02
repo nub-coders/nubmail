@@ -1,3 +1,4 @@
+@reference "../../app/globals.css";
 .nu_mlAuto {
   @apply ml-auto h-4 w-4;
 }

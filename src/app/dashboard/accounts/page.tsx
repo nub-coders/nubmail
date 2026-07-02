@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthClient } from '@/lib/auth-provider';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import type { Domain } from '@/lib/types';
 
 interface EmailAccount {
@@ -28,7 +28,7 @@ interface EmailAccount {
 
 export default function AccountsPage() {
   const router = useRouter();
-  const { user, token, loading: authLoading } = useAuthClient();
+  const { user, loading: authLoading } = useAuthClient();
   const { toast } = useToast();
   const [dataLoading, setDataLoading] = useState(false);
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
@@ -48,21 +48,21 @@ export default function AccountsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!token || authLoading) return;
+      if (!user || authLoading) return;
       
       setDataLoading(true);
       try {
         const [accountsRes, domainsRes, meRes] = await Promise.all([
           fetch('/api/accounts', { 
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
             cache: 'no-store'
           }),
           fetch('/api/domains', { 
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
             cache: 'no-store'
           }),
           fetch('/api/auth/me', {
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
             cache: 'no-store'
           })
         ]);
@@ -84,7 +84,7 @@ export default function AccountsPage() {
           setIsAdmin(true);
           // Fetch server DNS status for admins
           const serverDnsRes = await fetch('/api/admin/server-dns', {
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
             cache: 'no-store'
           });
           if (serverDnsRes.ok) {
@@ -110,7 +110,7 @@ export default function AccountsPage() {
     };
 
     fetchData();
-  }, [token, authLoading, toast]);
+  }, [user, authLoading, toast]);
 
   const handleCreateAccount = async () => {
     if (!localPart) {
@@ -150,7 +150,7 @@ export default function AccountsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          
         },
         body: JSON.stringify({
           emailAddress,
@@ -191,7 +191,7 @@ export default function AccountsPage() {
     try {
       const res = await fetch(`/api/accounts?id=${accountId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
 
       const data = await res.json();
@@ -205,7 +205,7 @@ export default function AccountsPage() {
     }
   };
 
-  if (!user || !token) {
+  if (!user) {
     if (authLoading) {
       return (
         <div className={styles.nu_container}>
@@ -217,7 +217,7 @@ export default function AccountsPage() {
         </div>
       );
     }
-    router.push('/');
+    router.push('/login');
     return null;
   }
 

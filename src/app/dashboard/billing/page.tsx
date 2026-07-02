@@ -31,7 +31,7 @@ const FREE_PLAN_FEATURES = [
 ];
 
 export default function BillingPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const [stats, setStats] = useState<Stats | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,8 +42,8 @@ export default function BillingPage() {
       
       try {
         const [statsRes, accountsRes] = await Promise.all([
-          fetch('/api/stats', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/accounts', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/stats', { credentials: 'include' }),
+          fetch('/api/accounts', { credentials: 'include' }),
         ]);
         const statsData = await statsRes.json();
         const accountsData = await accountsRes.json();

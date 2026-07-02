@@ -1,3 +1,4 @@
+@reference "../globals.css";
 .nu_flex {
   @apply flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4;
 }
@@ -51,7 +52,8 @@
 }
 
 .nu_flex3 {
-  @apply flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground;
+  @apply flex items-center justify-center gap-2 text-sm text-muted-foreground;
+  &:hover { @apply text-foreground; }
 }
 
 .nu_h4 {
@@ -95,7 +97,8 @@
 }
 
 .nu_absolute {
-  @apply absolute right-0 top-0 h-full px-3 hover:bg-transparent;
+  @apply absolute right-0 top-0 h-full px-3;
+  &:hover { @apply bg-transparent; }
 }
 
 .nu_h42 {

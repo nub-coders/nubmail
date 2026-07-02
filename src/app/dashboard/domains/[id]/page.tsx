@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,7 +92,7 @@ export default function DomainDnsPage() {
   const params = useParams();
   const router = useRouter();
   const domainId = params.id as string;
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [data, setData] = useState<DomainDnsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -122,7 +122,7 @@ export default function DomainDnsPage() {
     try {
       const res = await fetch(`/api/domains/dns-status?domainId=${domainId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          
         },
       });
 
@@ -153,7 +153,7 @@ export default function DomainDnsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          
         },
         body: JSON.stringify({ domainId })
       });
@@ -203,7 +203,7 @@ export default function DomainDnsPage() {
       const res = await fetch(`/api/domains?id=${domainId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`
+          
         }
       });
 

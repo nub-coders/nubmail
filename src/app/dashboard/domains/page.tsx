@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuthClient } from '@/lib/auth-provider';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import type { Domain } from '@/lib/types';
 
 const formSchema = z.object({
@@ -57,7 +57,7 @@ const formSchema = z.object({
 });
 
 export default function DomainsPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const [isAddDomainOpen, setAddDomainOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -74,7 +74,7 @@ export default function DomainsPage() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/domains', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/domains', { credentials: 'include' });
       const data = await res.json();
       if (res.ok) setDomains(data.domains || []);
       else setDomains([]);
@@ -97,7 +97,7 @@ export default function DomainsPage() {
     }
 
     try {
-      const res = await fetch('/api/domains', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ domainName: values.domainName }) });
+      const res = await fetch('/api/domains', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domainName: values.domainName }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to add domain');
       form.reset();
@@ -113,27 +113,7 @@ export default function DomainsPage() {
 
 
   if (!user) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Domain Management</CardTitle>
-          <CardDescription>You must be signed in to manage domains.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className={styles.nu_flex}>
-            <p className={styles.nu_textMutedForeground}>Please sign in to add and manage custom domains.</p>
-            <div className={styles.nu_flex2}>
-              <Link href="/register" className={styles.nu_wFull}>
-                <Button className={styles.nu_wFull}>Sign up</Button>
-              </Link>
-              <Link href="/" className={styles.nu_wFull}>
-                <Button variant="outline" className={styles.nu_wFull}>Sign in</Button>
-              </Link>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (

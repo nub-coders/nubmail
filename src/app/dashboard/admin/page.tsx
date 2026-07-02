@@ -6,10 +6,10 @@ import { Users, Globe, Shield, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthClient } from '@/lib/auth-provider';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboardPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const router = useRouter();
   const { toast } = useToast();
   const [stats, setStats] = useState({
@@ -28,10 +28,10 @@ export default function AdminDashboardPage() {
       try {
         const [usersRes, domainsRes] = await Promise.all([
           fetch('/api/admin/users', {
-            headers: { Authorization: `Bearer ${token}` }
+            credentials: 'include'
           }),
           fetch('/api/admin/domains', {
-            headers: { Authorization: `Bearer ${token}` }
+            credentials: 'include'
           })
         ]);
 

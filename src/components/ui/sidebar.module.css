@@ -1,3 +1,4 @@
+@reference "../../app/globals.css";
 .nu_wSidebarWidth {
   @apply w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden;
 }
@@ -11,7 +12,12 @@
 }
 
 .nu_group {
-  @apply hidden md:block text-sidebar-foreground;
+  @apply hidden text-sidebar-foreground;
+  @media (min-width: 768px) {
+    & {
+      @apply block;
+    }
+  }
 }
 
 .nu_flex2 {

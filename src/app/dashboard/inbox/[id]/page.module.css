@@ -1,3 +1,4 @@
+@reference "../../../globals.css";
 .nu_py8 {
   @apply py-8 text-center;
 }
@@ -94,7 +95,7 @@
 }
 
 .nu_hoverBgBackground80 {
-  @apply hover:bg-background/80;
+  &:hover { @apply bg-background/80; }
 }
 
 .nu_h42 {
@@ -110,7 +111,8 @@
 }
 
 .nu_textDestructive {
-  @apply text-destructive hover:text-destructive;
+  @apply text-destructive;
+  &:hover { @apply text-destructive; }
 }
 
 .nu_flex7 {
@@ -122,7 +124,12 @@
 }
 
 .nu_grid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/20 rounded-lg;
+  @apply grid grid-cols-1 gap-4 p-4 bg-muted/20 rounded-lg;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
 }
 
 .nu_textXs2 {

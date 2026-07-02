@@ -1,3 +1,4 @@
+@reference "../../app/globals.css";
 .nu_mb6 {
   @apply mb-6 rounded-2xl bg-muted/50 p-6 text-muted-foreground/30;
 }

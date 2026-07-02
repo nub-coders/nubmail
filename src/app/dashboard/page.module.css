@@ -1,9 +1,20 @@
+@reference "../globals.css";
 .nu_flex {
   @apply flex flex-col gap-8;
 }
 
 .nu_grid {
-  @apply grid gap-4 md:grid-cols-2 lg:grid-cols-3;
+  @apply grid gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
+  @media (min-width: 1024px) {
+    & {
+      @apply grid-cols-3;
+    }
+  }
 }
 
 .nu_flex2 {
@@ -23,11 +34,17 @@
 }
 
 .nu_grid2 {
-  @apply grid gap-4 md:grid-cols-3;
+  @apply grid gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-3;
+    }
+  }
 }
 
 .nu_flex3 {
-  @apply flex flex-col items-center gap-2 p-5 border border-border/40 rounded-xl hover:bg-muted/50 hover:border-border transition-all duration-150 cursor-pointer;
+  @apply flex flex-col items-center gap-2 p-5 border border-border/40 rounded-xl transition-all duration-150 cursor-pointer;
+  &:hover { @apply bg-muted/50 border-border; }
 }
 
 .nu_textSm {

@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuthClient } from '@/lib/auth-provider';
 
 function VerifyEmailContent() {
@@ -22,7 +22,7 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { setToken } = useAuthClient();
+  const { logout } = useAuthClient();
 
   useEffect(() => {
     if (searchParams.get('verified') === '1') {
@@ -99,8 +99,8 @@ function VerifyEmailContent() {
 
   const handleLogout = async () => {
     try {
-      await setToken(null);
-      router.push('/');
+      await logout();
+      router.push('/login');
     } catch (err) {
       toast({ title: 'Error', description: 'Could not log out', variant: 'destructive' });
     }

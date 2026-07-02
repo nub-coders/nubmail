@@ -1,4 +1,3 @@
-// @ts-nocheck
 import nodemailer from 'nodemailer';
 
 type Attachment = {
@@ -39,16 +38,13 @@ function getTransport(
   const internalHost = process.env.INTERNAL_SMTP_HOST || 'smtp-sender';
   const isInternal = config.host === internalHost;
   const allowSelfSigned = String(process.env.SMTP_ALLOW_SELF_SIGNED || '').toLowerCase() === 'true' || isInternal;
-  const transportConfig: any = {
+  const transportConfig: Record<string, unknown> = {
     host: config.host,
     port: Number(config.port),
     secure,
-    // Allow self-signed certificates in development
     tls: {
-      // For internal SMTP or when explicitly allowed, do not reject self-signed certs
-      rejectUnauthorized: allowSelfSigned ? false : process.env.NODE_ENV === 'production'
+      rejectUnauthorized: !allowSelfSigned
     },
-    // Never require TLS upgrade for internal route; STARTTLS will be attempted opportunistically
     requireTLS: isInternal ? false : undefined,
     ignoreTLS: undefined,
   };
@@ -88,8 +84,8 @@ export async function sendSmtpEmail({ from, to, subject, text, html, attachments
 
   return {
     messageId: info.messageId,
-    accepted: Array.isArray(info.accepted) ? info.accepted : [],
-    rejected: Array.isArray(info.rejected) ? info.rejected : [],
+    accepted: (Array.isArray(info.accepted) ? info.accepted : []).map(a => typeof a === 'string' ? a : a.address),
+    rejected: (Array.isArray(info.rejected) ? info.rejected : []).map(a => typeof a === 'string' ? a : a.address),
     response: info.response,
   };
 }

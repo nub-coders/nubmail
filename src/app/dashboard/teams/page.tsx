@@ -63,7 +63,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function TeamsPage() {
-  const { user , token} = useAuthClient();
+  const { user } = useAuthClient();
   const { toast } = useToast();
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,7 +83,7 @@ export default function TeamsPage() {
     if (!user) return;
     try {
       const res = await fetch('/api/teams', {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const data = await res.json();
       if (res.ok) setTeams(data.teams || []);
@@ -100,7 +100,7 @@ export default function TeamsPage() {
     setMembersLoading(teamId);
     try {
       const res = await fetch(`/api/teams/members?teamId=${teamId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const data = await res.json();
       if (res.ok) setMembers(prev => ({ ...prev, [teamId]: data.members || [] }));
@@ -124,7 +124,7 @@ export default function TeamsPage() {
     try {
       const res = await fetch('/api/teams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: teamName.trim() })
       });
       const data = await res.json();
@@ -144,7 +144,7 @@ export default function TeamsPage() {
     try {
       const res = await fetch(`/api/teams?id=${teamId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!res.ok) {
         const data = await res.json();
@@ -163,7 +163,7 @@ export default function TeamsPage() {
     try {
       const res = await fetch('/api/teams/members', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamId, email: addMemberEmail.trim() })
       });
       const data = await res.json();
@@ -186,7 +186,7 @@ export default function TeamsPage() {
     try {
       const res = await fetch(`/api/teams/members?teamId=${teamId}&userId=${userId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!res.ok) {
         const data = await res.json();

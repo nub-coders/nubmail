@@ -1,3 +1,4 @@
+@reference "../../globals.css";
 .nu_py8 {
   @apply py-8 text-center;
 }
@@ -67,7 +68,12 @@
 }
 
 .nu_grid2 {
-  @apply grid grid-cols-1 sm:grid-cols-3 gap-4;
+  @apply grid grid-cols-1 gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply grid-cols-3;
+    }
+  }
 }
 
 .nu_pt6 {
