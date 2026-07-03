@@ -90,14 +90,14 @@ services:
       - POSTFIX_myhostname=${SMTP_HOSTNAME:-mails.nubcoder.com}
       - POSTFIX_smtpd_banner=${SMTP_HOSTNAME:-mails.nubcoder.com} ESMTP
       - ALLOWED_SENDER_DOMAINS=${ALLOWED_SENDER_DOMAINS:-${DOMAIN:-nubcoder.com}}
-      # Restrict to local loopback inside the container; relay relies on SASL.
-      - POSTFIX_mynetworks=127.0.0.0/8 [::1]/128
-      - POSTFIX_smtp_tls_security_level=encrypt
+      # Trust Docker-internal networks so the app container can relay without SASL.
+      - POSTFIX_mynetworks=127.0.0.0/8 [::1]/128 172.16.0.0/12
+      - POSTFIX_smtp_tls_security_level=may
       - POSTFIX_inet_protocols=ipv4
       # Allow relay only for SASL-authenticated users.
-      - POSTFIX_smtpd_relay_restrictions=permit_sasl_authenticated,reject_unauth_destination
-      - POSTFIX_smtpd_sender_restrictions=permit_sasl_authenticated,reject
-      - POSTFIX_smtpd_recipient_restrictions=permit_sasl_authenticated,reject_unauth_destination,reject_unknown_recipient_domain
+      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination
+      - POSTFIX_smtpd_sender_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination,reject_unknown_recipient_domain
       # SASL Authentication via Dovecot
       - POSTFIX_smtpd_sasl_type=dovecot
       - POSTFIX_smtpd_sasl_path=private/dovecot-sasl/auth
