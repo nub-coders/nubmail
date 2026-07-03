@@ -127,7 +127,6 @@ services:
   # Additional headers for better reputation
       - POSTFIX_smtpd_helo_required=yes
       - POSTFIX_disable_vrfy_command=yes
-      # Per-host LE cert mounted from nginx-proxy/acme-companion
       - POSTFIX_smtpd_tls_cert_file=/etc/ssl/mail/fullchain.pem
       - POSTFIX_smtpd_tls_key_file=/etc/ssl/mail/key.pem
       - POSTFIX_smtpd_tls_protocols=>=TLSv1.2
@@ -136,12 +135,39 @@ services:
       - POSTFIX_smtpd_tls_exclude_ciphers=aNULL,MD5,DES,3DES,RC4
       - POSTFIX_smtpd_tls_loglevel=1
     volumes:
-      - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/ssl/mail:ro
+      - /root/nubmail/certs/${HOST:-mails.nubcoder.com}:/etc/ssl/mail:ro
       - dovecot-sasl:/var/spool/postfix/private/dovecot-sasl
     networks:
       - web
     ports:
       - "587:587"
+
+  traefik-certs-dumper:
+    image: ldez/traefik-certs-dumper:latest
+    container_name: nubmail-certs-dumper
+    restart: unless-stopped
+    volumes:
+      - deplox_traefik_acme:/traefik:ro
+      - /root/nubmail/certs:/output
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        apk add --no-cache curl >/dev/null 2>&1
+        exec traefik-certs-dumper file \
+          --source=/traefik/acme.json \
+          --dest=/output \
+          --domain-subdir \
+          --crt-name=fullchain \
+          --crt-ext=.pem \
+          --key-name=key \
+          --key-ext=.pem \
+          --version=v2 \
+          --watch \
+          --post-hook="curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-sender/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-dovecot/restart"
+    networks:
+      - web
 
   smtp-receiver:
     image: nubmail-app
@@ -210,7 +236,7 @@ services:
       - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext
       - ./dovecot/ssl.conf:/etc/dovecot/conf.d/ssl.conf:ro
       - ./dovecot/10-sasl.conf:/etc/dovecot/conf.d/10-sasl.conf:ro
-      - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/dovecot/ssl:ro
+      - /root/nubmail/certs/${HOST:-mails.nubcoder.com}:/etc/dovecot/ssl:ro
       - ./maildata:/app/maildata
       - dovecot-sasl:/var/run/dovecot-sasl
     environment:
@@ -229,3 +255,5 @@ networks:
 volumes:
   dovecot-sasl:
   pg_data:
+  deplox_traefik_acme:
+    external: true

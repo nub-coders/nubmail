@@ -65,3 +65,4 @@ scratch_doveconf.txt
 # logs
 /logs
 
+certs/
