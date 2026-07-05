@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Key, Plus, Trash2, Copy, Eye, EyeOff, CheckCircle, Mail, Globe, Send, BookOpen, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,6 +85,7 @@ export default function DeveloperPage() {
   const [selectedDomainIds, setSelectedDomainIds] = useState<string[]>([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [keyNameError, setKeyNameError] = useState('');
   const [newKey, setNewKey] = useState<string | null>(null);
   const [showNewKey, setShowNewKey] = useState(false);
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
@@ -113,7 +114,7 @@ export default function DeveloperPage() {
     }
   })();
 
-  const fetchKeys = async () => {
+  const fetchKeys = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -127,9 +128,9 @@ export default function DeveloperPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast, user]);
 
-  const fetchEmailAccounts = async () => {
+  const fetchEmailAccounts = useCallback(async () => {
     if (!user) return;
     setIsLoadingAccounts(true);
     try {
@@ -149,9 +150,9 @@ export default function DeveloperPage() {
     } finally {
       setIsLoadingAccounts(false);
     }
-  };
+  }, [toast, user]);
 
-  const fetchDomains = async () => {
+  const fetchDomains = useCallback(async () => {
     if (!user) return;
     setIsLoadingDomains(true);
     try {
@@ -165,13 +166,13 @@ export default function DeveloperPage() {
     } finally {
       setIsLoadingDomains(false);
     }
-  };
+  }, [toast, user]);
 
   useEffect(() => {
     fetchKeys();
     fetchEmailAccounts();
     fetchDomains();
-  }, [user]);
+  }, [fetchDomains, fetchEmailAccounts, fetchKeys]);
 
   const handleSetImapPassword = async () => {
     if (!selectedImapAccountId) return;
@@ -234,9 +235,10 @@ export default function DeveloperPage() {
 
   const handleCreateKey = async () => {
     if (!keyName.trim()) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Please enter a key name' });
+      setKeyNameError('Please enter a key name');
       return;
     }
+    setKeyNameError('');
     if (selectedPermissions.length === 0) {
       toast({ variant: 'destructive', title: 'Error', description: 'Select at least one permission' });
       return;
@@ -690,8 +692,10 @@ Requires: create_accounts permission
                 id="keyName"
                 placeholder="e.g., Production Server, Marketing Automation"
                 value={keyName}
-                onChange={(e) => setKeyName(e.target.value)}
+                onChange={(e) => { setKeyName(e.target.value); setKeyNameError(''); }}
+                className={keyNameError ? styles.nu_inputError : ''}
               />
+              {keyNameError && <p className={styles.nu_fieldError}>{keyNameError}</p>}
             </div>
 
             {/* Permissions */}

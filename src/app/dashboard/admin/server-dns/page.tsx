@@ -1,7 +1,7 @@
 "use client";
 import styles from './page.module.css';
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -130,7 +130,7 @@ export default function AdminServerDnsPage() {
     [data]
   );
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     if (!user?.isAdmin) return;
     setLoading(true);
     setLoadError(null);
@@ -171,17 +171,15 @@ export default function AdminServerDnsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, user?.isAdmin]);
 
   // DKIM generation is automatic; record value will be displayed when available
 
   // Test email feature removed
 
   useEffect(() => {
-    if (user?.isAdmin) {
-      fetchStatus();
-    }
-  }, [user]);
+    fetchStatus();
+  }, [fetchStatus]);
 
   if (!user) {
     return (

@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Shield, Inbox, Trash2, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export default function SpamPage() {
   const emailIds = useMemo(() => emails.map(e => e.id), [emails]);
   const selection = useEmailSelection(emailIds);
 
-  const fetchSpam = async () => {
+  const fetchSpam = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -47,11 +47,11 @@ export default function SpamPage() {
     } catch {} finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchSpam();
-  }, [user]);
+    fetchSpam();
+  }, [fetchSpam]);
 
   const handleNotSpam = async (emailId: string) => {
     setActionLoading(emailId);

@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Users, Plus, Trash2, UserPlus, Crown, Shield, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,7 +79,7 @@ export default function TeamsPage() {
   const [addingMember, setAddingMember] = useState(false);
 
 
-  const fetchTeams = async () => {
+  const fetchTeams = useCallback(async () => {
     if (!user) return;
     try {
       const res = await fetch('/api/teams', {
@@ -90,11 +90,11 @@ export default function TeamsPage() {
     } catch {} finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchTeams();
-  }, [user]);
+    fetchTeams();
+  }, [fetchTeams]);
 
   const fetchMembers = async (teamId: string) => {
     setMembersLoading(teamId);

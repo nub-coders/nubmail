@@ -1,7 +1,7 @@
 "use client";
 import styles from './page.module.css';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,7 @@ export default function AdminServerPage() {
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<any>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError(null);
@@ -32,9 +32,11 @@ export default function AdminServerPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [user]);
 
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const domain = config?.mailHostname || '';
   const apex = config?.rootDomain || '';

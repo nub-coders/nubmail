@@ -61,10 +61,12 @@ function ComposeForm() {
       try {
         const res = await fetch('/api/accounts', { credentials: 'include' });
         const data = await res.json();
-        if (res.ok && Array.isArray(data.accounts)) {
-          setAccounts(data.accounts.map((a: any) => ({ id: a.id, emailAddress: a.emailAddress })));
-          if (!from && data.accounts[0]?.emailAddress) setFrom(data.accounts[0].emailAddress);
-        }
+          if (res.ok && Array.isArray(data.accounts)) {
+            setAccounts(data.accounts.map((a: any) => ({ id: a.id, emailAddress: a.emailAddress })));
+            if (data.accounts[0]?.emailAddress) {
+              setFrom((previous) => previous || data.accounts[0].emailAddress);
+            }
+          }
       } catch {}
     };
     loadAccounts();

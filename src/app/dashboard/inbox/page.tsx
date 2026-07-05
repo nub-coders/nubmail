@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Mail, MailOpen, Clock, Archive, Trash2, RefreshCw, Star, Shield, BookOpen, BookX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -72,7 +72,7 @@ export default function InboxPage() {
   const filteredIds = useMemo(() => filteredEmails.map(e => e.id), [filteredEmails]);
   const selection = useEmailSelection(filteredIds);
 
-  const fetchEmailAccounts = async () => {
+  const fetchEmailAccounts = useCallback(async () => {
     if (!user) return;
     try {
       const res = await fetch('/api/accounts', {
@@ -85,9 +85,9 @@ export default function InboxPage() {
     } catch (error) {
       console.error('Failed to fetch email accounts');
     }
-  };
+  }, [user]);
 
-  const fetchEmails = async () => {
+  const fetchEmails = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -102,7 +102,7 @@ export default function InboxPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   const handleRefresh = async () => {
     if (!user || isRefreshing) return;
@@ -127,7 +127,7 @@ export default function InboxPage() {
       fetchEmailAccounts();
       fetchEmails();
     }
-  }, [user]);
+  }, [fetchEmailAccounts, fetchEmails, user]);
 
   const handleEmailClick = (email: Email) => {
     router.push(`/dashboard/inbox/${email.id}`);

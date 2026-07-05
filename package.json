@@ -1,7 +1,16 @@
 {
   "name": "nubmail",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nub-coders/nubmail.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nub-coders/nubmail/issues"
+  },
+  "homepage": "https://github.com/nub-coders/nubmail#readme",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "NODE_ENV=production next build",
@@ -71,7 +80,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/web-push": "^3.6.4",
-    "eslint": "^10.6.0",
+    "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.10",
     "postcss": "^8.5.16",
     "tailwindcss": "^4.3.2",

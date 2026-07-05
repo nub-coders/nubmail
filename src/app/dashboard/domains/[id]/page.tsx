@@ -1,7 +1,7 @@
 "use client";
 import styles from './page.module.css';
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert, Sparkles, Trash2 } from "lucide-react";
 
@@ -116,7 +116,7 @@ export default function DomainDnsPage() {
     [data]
   );
 
-  const fetchDomainDns = async () => {
+  const fetchDomainDns = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -143,7 +143,7 @@ export default function DomainDnsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [domainId, toast, user]);
 
   const verifyDnsRecords = async () => {
     if (!user || !domainId) return;
@@ -233,10 +233,8 @@ export default function DomainDnsPage() {
   };
 
   useEffect(() => {
-    if (user && domainId) {
-      fetchDomainDns();
-    }
-  }, [user, domainId]);
+    fetchDomainDns();
+  }, [fetchDomainDns]);
 
   if (!user) {
     return (

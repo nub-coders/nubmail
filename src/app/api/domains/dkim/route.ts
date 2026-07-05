@@ -110,8 +110,7 @@ export async function POST(req: NextRequest) {
       try {
         const crypto = await import('node:crypto');
         // Build public key from provided private key
-        const priv = crypto.createPrivateKey({ key: privateKeyPem });
-        const pub = crypto.createPublicKey(priv);
+        const pub = crypto.createPublicKey(privateKeyPem);
         const publicKeyPem = pub.export({ type: 'spki', format: 'pem' }) as unknown as string;
 
         // Verify that DNS TXT for selector matches the derived public key

@@ -1,7 +1,7 @@
 "use client";
 import styles from './page.module.css';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle, Globe, Shield, Users, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -41,7 +41,7 @@ export default function AdminDomainsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [usersRes, domainsRes] = await Promise.all([
@@ -66,10 +66,11 @@ export default function AdminDomainsPage() {
         setUsers(nextUsers);
         setDomains(nextDomains);
 
-        if (!selectedUserId && nextUsers.length > 0) {
+        setSelectedUserId((previous) => {
+          if (previous || nextUsers.length === 0) return previous;
           const firstWithDomains = nextUsers.find((item: User) => nextDomains.some((domain: Domain) => domain.userId === item.id));
-          setSelectedUserId((firstWithDomains || nextUsers[0])?.id || null);
-        }
+          return (firstWithDomains || nextUsers[0])?.id || null;
+        });
       }
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -81,13 +82,13 @@ export default function AdminDomainsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, toast]);
 
   useEffect(() => {
     if (user) {
       fetchData();
     }
-  }, [user]);
+  }, [fetchData, user]);
 
   const domainCountByUser = useMemo(() => {
     return domains.reduce<Record<string, number>>((accumulator, domain) => {

@@ -242,3 +242,11 @@
   @apply flex items-center gap-2 p-2 rounded cursor-pointer text-sm;
   &:hover { @apply bg-muted/50; }
 }
+
+.nu_inputError {
+  @apply border-destructive focus-visible:ring-destructive;
+}
+
+.nu_fieldError {
+  @apply text-sm text-destructive;
+}

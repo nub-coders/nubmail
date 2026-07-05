@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Trash2, Clock, Edit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,7 +38,7 @@ export default function DraftsPage() {
   const draftIds = useMemo(() => drafts.map(d => d.id), [drafts]);
   const selection = useEmailSelection(draftIds);
 
-  const fetchDrafts = async () => {
+  const fetchDrafts = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -50,11 +50,11 @@ export default function DraftsPage() {
     } catch {} finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchDrafts();
-  }, [user]);
+    fetchDrafts();
+  }, [fetchDrafts]);
 
   const handleEdit = (draft: Draft) => {
     router.push(`/dashboard/compose?draftId=${draft.id}`);

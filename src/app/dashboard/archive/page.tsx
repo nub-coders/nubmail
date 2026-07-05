@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Archive, Inbox, Trash2, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export default function ArchivePage() {
   const emailIds = useMemo(() => emails.map(e => e.id), [emails]);
   const selection = useEmailSelection(emailIds);
 
-  const fetchArchive = async () => {
+  const fetchArchive = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -47,11 +47,11 @@ export default function ArchivePage() {
     } catch {} finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchArchive();
-  }, [user]);
+    fetchArchive();
+  }, [fetchArchive]);
 
   const handleUnarchive = async (emailId: string) => {
     setActionLoading(emailId);

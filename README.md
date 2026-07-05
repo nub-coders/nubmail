@@ -1,5 +1,9 @@
 # NubMail
 
+[![License](https://img.shields.io/github/license/nub-coders/nubmail?color=0f766e)](LICENSE)
+[![Issues](https://img.shields.io/github/issues/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/pulls)
+
 A powerful, lightweight email management system built with **Next.js 16**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure.
 
 ## Key Features
@@ -11,6 +15,10 @@ A powerful, lightweight email management system built with **Next.js 16**, **Rea
 - 🔐 **Security** – JWT authentication, API keys, DKIM signing
 - 🎨 **Modern UI** – Responsive interface built with shadcn/ui and Tailwind CSS
 - 📱 **Multi-Protocol** – IMAP, POP3, SMTP support with SSL/TLS encryption
+
+## Open Source
+
+NubMail is released under the MIT License. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md) for the project rules and reporting process.
 
 ## Quick Start
 
@@ -29,7 +37,7 @@ cd nubmail
 npm install
 
 # 2. Set up environment variables (see below)
-cp .env.example .env  # Configure your variables
+cp .env.example .env  # or .env.local for local development
 
 # 3. Run the development server
 npm run dev
@@ -56,57 +64,9 @@ docker compose down
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory with the following variables:
+Copy `.env.example` to `.env` or `.env.local` and replace the placeholder values. The template includes the required app, database, SMTP, backup, and push-notification settings used by the codebase and Docker setup.
 
-```bash
-# Application Security
-JWT_SECRET=your-secret-key-min-32-chars
-
-# Database
-USE_POSTGRES=true
-POSTGRES_URL=postgres://nubmail:nubmail@localhost:5432/nubmail
-
-# Email Domain Configuration
-DOMAIN=mails.example.com
-PROTOCOL=https
-
-# SMTP (optional - defaults to built-in relay)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-
-# Microsoft Graph / Outlook Integration (optional)
-AZURE_TENANT_ID=your-tenant-id
-AZURE_CLIENT_ID=your-client-id
-AZURE_CLIENT_SECRET=your-client-secret
-AZURE_OUTLOOK_REDIRECT_URI=https://your-domain/api/integrations/outlook/callback
-TOKEN_ENCRYPTION_KEY=your-32-char-encryption-key
-
-# Admin Account
-ADMIN_PASS=secure-admin-password
-ADMIN_EMAIL=admin@example.com
-
-# Web Push Notifications (optional)
-VAPID_PUBLIC_KEY=your-public-vapid-key
-VAPID_PRIVATE_KEY=your-private-vapid-key
-VAPID_SUBJECT=mailto:admin@example.com
-```
-
-Generate VAPID keys:
-
-```bash
-npx web-push generate-vapid-keys
-```
-
-### Required Variables Explained
-
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `JWT_SECRET` | Authentication token encryption | `sk_test_abc123...` |
-| `POSTGRES_URL` | Database connection string | `postgres://user:pass@host:5432/db` |
-| `DOMAIN` | Your mail server domain | `mails.example.com` |
-| `PROTOCOL` | HTTP or HTTPS | `https` |
+For local development, the most important values are `JWT_SECRET`, `API_KEY_ENCRYPTION_SECRET`, `FIELD_ENCRYPTION_SECRET`, `POSTGRES_URL`, `ADMIN_EMAIL`, and `ADMIN_PASS`. For production deployments, also set `DOMAIN`, `HOST`, `PROTOCOL`, `SMTP_HOSTNAME`, `SMTP_BANNER_HOST`, and the optional `BACKUP_ENCRYPTION_KEY`.
 
 ## Features
 
@@ -412,9 +372,6 @@ npm start
 
 # Lint code
 npm run lint
-
-# Format code (if prettier configured)
-npm run format
 ```
 
 ### Database Schema

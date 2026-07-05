@@ -1,7 +1,7 @@
 'use client';
 import styles from './page.module.css';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Trash2, RotateCcw, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ export default function TrashPage() {
   const emailIds = useMemo(() => emails.map(e => e.id), [emails]);
   const selection = useEmailSelection(emailIds);
 
-  const fetchTrash = async () => {
+  const fetchTrash = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -59,11 +59,11 @@ export default function TrashPage() {
     } catch {} finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchTrash();
-  }, [user]);
+    fetchTrash();
+  }, [fetchTrash]);
 
   const handleRestore = async (emailId: string) => {
     setActionLoading(emailId);

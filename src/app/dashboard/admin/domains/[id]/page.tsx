@@ -1,7 +1,7 @@
 "use client";
 import styles from './page.module.css';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert } from 'lucide-react';
 
@@ -78,7 +78,7 @@ export default function AdminDomainDetailPage() {
   const allVerified = data?.records.every((record) => record.status === 'verified') ?? false;
   const hasFailedRecords = data?.records.some((record) => record.status === 'failed') ?? false;
 
-  const fetchDomain = async () => {
+  const fetchDomain = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -112,7 +112,7 @@ export default function AdminDomainDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [domainId, router, toast, user]);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -124,10 +124,8 @@ export default function AdminDomainDetailPage() {
   };
 
   useEffect(() => {
-    if (user && domainId) {
-      fetchDomain();
-    }
-  }, [user, domainId]);
+    fetchDomain();
+  }, [fetchDomain]);
 
   if (!user) {
     return (
