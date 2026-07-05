@@ -55,8 +55,10 @@ export default function DashboardLayout({
             <UserNav />
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6 lg:p-8 animate-fade-in max-w-6xl">
-          <AuthGuard>{children}</AuthGuard>
+        <main className="flex-1 overflow-auto p-6 lg:p-8 animate-fade-in">
+          <div className="max-w-screen-xl mx-auto">
+            <AuthGuard>{children}</AuthGuard>
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>
