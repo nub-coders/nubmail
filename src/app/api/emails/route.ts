@@ -42,16 +42,16 @@ export async function GET(req: NextRequest) {
           WHERE m.sender = $1
           AND (r.deleted_at IS NULL)
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [user.email, payload.sub, cursor, limit + 1] : [user.email, payload.sub, limit + 1];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.sender = ANY($1)
           AND NOT (m.recipients && $1)
           AND (r.deleted_at IS NULL)
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor, limit + 1] : [ownedEmails, payload.sub, limit + 1];
       }
     } else if (folder === 'trash') {
       if (ownedEmails.length === 0) {
@@ -59,15 +59,15 @@ export async function GET(req: NextRequest) {
           WHERE ($1 = ANY(m.recipients) OR m.sender = $1)
           AND r.deleted_at IS NOT NULL
           ${cursor ? 'AND r.deleted_at < $3' : ''}
-          ORDER BY r.deleted_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
+          ORDER BY r.deleted_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [user.email, payload.sub, cursor, limit + 1] : [user.email, payload.sub, limit + 1];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE (m.recipients && $1 OR m.sender = ANY($1))
           AND r.deleted_at IS NOT NULL
           ${cursor ? 'AND r.deleted_at < $3' : ''}
-          ORDER BY r.deleted_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
+          ORDER BY r.deleted_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor, limit + 1] : [ownedEmails, payload.sub, limit + 1];
       }
     } else if (folder === 'spam') {
       if (ownedEmails.length === 0) {
@@ -76,16 +76,16 @@ export async function GET(req: NextRequest) {
           AND COALESCE(r.is_spam, false) = true
           AND r.deleted_at IS NULL
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [user.email, payload.sub, cursor, limit + 1] : [user.email, payload.sub, limit + 1];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.recipients && $1
           AND COALESCE(r.is_spam, false) = true
           AND r.deleted_at IS NULL
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor, limit + 1] : [ownedEmails, payload.sub, limit + 1];
       }
     } else if (folder === 'archive') {
       if (ownedEmails.length === 0) {
@@ -94,16 +94,16 @@ export async function GET(req: NextRequest) {
           AND COALESCE(r.archived, false) = true
           AND r.deleted_at IS NULL
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [user.email, payload.sub, cursor, limit + 1] : [user.email, payload.sub, limit + 1];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE (m.recipients && $1 OR m.sender = ANY($1))
           AND COALESCE(r.archived, false) = true
           AND r.deleted_at IS NULL
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor, limit + 1] : [ownedEmails, payload.sub, limit + 1];
       }
     } else {
       // inbox (default)
@@ -114,8 +114,8 @@ export async function GET(req: NextRequest) {
           AND COALESCE(r.archived, false) = false
           AND COALESCE(r.is_spam, false) = false
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [user.email, payload.sub, cursor] : [user.email, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [user.email, payload.sub, cursor, limit + 1] : [user.email, payload.sub, limit + 1];
       } else {
         query = `SELECT ${baseColumns} ${baseJoin}
           WHERE m.recipients && $1
@@ -124,8 +124,8 @@ export async function GET(req: NextRequest) {
           AND COALESCE(r.archived, false) = false
           AND COALESCE(r.is_spam, false) = false
           ${cursor ? 'AND m.sent_at < $3' : ''}
-          ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-        params = cursor ? [ownedEmails, payload.sub, cursor] : [ownedEmails, payload.sub];
+          ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+        params = cursor ? [ownedEmails, payload.sub, cursor, limit + 1] : [ownedEmails, payload.sub, limit + 1];
       }
     }
 

@@ -72,15 +72,15 @@ export async function GET(req: NextRequest) {
         AND NOT (m.recipients && $1)
         AND (r.deleted_at IS NULL)
         ${cursor ? 'AND m.sent_at < $3' : ''}
-        ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-      params = cursor ? [ownedEmails, apiUser.id, cursor] : [ownedEmails, apiUser.id];
+        ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+      params = cursor ? [ownedEmails, apiUser.id, cursor, limit + 1] : [ownedEmails, apiUser.id, limit + 1];
     } else if (folder === 'trash') {
       query = `SELECT ${baseColumns} ${baseJoin}
         WHERE (m.recipients && $1 OR m.sender = ANY($1))
         AND r.deleted_at IS NOT NULL
         ${cursor ? 'AND r.deleted_at < $3' : ''}
-        ORDER BY r.deleted_at DESC LIMIT ${limit + 1}`;
-      params = cursor ? [ownedEmails, apiUser.id, cursor] : [ownedEmails, apiUser.id];
+        ORDER BY r.deleted_at DESC LIMIT $${cursor ? 4 : 3}`;
+      params = cursor ? [ownedEmails, apiUser.id, cursor, limit + 1] : [ownedEmails, apiUser.id, limit + 1];
     } else {
       query = `SELECT ${baseColumns} ${baseJoin}
         WHERE m.recipients && $1
@@ -89,8 +89,8 @@ export async function GET(req: NextRequest) {
         AND COALESCE(r.archived, false) = false
         AND COALESCE(r.is_spam, false) = false
         ${cursor ? 'AND m.sent_at < $3' : ''}
-        ORDER BY m.sent_at DESC LIMIT ${limit + 1}`;
-      params = cursor ? [ownedEmails, apiUser.id, cursor] : [ownedEmails, apiUser.id];
+        ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
+      params = cursor ? [ownedEmails, apiUser.id, cursor, limit + 1] : [ownedEmails, apiUser.id, limit + 1];
     }
 
     const { rows: emails } = await pgQuery(query, params);

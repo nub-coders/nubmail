@@ -7,6 +7,7 @@ const { Pool } = require('pg');
 const webpush = require('web-push');
 const fs = require('fs');
 const path = require('path');
+const sanitizeHtml = require('sanitize-html');
 
 const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 25; // container port
 const POSTGRES_URL = process.env.POSTGRES_URL;
@@ -251,15 +252,21 @@ const server = new SMTPServer({
         // Sanitize HTML at ingestion — untrusted external content must never
         // be stored raw, even if the client also sanitizes on render.
         if (html) {
-          html = html
-            .replace(/<script[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[\s\S]*?<\/style>/gi, '')
-            .replace(/\bon\w+\s*=\s*"[^"]*"/gi, '')
-            .replace(/\bon\w+\s*=\s*'[^']*'/gi, '')
-            .replace(/\bon\w+\s*=[^\s>]*/gi, '')
-            .replace(/javascript\s*:/gi, 'blocked:')
-            .replace(/vbscript\s*:/gi, 'blocked:')
-            .replace(/data\s*:\s*text\/html/gi, 'blocked:text/html');
+          html = sanitizeHtml(html, {
+            allowedTags: [
+              ...sanitizeHtml.defaults.allowedTags,
+              'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'span',
+              'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+            ],
+            allowedAttributes: {
+              ...sanitizeHtml.defaults.allowedAttributes,
+              a: ['href', 'name', 'target', 'rel'],
+              img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
+              '*': ['style'],
+            },
+            allowedSchemes: ['http', 'https', 'mailto'],
+            allowedSchemesByTag: { img: ['http', 'https', 'data'] },
+          });
         }
         const body = html || text || '';
         const sentAt = parsed.date ? new Date(parsed.date) : new Date();
