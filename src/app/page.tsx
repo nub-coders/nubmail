@@ -1,38 +1,23 @@
 import styles from './page.module.css';
 import Link from 'next/link';
-import { Mail, Shield, Globe, Key, Zap, Code, Send } from 'lucide-react';
+import { Mail, Globe, ShieldCheck, Key, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const features = [
   {
     icon: Globe,
-    title: 'Custom Domains',
-    desc: 'Use your own domain names for professional email addresses. Full DNS management with automated verification.',
+    title: 'Custom domains',
+    desc: 'Point any domain here — DNS verification is automatic.',
   },
   {
-    icon: Shield,
-    title: 'DKIM Signing',
-    desc: 'Every outgoing email is signed with DKIM to ensure deliverability and protect against spoofing.',
-  },
-  {
-    icon: Send,
-    title: 'Built-in SMTP',
-    desc: 'Fully managed SMTP server. Send and receive emails without any third-party dependencies.',
+    icon: ShieldCheck,
+    title: 'Signed, not just sent',
+    desc: 'Every message is DKIM-signed and delivered by your own SMTP server.',
   },
   {
     icon: Key,
-    title: 'API Access',
-    desc: 'Scoped API keys with granular permissions. Control which domains and accounts each key can access.',
-  },
-  {
-    icon: Zap,
-    title: 'Fast & Reliable',
-    desc: 'Lightweight architecture built for speed. Your emails are delivered quickly and reliably.',
-  },
-  {
-    icon: Code,
-    title: 'Developer Friendly',
-    desc: 'RESTful API for sending, reading, and managing emails programmatically. Perfect for automations.',
+    title: 'Scoped API keys',
+    desc: 'Per-domain, per-account permissions — nothing more than a key needs.',
   },
 ];
 
@@ -59,27 +44,28 @@ export default function LandingPage() {
       </nav>
 
       <section className={styles.hero}>
-        <div className={styles.heroBg} />
-        <div className={styles.heroGlow} />
         <div className={styles.heroInner}>
-          <div className={styles.badge}>
-            <Mail className="h-4 w-4" />
-            Self-hosted email made simple
-          </div>
           <h1 className={styles.heroTitle}>
-            Professional email for{' '}
-            <span className={styles.heroGradient}>your custom domains</span>
+            Run your own mail server, not someone else&apos;s API
           </h1>
           <p className={styles.heroDesc}>
-            Send, receive, and manage emails with your own domain. Built-in SMTP server, DKIM signing, granular API access, and a clean dashboard — all in one self-hosted package.
+            SMTP, DKIM signing, and a scoped REST API for every domain you own — self-hosted, not billed per message.
           </p>
           <div className={styles.heroCta}>
             <Button size="lg" className={styles.ctaPrimary} asChild>
-              <Link href="/register">Start for free</Link>
+              <Link href="/register">Get started</Link>
             </Button>
             <Button size="lg" variant="outline" className={styles.ctaSecondary} asChild>
               <Link href="/login">Sign in</Link>
             </Button>
+          </div>
+          <div className={styles.proof}>
+            <div className={styles.proofLine}>_dkim._domainkey.yourdomain.com&nbsp;&nbsp;TXT</div>
+            <div className={styles.proofLineMuted}>v=DKIM1; k=rsa; p=MIGfMA0GCSq...</div>
+            <div className={styles.proofVerified}>
+              <Check className={styles.proofCheckIcon} />
+              Verified
+            </div>
           </div>
         </div>
       </section>
@@ -88,17 +74,15 @@ export default function LandingPage() {
         <div className={styles.featuresInner}>
           <div className={styles.featuresHeader}>
             <p className={styles.featuresLabel}>Features</p>
-            <h2 className={styles.featuresTitle}>Everything you need for email</h2>
+            <h2 className={styles.featuresTitle}>Domains, signing, and API access</h2>
             <p className={styles.featuresDesc}>
-              A complete email solution with domain management, SMTP, and developer tools built in.
+              The three pieces that make self-hosting worth it.
             </p>
           </div>
           <div className={styles.featuresGrid}>
             {features.map((f) => (
               <div key={f.title} className={styles.featureCard}>
-                <div className={styles.featureIcon}>
-                  <f.icon className={styles.featureIconSvg} />
-                </div>
+                <f.icon className={styles.featureIconSvg} />
                 <h3 className={styles.featureTitle}>{f.title}</h3>
                 <p className={styles.featureDesc}>{f.desc}</p>
               </div>
@@ -109,9 +93,9 @@ export default function LandingPage() {
 
       <section className={styles.ctaSection}>
         <div className={styles.ctaInner}>
-          <h2 className={styles.ctaTitle}>Ready to take control of your email?</h2>
+          <h2 className={styles.ctaTitle}>Add your first domain in minutes</h2>
           <p className={styles.ctaDesc}>
-            Create an account and add your first domain in minutes.
+            DNS verification, DKIM signing, and SMTP are ready as soon as you connect a domain.
           </p>
           <div className={styles.ctaButtons}>
             <Button size="lg" className={styles.ctaPrimary} asChild>
@@ -131,7 +115,7 @@ export default function LandingPage() {
           </p>
           <div className={styles.footerLinks}>
             <Link href="/login" className={styles.footerLink}>Sign in</Link>
-            <Link href="/register" className={styles.footerLink}>Register</Link>
+            <Link href="/register" className={styles.footerLink}>Get started</Link>
           </div>
         </div>
       </footer>

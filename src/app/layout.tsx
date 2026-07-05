@@ -2,9 +2,25 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import AuthClientProvider from '@/lib/auth-provider';
-import { Inter } from 'next/font/google';
+import { IBM_Plex_Sans, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
+const bodyFont = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-body',
+});
+
+const headlineFont = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  variable: '--font-headline',
+});
+
+const monoFont = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-mono',
+});
 
 export const metadata: Metadata = {
   title: 'NubMail - Email Server Management',
@@ -34,7 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-body antialiased`}>
+      <body className={`${bodyFont.variable} ${headlineFont.variable} ${monoFont.variable} font-body antialiased`}>
         <AuthClientProvider>
           {children}
         </AuthClientProvider>

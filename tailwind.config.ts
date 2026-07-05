@@ -10,9 +10,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        body: ['var(--font-body)', 'sans-serif'],
+        headline: ['var(--font-headline)', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
+        code: ['var(--font-mono)', 'monospace'],
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -109,7 +110,7 @@ export default {
     function({ addUtilities }: { addUtilities: any }) {
       addUtilities({
         '.gradient-primary': {
-          background: 'linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(262 83% 58%) 100%)',
+          background: 'hsl(149 41% 31%)',
         }
       })
     }

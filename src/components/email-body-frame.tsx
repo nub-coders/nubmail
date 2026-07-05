@@ -72,7 +72,7 @@ export function EmailBodyFrame({ html, className }: Props) {
     <iframe
       ref={ref}
       title="Email body"
-      sandbox="allow-popups allow-popups-to-escape-sandbox"
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       srcDoc={FRAME_DOC(html)}
       className={className}
       style={{
