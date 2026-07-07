@@ -1,10 +1,10 @@
-# NubMail
+# [NubMail](https://mails.nubcoder.com)
 
 [![License](https://img.shields.io/github/license/nub-coders/nubmail?color=0f766e)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/pulls)
 
-A powerful, lightweight email management system built with **Next.js 16**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure.
+[**NubMail**](https://mails.nubcoder.com) is a powerful, lightweight email management system built with **Next.js 16**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure.
 
 ## Key Features
 
