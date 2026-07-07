@@ -67,3 +67,4 @@ scratch_doveconf.txt
 /logs
 
 certs/
+.claude/settings.json
