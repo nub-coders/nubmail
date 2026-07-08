@@ -499,7 +499,7 @@ You will be prompted to confirm before any data is overwritten.
 
 ## License
 
-[Add your license here]
+Released under the [MIT License](LICENSE).
 
 ## Contributing
 
