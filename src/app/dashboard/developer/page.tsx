@@ -103,14 +103,14 @@ export default function DeveloperPage() {
 
   const apiHost = typeof window !== 'undefined'
     ? `${window.location.protocol}//${window.location.host}`
-    : 'https://mails.nubcoder.com';
+    : 'https://mails.nubcoders.com';
 
   const baseDomain = (() => {
     try {
-      const hostname = typeof window !== 'undefined' ? window.location.hostname : 'nubcoder.com';
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : 'nubcoders.com';
       return hostname.replace(/^(mails?|webmail)\./, '');
     } catch {
-      return 'nubcoder.com';
+      return 'nubcoders.com';
     }
   })();
 

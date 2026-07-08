@@ -9,7 +9,7 @@
 set -eu
 
 CERTS_DIR="${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}"
-HOST="${HOST:-mails.nubcoder.com}"
+HOST="${HOST:-mails.nubcoders.com}"
 CERT="${CERTS_DIR}/${HOST}/fullchain.pem"
 STAMP="/var/lib/nubmail-cert.stamp"
 COMPOSE_DIR="$(cd "$(dirname "$0")/.." && pwd)"

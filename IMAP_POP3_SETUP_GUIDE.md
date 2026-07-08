@@ -1,7 +1,7 @@
 # IMAP/POP3 Setup Guide
 
 ## Overview
-Your nubmail application now supports IMAP and POP3 access for **email accounts** created by users. Each email account (e.g., `support@nubcoder.com`, `verify@nubcoder.com`) can be configured with IMAP/POP3 access independently.
+Your nubmail application now supports IMAP and POP3 access for **email accounts** created by users. Each email account (e.g., `support@nubcoders.com`, `verify@nubcoders.com`) can be configured with IMAP/POP3 access independently.
 
 **Important:** Authentication is based on **email accounts**, not portal user login credentials. Users authenticate with their email account address and the password set for that specific email account.
 
@@ -14,7 +14,7 @@ Your nubmail application now supports IMAP and POP3 access for **email accounts*
 - **Authentication**: Username and password
 
 ### User Credentials
-- **Username**: Email account address (e.g., `verify@nubcoder.com`, `support@nubcoder.com`)
+- **Username**: Email account address (e.g., `verify@nubcoders.com`, `support@nubcoders.com`)
 - **Password**: Email account password (set in the `email_accounts` table, not the portal user password)
 
 ## Gmail App Setup (Android/iOS)
@@ -131,8 +131,8 @@ docker compose restart dovecot
 ## Current Exported Email Accounts
 
 Based on the export, the following email accounts have emails available:
-- `verify@nubcoder.com` (33 emails) — Set a password via the Developer dashboard
-- `support@nubcoder.com` (33 emails)
+- `verify@nubcoders.com` (33 emails) — Set a password via the Developer dashboard
+- `support@nubcoders.com` (33 emails)
 - `meow@nubcoder.dev` (5 emails)
 
 **Note:** Use the Developer dashboard (IMAP/POP3 tab) to set passwords for each email account.

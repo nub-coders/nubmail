@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const resetUrl = `${protocol}://${host}/reset-password?token=${resetToken}`;
 
     try {
-      const domain = process.env.DOMAIN || 'nubcoder.com';
+      const domain = process.env.DOMAIN || 'nubcoders.com';
       await sendSmtpEmail({
         from: `verify@${domain}`,
         to: user.email,

@@ -3,4 +3,4 @@ services:
     volumes:
       - ./dovecot/99-protocols.conf:/etc/dovecot/conf.d/99-protocols.conf:ro
       - ./dovecot/ssl.conf:/etc/dovecot/conf.d/ssl.conf:ro
-      - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoder.com}:/etc/dovecot/ssl:ro
+      - ${NGINX_CERTS_DIR:-/root/nginx-proxy/nginx/certs}/${HOST:-mails.nubcoders.com}:/etc/dovecot/ssl:ro

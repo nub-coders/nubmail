@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
 
     try {
-      const domain = process.env.DOMAIN || 'nubcoder.com';
+      const domain = process.env.DOMAIN || 'nubcoders.com';
       await sendSmtpEmail({
         from: `verify@${domain}`,
         to: user.email,

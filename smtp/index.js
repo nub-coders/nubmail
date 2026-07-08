@@ -16,7 +16,7 @@ if (!POSTGRES_URL) {
   process.exit(1);
 }
 const MAILDIR_BASE = process.env.MAILDIR_BASE || '/app/maildata';
-const SMTP_BANNER_HOST = process.env.SMTP_BANNER_HOST || 'mails.nubcoder.com';
+const SMTP_BANNER_HOST = process.env.SMTP_BANNER_HOST || 'mails.nubcoders.com';
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@localhost';

@@ -25,9 +25,9 @@ const monoFont = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: 'NubMail - Email Server Management',
   description: 'NubMail is a full-featured email server management system for custom domains. Send, receive, and manage emails with your own domain.',
-  metadataBase: new URL('https://mails.nubcoder.com'),
+  metadataBase: new URL('https://mails.nubcoders.com'),
   applicationName: 'NubMail',
-  authors: [{ name: 'NubCoder', url: 'https://nubcoder.com' }],
+  authors: [{ name: 'NubCoder', url: 'https://nubcoders.com' }],
   creator: 'NubCoder',
   publisher: 'NubCoder',
   robots: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'NubMail - Email Server Management',
     description: 'Professional email server management for custom domains. Built-in SMTP, DKIM signing, and API access included.',
-    url: 'https://mails.nubcoder.com',
+    url: 'https://mails.nubcoders.com',
     siteName: 'NubMail',
     type: 'website',
   },

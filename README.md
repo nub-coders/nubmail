@@ -1,10 +1,10 @@
-# [NubMail](https://mails.nubcoder.com)
+# [NubMail](https://mails.nubcoders.com)
 
 [![License](https://img.shields.io/github/license/nub-coders/nubmail?color=0f766e)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/pulls)
 
-[**NubMail**](https://mails.nubcoder.com) is a powerful, lightweight email management system built with **Next.js 16**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure.
+[**NubMail**](https://mails.nubcoders.com) is a powerful, lightweight email management system built with **Next.js 16**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure.
 
 ## Key Features
 
@@ -193,7 +193,7 @@ Override the base path or hostname via env vars in `.env`:
 
 ```bash
 NGINX_CERTS_DIR=/path/to/nginx-proxy/certs   # default: /root/nginx-proxy/nginx/certs
-HOST=mails.example.com                       # default: mails.nubcoder.com
+HOST=mails.example.com                       # default: mails.nubcoders.com
 ```
 
 **Certificate Renewal:**
