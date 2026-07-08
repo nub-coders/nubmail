@@ -1,0 +1,259 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nubmail
+      POSTGRES_USER: nubmail
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./docs/postgres-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nubmail -d nubmail"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      web:
+        aliases:
+          - nubmail-db
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      shm_size: '2gb'
+    image: nubmail-app
+    container_name: nubmail-app
+    restart: always
+    shm_size: '2gb'
+    expose:
+      - "5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      API_KEY_ENCRYPTION_SECRET: ${API_KEY_ENCRYPTION_SECRET:?API_KEY_ENCRYPTION_SECRET must be set}
+      FIELD_ENCRYPTION_SECRET: ${FIELD_ENCRYPTION_SECRET:?FIELD_ENCRYPTION_SECRET must be set}
+      USE_POSTGRES: ${USE_POSTGRES:-true}
+      POSTGRES_URL: ${POSTGRES_URL:?POSTGRES_URL must be set}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:?SMTP_USER must be set}
+      SMTP_PASS: ${SMTP_PASS:?SMTP_PASS must be set}
+      DOMAIN: ${DOMAIN:-localhost:5000}
+      HOST: ${HOST:-mails.${DOMAIN:-localhost:5000}}
+      PROTOCOL: ${PROTOCOL:-http}
+      ADMIN_PASS: ${ADMIN_PASS:?ADMIN_PASS must be set}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL must be set}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
+    depends_on:
+      - postgres
+    volumes:
+      - ./maildata:/app/maildata
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://0.0.0.0:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nubmail.rule=Host(`${HOST:-mail.example.com}`)"
+      - "traefik.http.routers.nubmail.entrypoints=websecure"
+      - "traefik.http.routers.nubmail.tls.certresolver=letsencrypt"
+      - "traefik.http.services.nubmail.loadbalancer.server.port=5000"
+    networks:
+      - web
+    # Use Dockerfile CMD which now runs migrations and init-admin before starting the server
+
+  smtp-sender:
+    image: boky/postfix
+    container_name: nubmail-smtp-sender
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "postfix status >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      - POSTFIX_myhostname=${SMTP_HOSTNAME:-mail.example.com}
+      - POSTFIX_smtpd_banner=${SMTP_HOSTNAME:-mail.example.com} ESMTP
+      - ALLOWED_SENDER_DOMAINS=${ALLOWED_SENDER_DOMAINS:-${DOMAIN:-example.com}}
+      # Trust Docker-internal networks so the app container can relay without SASL.
+      - POSTFIX_mynetworks=127.0.0.0/8 [::1]/128 172.16.0.0/12
+      - POSTFIX_smtp_tls_security_level=may
+      - POSTFIX_inet_protocols=ipv4
+      # Allow relay only for SASL-authenticated users.
+      - POSTFIX_smtpd_relay_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination
+      - POSTFIX_smtpd_sender_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination,reject_unknown_recipient_domain
+      # SASL Authentication via Dovecot
+      - POSTFIX_smtpd_sasl_type=dovecot
+      - POSTFIX_smtpd_sasl_path=private/dovecot-sasl/auth
+      - POSTFIX_smtpd_sasl_auth_enable=yes
+      # Block anonymous + plaintext SASL on cleartext channels.
+      - POSTFIX_smtpd_sasl_security_options=noanonymous,noplaintext
+      - POSTFIX_smtpd_sasl_tls_security_options=noanonymous
+      - POSTFIX_smtpd_tls_auth_only=yes
+      # Brute-force resistance and connection throttling
+      - POSTFIX_anvil_rate_time_unit=60s
+      - POSTFIX_smtpd_client_connection_count_limit=10
+      - POSTFIX_smtpd_client_connection_rate_limit=30
+      - POSTFIX_smtpd_client_message_rate_limit=60
+      - POSTFIX_smtpd_client_auth_rate_limit=10
+      - POSTFIX_smtpd_soft_error_limit=5
+      - POSTFIX_smtpd_hard_error_limit=10
+      - POSTFIX_smtpd_error_sleep_time=5s
+      # Prefer hash aliases map to avoid lmdb lookup noise on some builds
+      - POSTFIX_alias_maps=hash:/etc/aliases
+      - POSTFIX_alias_database=hash:/etc/aliases
+      # DKIM disabled here; app signs per user domain using Nodemailer
+  # - DKIM_AUTOGENERATE=0
+  # - DKIM_SELECTOR=default
+  # - DKIM_DOMAINS=example.com
+      # Ensure OpenDKIM does not sign (verify-only)
+      - OPENDKIM_Mode=v
+  # Additional headers for better reputation
+      - POSTFIX_smtpd_helo_required=yes
+      - POSTFIX_disable_vrfy_command=yes
+      - POSTFIX_smtpd_tls_cert_file=/etc/ssl/mail/fullchain.pem
+      - POSTFIX_smtpd_tls_key_file=/etc/ssl/mail/key.pem
+      - POSTFIX_smtpd_tls_protocols=>=TLSv1.2
+      - POSTFIX_smtpd_tls_mandatory_protocols=>=TLSv1.2
+      - POSTFIX_smtpd_tls_mandatory_ciphers=high
+      - POSTFIX_smtpd_tls_exclude_ciphers=aNULL,MD5,DES,3DES,RC4
+      - POSTFIX_smtpd_tls_loglevel=1
+    volumes:
+      - ${CERTS_DIR:-./certs}/${HOST:-mail.example.com}:/etc/ssl/mail:ro
+      - dovecot-sasl:/var/spool/postfix/private/dovecot-sasl
+    networks:
+      - web
+    ports:
+      - "587:587"
+
+  traefik-certs-dumper:
+    image: ldez/traefik-certs-dumper:latest
+    container_name: nubmail-certs-dumper
+    restart: unless-stopped
+    volumes:
+      - deplox_traefik_acme:/traefik:ro
+      - ${CERTS_DIR:-./certs}:/output
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        apk add --no-cache curl >/dev/null 2>&1
+        exec traefik-certs-dumper file \
+          --source=/traefik/acme.json \
+          --dest=/output \
+          --domain-subdir \
+          --crt-name=fullchain \
+          --crt-ext=.pem \
+          --key-name=key \
+          --key-ext=.pem \
+          --version=v2 \
+          --watch \
+          --post-hook="curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-sender/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-dovecot/restart"
+    networks:
+      - web
+
+  smtp-receiver:
+    image: nubmail-app
+    container_name: nubmail-smtp-receiver
+    working_dir: /app
+    user: "1000:1000"
+    restart: always
+    depends_on:
+      - app
+      - postgres
+    environment:
+      SMTP_PORT: 25
+      SMTP_BANNER_HOST: ${SMTP_HOSTNAME:-mail.example.com}
+      INBOUND_ALLOWED_DOMAINS: ${INBOUND_ALLOWED_DOMAINS:-}
+      POSTGRES_URL: ${POSTGRES_URL:?POSTGRES_URL must be set}
+      MAILDIR_BASE: /app/maildata
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
+    volumes:
+      - ./maildata:/app/maildata
+    command: node smtp/index.js
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    networks:
+      - web
+    ports:
+      - "25:25"
+
+  dovecot-init:
+    image: alpine
+    container_name: nubmail-dovecot-init
+    volumes:
+      - ./maildata:/app/maildata
+    command: chown -R 1000:1000 /app/maildata
+    restart: "no"
+
+  dovecot:
+    image: dovecot/dovecot
+    container_name: nubmail-dovecot
+    restart: unless-stopped
+    # Run as root so the entrypoint can rewrite the bind-mounted SQL config files
+    # to inject POSTGRES_PASSWORD. Dovecot's master process expects to start as
+    # root and drops privileges to mail_uid/mail_gid (1000/1000) for workers.
+    user: "0:0"
+    depends_on:
+      dovecot-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+    ports:
+      - "127.0.0.1:143:143"    # IMAP (localhost only — use IMAPS for remote access)
+      - "993:993"              # IMAPS (SSL/TLS)
+      - "127.0.0.1:110:110"    # POP3 (localhost only — use POP3S for remote access)
+      - "995:995"              # POP3S (SSL/TLS)
+    volumes:
+      - ./dovecot/entrypoint.sh:/entrypoint.sh:ro
+      - ./dovecot/10-protocols.conf:/etc/dovecot/conf.d/10-protocols.conf:ro
+      - ./dovecot/10-mail.conf:/etc/dovecot/conf.d/10-mail.conf:ro
+      - ./dovecot/10-sql.conf:/etc/dovecot/conf.d/10-sql.conf
+      - ./dovecot/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
+      - ./dovecot/auth-sql.conf.ext:/etc/dovecot/conf.d/auth-sql.conf.ext:ro
+      - ./dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext
+      - ./dovecot/ssl.conf:/etc/dovecot/conf.d/ssl.conf:ro
+      - ./dovecot/10-sasl.conf:/etc/dovecot/conf.d/10-sasl.conf:ro
+      - ${CERTS_DIR:-./certs}/${HOST:-mail.example.com}:/etc/dovecot/ssl:ro
+      - ./maildata:/app/maildata
+      - dovecot-sasl:/var/run/dovecot-sasl
+    environment:
+      - POSTGRES_DB=nubmail
+      - POSTGRES_USER=nubmail
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      - POSTGRES_HOST=postgres
+    command: /bin/sh /entrypoint.sh
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
+
+volumes:
+  dovecot-sasl:
+  pg_data:
+  deplox_traefik_acme:
+    external: true

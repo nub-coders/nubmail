@@ -1,0 +1,61 @@
+@reference "../globals.css";
+.nu_flex {
+  @apply flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4;
+}
+
+.nu_mxAuto {
+  @apply mx-auto w-full max-w-sm shadow-elevated border-border/50;
+}
+
+.nu_textCenter {
+  @apply text-center;
+}
+
+.nu_mb2 {
+  @apply mb-2 flex items-center justify-center gap-2;
+}
+
+.nu_h8 {
+  @apply h-8 w-8 text-primary;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-bold text-foreground;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl;
+}
+
+.nu_grid {
+  @apply grid gap-4;
+}
+
+.nu_grid2 {
+  @apply grid gap-2;
+}
+
+.nu_wFull {
+  @apply w-full;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-center gap-2 text-sm text-muted-foreground;
+  &:hover { @apply text-foreground; }
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4;
+}
+
+.nu_roundedXl {
+  @apply rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4;
+}
+
+.nu_textSm {
+  @apply text-sm text-foreground/80;
+}

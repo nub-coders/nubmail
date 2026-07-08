@@ -1,0 +1,145 @@
+@reference "../../globals.css";
+.nu_flex {
+  @apply flex flex-col gap-6 h-full max-w-4xl mx-auto;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-between;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-3;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_flex1 {
+  @apply flex-1 border border-border/40 shadow-card bg-card;
+}
+
+.nu_p0 {
+  @apply p-0;
+}
+
+.nu_flex4 {
+  @apply flex flex-col h-full;
+}
+
+.nu_spaceY1 {
+  @apply space-y-1 p-6 border-b bg-muted/20;
+}
+
+.nu_flex5 {
+  @apply flex items-center gap-4;
+}
+
+.nu_textSm2 {
+  @apply text-sm font-medium text-muted-foreground w-16 flex-shrink-0;
+}
+
+.nu_border0 {
+  @apply border-0 bg-transparent;
+  &:hover { @apply bg-muted/50; }
+  &:focus { @apply bg-background; }
+}
+
+.nu_flex6 {
+  @apply flex items-center gap-2;
+}
+
+.nu_h6 {
+  @apply h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center;
+}
+
+.nu_textXs {
+  @apply text-xs font-medium text-primary;
+}
+
+.nu_flex12 {
+  @apply flex-1 flex flex-col;
+}
+
+.nu_flex13 {
+  @apply flex-1 border-0 bg-transparent resize-none text-base leading-relaxed p-6 min-h-[400px];
+  &:focus { @apply ring-0; }
+}
+
+.nu_flex7 {
+  @apply flex flex-wrap gap-2 px-6 py-3 border-t bg-muted/10;
+}
+
+.nu_flex8 {
+  @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 text-sm;
+}
+
+.nu_h3 {
+  @apply h-3 w-3 text-muted-foreground;
+}
+
+.nu_truncate {
+  @apply truncate max-w-[150px];
+}
+
+.nu_textXs2 {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_ml1 {
+  @apply ml-1;
+  &:hover { @apply text-destructive; }
+}
+
+.nu_h32 {
+  @apply h-3 w-3;
+}
+
+.nu_textXs3 {
+  @apply text-xs text-muted-foreground self-center ml-2;
+}
+
+.nu_flex9 {
+  @apply flex items-center justify-between gap-4 p-6 border-t bg-muted/10;
+}
+
+.nu_hidden {
+  @apply hidden;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 mr-2;
+}
+
+.nu_hoverBgDestructive10 {
+  &:hover { @apply bg-destructive/10 text-destructive; }
+}
+
+.nu_mr2 {
+  @apply mr-2 h-4 w-4;
+}
+
+.nu_minW100px {
+  @apply min-w-[100px] gradient-primary text-white;
+  &:hover { @apply opacity-90; }
+}
+
+.nu_animateSpin {
+  @apply animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2;
+}
+
+.nu_flex10 {
+  @apply flex items-center justify-center min-h-[60vh];
+}
+
+.nu_animateSpin2 {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-primary;
+}

@@ -1,0 +1,136 @@
+@reference "../../globals.css";
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-4 h-full;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-between;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_relative {
+  @apply relative w-full max-w-sm;
+}
+
+.nu_absolute {
+  @apply absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground;
+}
+
+.nu_pl8 {
+  @apply pl-8;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_flex1 {
+  @apply flex-1;
+}
+
+.nu_p0 {
+  @apply p-0;
+}
+
+.nu_p6 {
+  @apply p-6 h-96 flex flex-col items-center justify-center text-center;
+}
+
+.nu_h16 {
+  @apply h-16 w-16 text-muted-foreground/50 mb-4;
+}
+
+.nu_textXl {
+  @apply text-xl font-semibold;
+}
+
+.nu_textMutedForeground2 {
+  @apply text-muted-foreground mt-2;
+}
+
+.nu_flex3 {
+  @apply flex flex-col;
+}
+
+.nu_flex4 {
+  @apply flex items-center gap-3 px-4 py-2 border-b bg-muted/20;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_flex5 {
+  @apply flex items-center px-3 pt-5;
+}
+
+.nu_flex12 {
+  @apply flex-1 flex flex-col items-start gap-2 p-4 pl-1 text-sm w-full text-left cursor-pointer;
+}
+
+.nu_flex6 {
+  @apply flex w-full items-center;
+}
+
+.nu_flex7 {
+  @apply flex items-center gap-2;
+}
+
+.nu_h6 {
+  @apply h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0;
+}
+
+.nu_textXs2 {
+  @apply text-xs font-medium text-primary;
+}
+
+.nu_fontSemibold {
+  @apply font-semibold;
+}
+
+.nu_mlAuto {
+  @apply ml-auto text-xs text-muted-foreground;
+}
+
+.nu_textXs3 {
+  @apply text-xs font-medium;
+}
+
+.nu_lineClamp2 {
+  @apply line-clamp-2 whitespace-pre-wrap break-words text-xs text-muted-foreground;
+}
+
+.nu_maxW4xl {
+  @apply max-w-4xl max-h-[80vh] overflow-hidden flex flex-col;
+}
+
+.nu_flex8 {
+  @apply flex flex-col gap-4 overflow-hidden;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2 border-b pb-4;
+}
+
+.nu_flex9 {
+  @apply flex flex-col gap-1 text-sm text-muted-foreground;
+}
+
+.nu_flex13 {
+  @apply flex-1 overflow-auto;
+}
+
+.nu_prose {
+  @apply prose max-w-none dark:prose-invert;
+}

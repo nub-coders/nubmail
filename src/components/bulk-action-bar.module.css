@@ -1,0 +1,33 @@
+@reference "../app/globals.css";
+.nu_flex {
+  @apply flex items-center justify-between gap-4 px-4 py-2 bg-muted/80 border border-border/40 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200;
+}
+
+.nu_flex2 {
+  @apply flex items-center gap-3;
+}
+
+.nu_textSm {
+  @apply text-sm font-medium;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_textSm2 {
+  @apply text-sm text-primary;
+  &:hover { @apply underline; }
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2;
+}
+
+.nu_ml15 {
+  @apply ml-1.5;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}

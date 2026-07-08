@@ -1,0 +1,13 @@
+@reference "../app/globals.css";
+.nu_px3 {
+  @apply px-3 mb-3;
+}
+
+.nu_text11px {
+  @apply text-[11px] font-medium text-muted-foreground uppercase tracking-widest;
+}
+
+.nu_hoverBgSidebarAccent {
+  @apply transition-colors duration-150;
+  &:hover { @apply bg-sidebar-accent; }
+}

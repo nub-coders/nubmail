@@ -1,0 +1,11 @@
+# Legacy Dovecot SQL driver configuration (pre-2.4 compatibility)
+# The password placeholder 'nubmail' is replaced at runtime by dovecot/entrypoint.sh
+# with the actual POSTGRES_PASSWORD environment variable value.
+driver = pgsql
+connect = host=nubmail-db dbname=nubmail user=nubmail password=nubmail
+
+# Query to fetch email account credentials (not user login credentials)
+# Users authenticate with their email_address and email account password
+# home = user directory (no /Maildir suffix — mail_path = ~/Maildir in 10-mail.conf adds it)
+user_query = SELECT email_address as user, '/app/maildata/' || lower(email_address) as home, 'maildir:/app/maildata/' || lower(email_address) || '/Maildir' as mail, 1000 AS uid, 1000 AS gid FROM email_accounts WHERE email_address = '%u'
+password_query = SELECT email_address as user, password_hash as password, '/app/maildata/' || lower(email_address) as userdb_home, 'maildir:/app/maildata/' || lower(email_address) || '/Maildir' as userdb_mail, 1000 AS userdb_uid, 1000 AS userdb_gid FROM email_accounts WHERE email_address = '%u' AND password_hash IS NOT NULL

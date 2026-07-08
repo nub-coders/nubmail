@@ -1,0 +1,33 @@
+@reference "../../app/globals.css";
+.nu_wSidebarWidth {
+  @apply w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden;
+}
+
+.nu_srOnly {
+  @apply sr-only;
+}
+
+.nu_flex {
+  @apply flex h-full w-full flex-col;
+}
+
+.nu_group {
+  @apply hidden text-sidebar-foreground;
+  @media (min-width: 768px) {
+    & {
+      @apply block;
+    }
+  }
+}
+
+.nu_flex2 {
+  @apply flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow;
+}
+
+.nu_size4 {
+  @apply size-4 rounded-md;
+}
+
+.nu_h4 {
+  @apply h-4 flex-1 max-w-[--skeleton-width];
+}

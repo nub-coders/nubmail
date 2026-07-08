@@ -1,0 +1,4 @@
+@reference "../../app/globals.css";
+.nu_grid {
+  @apply grid gap-1;
+}

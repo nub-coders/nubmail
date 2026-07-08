@@ -1,0 +1,4 @@
+@reference "../../app/globals.css";
+.nu_h2 {
+  @apply h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce;
+}

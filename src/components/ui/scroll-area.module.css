@@ -1,0 +1,8 @@
+@reference "../../app/globals.css";
+.nu_hFull {
+  @apply h-full w-full rounded-[inherit];
+}
+
+.nu_relative {
+  @apply relative flex-1 rounded-full bg-border;
+}

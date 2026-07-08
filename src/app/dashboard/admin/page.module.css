@@ -1,0 +1,76 @@
+@reference "../../globals.css";
+.nu_flex {
+  @apply flex flex-col gap-8;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold;
+}
+
+.nu_textMutedForeground {
+  @apply text-muted-foreground;
+}
+
+.nu_grid {
+  @apply grid gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
+  @media (min-width: 1024px) {
+    & {
+      @apply grid-cols-4;
+    }
+  }
+}
+
+.nu_flex2 {
+  @apply flex flex-row items-center justify-between space-y-0 pb-2;
+}
+
+.nu_textSm {
+  @apply text-sm font-medium;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 text-muted-foreground;
+}
+
+.nu_text2xl2 {
+  @apply text-2xl font-bold;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_grid2 {
+  @apply grid gap-4;
+  @media (min-width: 768px) {
+    & {
+      @apply grid-cols-2;
+    }
+  }
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2 p-4 border rounded-lg transition-colors;
+  &:hover { @apply bg-muted/50; }
+}
+
+.nu_h5 {
+  @apply h-5 w-5;
+}
+
+.nu_textLeft {
+  @apply text-left;
+}
+
+.nu_fontMedium {
+  @apply font-medium;
+}
+
+.nu_textSm2 {
+  @apply text-sm text-muted-foreground;
+}

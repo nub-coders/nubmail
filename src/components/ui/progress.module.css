@@ -1,0 +1,4 @@
+@reference "../../app/globals.css";
+.nu_hFull {
+  @apply h-full w-full flex-1 bg-primary transition-all;
+}

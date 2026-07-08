@@ -1,0 +1,132 @@
+@reference "../../globals.css";
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-6 h-full;
+}
+
+.nu_flex2 {
+  @apply flex flex-col justify-between gap-4;
+  @media (min-width: 640px) {
+    & {
+      @apply flex-row items-center;
+    }
+  }
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-3;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_h4 {
+  @apply h-4 w-4;
+}
+
+.nu_flex1 {
+  @apply flex-1 border border-border/40 shadow-card bg-card;
+}
+
+.nu_p0 {
+  @apply p-0;
+}
+
+.nu_flex4 {
+  @apply flex flex-col;
+}
+
+.nu_flex5 {
+  @apply flex items-center gap-3 px-4 py-2 border-b border-border/30 bg-muted/20;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_py12 {
+  @apply py-12;
+}
+
+.nu_h16 {
+  @apply h-16 w-16;
+}
+
+.nu_flex6 {
+  @apply flex items-start gap-0;
+}
+
+.nu_flex7 {
+  @apply flex items-center px-3 pt-4;
+}
+
+.nu_flex12 {
+  @apply flex-1 p-4 pl-1 text-left;
+  &:focus { @apply outline-none ring-2 ring-primary/20 ring-inset; }
+}
+
+.nu_flex8 {
+  @apply flex items-start justify-between gap-4;
+}
+
+.nu_flex13 {
+  @apply flex-1 min-w-0;
+}
+
+.nu_flex9 {
+  @apply flex items-center gap-2 mb-1;
+}
+
+.nu_h5 {
+  @apply h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0;
+}
+
+.nu_text10px {
+  @apply text-[10px] font-medium text-primary;
+}
+
+.nu_h3 {
+  @apply h-3 w-3 text-muted-foreground ml-1;
+}
+
+.nu_textXs2 {
+  @apply text-xs text-muted-foreground truncate;
+}
+
+.nu_textSm2 {
+  @apply text-sm font-medium text-foreground/90 line-clamp-1;
+}
+
+.nu_textXs3 {
+  @apply text-xs text-muted-foreground line-clamp-1 mt-1;
+}
+
+.nu_flex10 {
+  @apply flex items-center gap-2 flex-shrink-0;
+}
+
+.nu_textXs4 {
+  @apply text-xs text-muted-foreground flex items-center gap-1;
+}
+
+.nu_h32 {
+  @apply h-3 w-3;
+}
+
+.nu_h7 {
+  @apply h-7 w-7 p-0 opacity-0 transition-opacity;
+  &:is(:where(.group):hover *) { @apply opacity-100; }
+  &:hover { @apply bg-destructive/20; }
+}

@@ -1,0 +1,174 @@
+"use client";
+import styles from './page.module.css';
+
+import { useCallback, useEffect, useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useAuthClient } from '@/lib/auth-provider';
+
+type Result = { check: string; ok: boolean; details?: string };
+
+export default function AdminServerPage() {
+  const { user } = useAuthClient();
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<Result[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [config, setConfig] = useState<any>(null);
+
+  const load = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/server/dns', { credentials: 'include', cache: 'no-store' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setResults(data.results || []);
+      setConfig(data.config || null);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const domain = config?.mailHostname || '';
+  const apex = config?.rootDomain || '';
+  const dkimSelector = config?.dkimSelector || 'mail';
+  const hasServerIp = Boolean(config?.serverPublicIp);
+  const spfValue = hasServerIp
+    ? `v=spf1 a:${domain} mx ip4:${config.serverPublicIp} -all`
+    : `v=spf1 a:${domain} mx -all`;
+
+  // Suggested records for our own server only
+  const suggested: Array<{ name: string; type: string; value: string; note?: string }> = [
+    { name: domain, type: 'A', value: config?.serverPublicIp || '<your-server-ip>' },
+    { name: apex, type: 'MX', value: `10 ${domain}` },
+    { name: apex, type: 'TXT', value: spfValue },
+    { name: `${dkimSelector}._domainkey.${apex}`, type: 'TXT', value: `DKIM public key (selector: ${dkimSelector})` },
+    { name: `_dmarc.${apex}`, type: 'TXT', value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@' + apex },
+  ];
+
+  if (hasServerIp) {
+    suggested.push({
+      name: config.serverPublicIp,
+      type: 'PTR',
+      value: domain,
+      note: 'Set this in your VPS/cloud provider reverse DNS settings',
+    });
+  }
+
+  function isSuggestedVerified(rec: { name: string; type: string }) {
+    if (!results || results.length === 0) return false;
+    const checks = {
+      A: `A ${domain}`,
+      MX: `MX ${apex}`,
+      SPF: `SPF ${apex}`,
+      DKIM: `DKIM ${dkimSelector}._domainkey.${apex}`,
+      DMARC: `DMARC _dmarc.${apex}`,
+      PTR: hasServerIp ? `PTR ${config.serverPublicIp}` : '',
+    };
+    if (rec.type === 'A') {
+      return !!results.find((r) => r.check === checks.A && r.ok);
+    }
+    if (rec.type === 'MX') {
+      return !!results.find((r) => r.check === checks.MX && r.ok);
+    }
+    if (rec.type === 'PTR' && checks.PTR) {
+      return !!results.find((r) => r.check === checks.PTR && r.ok);
+    }
+    // Heuristic based on check label prefixes
+    if (rec.name === apex && rec.type === 'TXT') {
+      return !!results.find((r) => r.check === checks.SPF && r.ok);
+    }
+    if (rec.name.startsWith(`${dkimSelector}._domainkey`) && rec.type === 'TXT') {
+      return !!results.find((r) => r.check === checks.DKIM && r.ok);
+    }
+    if (rec.name.startsWith('_dmarc.') && rec.type === 'TXT') {
+      return !!results.find((r) => r.check === checks.DMARC && r.ok);
+    }
+    return false;
+  }
+
+  return (
+    <div className={styles.nu_spaceY6}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Server Configuration</CardTitle>
+          <CardDescription>DNS verification for this server only. Add the records below exactly, then re-run checks.</CardDescription>
+        </CardHeader>
+        <CardContent className={styles.nu_spaceY4}>
+          <div className={styles.nu_flex}>
+            <div className={styles.nu_textSm}>
+              Root domain: <span className={styles.nu_fontMedium}>{config?.rootDomain}</span> · Mail host: <span className={styles.nu_fontMedium}>{config?.mailHostname}</span> · DKIM selector: <span className={styles.nu_fontMedium}>{dkimSelector}</span>
+            </div>
+            <Button size="sm" onClick={load} disabled={loading}>{loading ? 'Checking…' : 'Re-run checks'}</Button>
+          </div>
+
+          <div className={styles.nu_spaceY2}>
+            <div className={styles.nu_textSm2}>Required DNS records</div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Host</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Notes</TableHead>
+                  <TableHead>Verified</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {suggested.map((rec, i) => {
+                  const ok = isSuggestedVerified(rec);
+                  return (
+                    <TableRow key={i}>
+                      <TableCell className={styles.nu_fontMedium}>{rec.name}</TableCell>
+                      <TableCell>{rec.type}</TableCell>
+                      <TableCell className={styles.nu_textSm3}>{rec.value}</TableCell>
+                      <TableCell className={styles.nu_textSm3}>{rec.note || '-'}</TableCell>
+                      <TableCell>{ok ? <Badge variant="default">OK</Badge> : <Badge variant="destructive">Missing</Badge>}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          {error && <div className={styles.nu_textSm4}>{error}</div>}
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Check</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {results.map((r, i) => (
+                <TableRow key={i}>
+                  <TableCell className={styles.nu_fontMedium}>{r.check}</TableCell>
+                  <TableCell>{r.ok ? <Badge variant="default">OK</Badge> : <Badge variant="destructive">Fail</Badge>}</TableCell>
+                  <TableCell className={styles.nu_textSm3}>{r.details || ''}</TableCell>
+                </TableRow>
+              ))}
+              {results.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} className={styles.nu_textSm}>No results yet</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+

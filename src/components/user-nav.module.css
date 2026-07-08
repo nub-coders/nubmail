@@ -1,0 +1,62 @@
+@reference "../app/globals.css";
+.nu_relative {
+  @apply relative h-9 w-9 rounded-full transition-colors;
+  &:hover { @apply bg-muted/50; }
+}
+
+.nu_h8 {
+  @apply h-8 w-8 ring-1 ring-border/30 transition-all duration-150;
+  &:hover { @apply ring-border/60; }
+}
+
+.nu_bgPrimary10 {
+  @apply bg-primary/10 text-primary font-semibold;
+}
+
+.nu_absolute {
+  @apply absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-background;
+}
+
+.nu_w60 {
+  @apply w-60 shadow-elevated;
+}
+
+.nu_fontNormal {
+  @apply font-normal p-3 bg-muted/20;
+}
+
+.nu_flex {
+  @apply flex items-center space-x-3;
+}
+
+.nu_h12 {
+  @apply h-12 w-12;
+}
+
+.nu_bgPrimary102 {
+  @apply bg-primary/10 text-primary font-semibold text-lg;
+}
+
+.nu_flex2 {
+  @apply flex flex-col space-y-1;
+}
+
+.nu_textSm {
+  @apply text-sm font-semibold leading-none;
+}
+
+.nu_textXs {
+  @apply text-xs leading-none text-muted-foreground;
+}
+
+.nu_mr2 {
+  @apply mr-2 h-4 w-4;
+}
+
+.nu_mlAuto {
+  @apply ml-auto h-4 w-4 text-amber-500;
+}
+
+.nu_cursorPointer {
+  @apply cursor-pointer;
+}

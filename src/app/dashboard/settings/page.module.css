@@ -1,0 +1,81 @@
+@reference "../../globals.css";
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_py12 {
+  @apply py-12;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-6 max-w-2xl;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_flex2 {
+  @apply flex items-center gap-2;
+}
+
+.nu_h5 {
+  @apply h-5 w-5;
+}
+
+.nu_spaceY3 {
+  @apply space-y-3;
+}
+
+.nu_flex3 {
+  @apply flex items-center justify-between py-2;
+}
+
+.nu_textSm2 {
+  @apply text-sm font-medium;
+}
+
+.nu_bgGreen50010 {
+  @apply bg-green-500/10 text-green-600;
+}
+
+.nu_h3 {
+  @apply h-3 w-3 mr-1;
+}
+
+.nu_bgDestructive10 {
+  @apply bg-destructive/10 text-destructive;
+}
+
+.nu_flex4 {
+  @apply flex items-center justify-between;
+}
+
+.nu_spaceY05 {
+  @apply space-y-0.5;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_borderDestructive50 {
+  @apply border-destructive/50;
+}
+
+.nu_flex5 {
+  @apply flex items-center gap-2 text-destructive;
+}
+
+.nu_bgDestructive {
+  @apply bg-destructive text-destructive-foreground;
+  &:hover { @apply bg-destructive/90; }
+}

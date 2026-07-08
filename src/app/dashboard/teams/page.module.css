@@ -1,0 +1,130 @@
+@reference "../../globals.css";
+.nu_h3 {
+  @apply h-3 w-3;
+}
+
+.nu_py8 {
+  @apply py-8 text-center;
+}
+
+.nu_py12 {
+  @apply py-12;
+}
+
+.nu_flex {
+  @apply flex flex-col gap-6 max-w-3xl;
+}
+
+.nu_flex2 {
+  @apply flex items-center justify-between;
+}
+
+.nu_spaceY2 {
+  @apply space-y-2;
+}
+
+.nu_text2xl {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.nu_textSm {
+  @apply text-sm text-muted-foreground;
+}
+
+.nu_h4 {
+  @apply h-4 w-4 mr-2;
+}
+
+.nu_spaceY4 {
+  @apply space-y-4 py-4;
+}
+
+.nu_h16 {
+  @apply h-16 w-16;
+}
+
+.nu_cursorPointer {
+  @apply cursor-pointer;
+}
+
+.nu_textLg {
+  @apply text-lg;
+}
+
+.nu_flex3 {
+  @apply flex items-center gap-2;
+}
+
+.nu_hoverBgDestructive10 {
+  &:hover { @apply bg-destructive/10; }
+}
+
+.nu_h42 {
+  @apply h-4 w-4 text-destructive;
+}
+
+.nu_bgDestructive {
+  @apply bg-destructive text-destructive-foreground;
+  &:hover { @apply bg-destructive/90; }
+}
+
+.nu_pt0 {
+  @apply pt-0 space-y-4;
+}
+
+.nu_py4 {
+  @apply py-4;
+}
+
+.nu_flex4 {
+  @apply flex items-center justify-between p-3 rounded-lg bg-muted/30;
+}
+
+.nu_flex5 {
+  @apply flex items-center gap-3;
+}
+
+.nu_h8 {
+  @apply h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center;
+}
+
+.nu_textSm2 {
+  @apply text-sm font-medium text-primary;
+}
+
+.nu_textSm3 {
+  @apply text-sm font-medium;
+}
+
+.nu_textXs {
+  @apply text-xs text-muted-foreground;
+}
+
+.nu_ml1 {
+  @apply ml-1 capitalize;
+}
+
+.nu_h7 {
+  @apply h-7 w-7 p-0;
+  &:hover { @apply bg-destructive/10; }
+}
+
+.nu_h32 {
+  @apply h-3 w-3 text-destructive;
+}
+
+.nu_flex6 {
+  @apply flex items-end gap-2 pt-2 border-t;
+}
+
+.nu_flex1 {
+  @apply flex-1 space-y-1;
+}
+
+.nu_textXs2 {
+  @apply text-xs;
+}
+
+.nu_h43 {
+  @apply h-4 w-4 mr-1;
+}
