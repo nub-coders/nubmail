@@ -21,6 +21,10 @@ function normalizeDomain(input: string): string {
   return input.toLowerCase().trim().replace(/\.$/, '');
 }
 
+function ensureTrailingDot(value: string): string {
+  return value.endsWith('.') ? value : `${value}.`;
+}
+
 function getMailHost(domain?: string): string {
   const hostCandidate = process.env.HOST?.trim();
   if (hostCandidate) {
@@ -196,7 +200,7 @@ export async function GET(req: NextRequest) {
       type: 'MX',
       name: '@',
       host: normalizedDomain,
-      expectedValue: `${mxExpectedPriority} ${mailHost}`,
+      expectedValue: `${mxExpectedPriority} ${ensureTrailingDot(mailHost)}`,
       priority: mxExpectedPriority,
       status: hasExpectedMx ? 'verified' : 'not_checked',
       observedValues: mxObserved,
@@ -308,7 +312,7 @@ export async function GET(req: NextRequest) {
         type: 'CNAME',
         name: label,
         host: `${label}.${normalizedDomain}`,
-        expectedValue: mailHost,
+        expectedValue: ensureTrailingDot(mailHost),
         status: hasCNAME ? 'verified' : 'not_checked',
         observedValues: lookup.values,
         message: hasCNAME 

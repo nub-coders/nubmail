@@ -392,6 +392,39 @@ The PostgreSQL container initializes the schema automatically on first boot from
 - **Verify SMTP receiver:** `docker compose logs smtp-receiver`
 - **Check firewall:** Ensure port 25 is open and not blocked
 
+#### Server DNS dashboard shows records as "Missing" that actually exist
+The admin **Server DNS** page checks records by resolving them from the host. If
+the host's DNS resolver is slow or rate-limited (a common issue when
+`/etc/resolv.conf` points at a single upstream such as `8.8.8.8`), lookups time
+out and correctly-configured records get reported incorrectly.
+
+The `/api/admin/server-dns` route mitigates this in two ways:
+- It uses an explicit resolver with **redundant upstream servers**
+  (`1.1.1.1`, `8.8.8.8`, `9.9.9.9`, `8.8.4.4`) and **retries** transient
+  failures, rather than relying on the host `resolv.conf`.
+- A lookup that times out or fails is now shown as a distinct **"Check failed"**
+  status (not "Missing"), so a transient DNS blip no longer implies your records
+  are broken. Use **Refresh status** to re-check.
+
+If you still see intermittent "Check failed", fix the host resolver:
+```bash
+# Back up first
+cp -a /etc/resolv.conf /etc/resolv.conf.bak
+
+# Use redundant resolvers with fast failover
+cat > /etc/resolv.conf <<'EOF'
+nameserver 1.1.1.1
+nameserver 9.9.9.9
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+options timeout:2 attempts:2 rotate
+EOF
+
+# If resolvconf is installed, seed it so the change survives regeneration
+mkdir -p /etc/resolvconf/resolv.conf.d
+cp /etc/resolv.conf /etc/resolvconf/resolv.conf.d/head
+```
+
 #### Database connection errors
 - **Verify POSTGRES_URL:** Check environment variable is set correctly
 - **Check database status:** `docker compose logs postgres`

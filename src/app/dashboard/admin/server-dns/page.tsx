@@ -2,7 +2,7 @@
 import styles from './page.module.css';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Copy, Download, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, Download, HelpCircle, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ interface ServerDnsRecord {
   host: string;
   expectedValue: string;
   priority?: number;
-  status: "configured" | "missing" | "mismatch" | "action_required";
+  status: "configured" | "missing" | "mismatch" | "action_required" | "check_failed";
   observedValues: string[];
   message: string;
   optional?: boolean;
@@ -100,6 +100,11 @@ function StatusBadge({ status }: { status: ServerDnsRecord["status"] }) {
       label: "Action required",
       className: "bg-sky-500/20 text-sky-700 border-sky-500/30",
     },
+    check_failed: {
+      icon: HelpCircle,
+      label: "Check failed",
+      className: "bg-slate-500/15 text-slate-700 border-slate-500/30",
+    },
   } as const;
 
   const { icon: Icon, label, className } = config[status];
@@ -126,7 +131,10 @@ export default function AdminServerDnsPage() {
   );
 
   const hasBlockingIssues = useMemo(
-    () => data?.records.some((record) => !record.optional && record.status !== "configured") ?? false,
+    () =>
+      data?.records.some(
+        (record) => !record.optional && record.status !== "configured" && record.status !== "check_failed"
+      ) ?? false,
     [data]
   );
 
