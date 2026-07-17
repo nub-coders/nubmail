@@ -147,7 +147,7 @@ services:
     container_name: nubmail-certs-dumper
     restart: unless-stopped
     volumes:
-      - deplox_traefik_acme:/traefik:ro
+      - halvo_traefik_acme:/traefik:ro
       - ${CERTS_DIR:-./certs}:/output
       - /var/run/docker.sock:/var/run/docker.sock:ro
     entrypoint: /bin/sh
@@ -165,7 +165,7 @@ services:
           --key-ext=.pem \
           --version=v2 \
           --watch \
-          --post-hook="curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-sender/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-dovecot/restart"
+          --post-hook="curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-sender/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-dovecot/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-receiver/restart"
     networks:
       - web
 
@@ -187,8 +187,11 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
+      SMTP_TLS_CERT: /etc/ssl/mail/fullchain.pem
+      SMTP_TLS_KEY: /etc/ssl/mail/key.pem
     volumes:
       - ./maildata:/app/maildata
+      - ${CERTS_DIR:-./certs}/${HOST:-mail.example.com}:/etc/ssl/mail:ro
     command: node smtp/index.js
     deploy:
       resources:
@@ -255,5 +258,5 @@ networks:
 volumes:
   dovecot-sasl:
   pg_data:
-  deplox_traefik_acme:
+  halvo_traefik_acme:
     external: true

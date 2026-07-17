@@ -27,6 +27,92 @@ const INBOUND_ALLOWED_DOMAINS = new Set(
     .filter(Boolean)
 );
 
+// --- TLS (STARTTLS) configuration -------------------------------------------
+// The same certs dumped by traefik-certs-dumper for the Postfix sender are
+// mounted here. If they are absent (e.g. local dev), STARTTLS is simply not
+// advertised and the server continues to accept cleartext, as a public MX must.
+const SMTP_TLS_CERT_PATH = process.env.SMTP_TLS_CERT || '/etc/ssl/mail/fullchain.pem';
+const SMTP_TLS_KEY_PATH = process.env.SMTP_TLS_KEY || '/etc/ssl/mail/key.pem';
+
+function loadTlsOptions() {
+  try {
+    if (fs.existsSync(SMTP_TLS_CERT_PATH) && fs.existsSync(SMTP_TLS_KEY_PATH)) {
+      const cert = fs.readFileSync(SMTP_TLS_CERT_PATH);
+      const key = fs.readFileSync(SMTP_TLS_KEY_PATH);
+      console.log(`STARTTLS enabled using ${SMTP_TLS_CERT_PATH}`);
+      return { key, cert, minVersion: 'TLSv1.2' };
+    }
+    console.warn(
+      `STARTTLS disabled: cert/key not found at ${SMTP_TLS_CERT_PATH} / ${SMTP_TLS_KEY_PATH}`
+    );
+  } catch (err) {
+    console.error('Failed to load TLS cert/key; STARTTLS disabled:', err);
+  }
+  return null;
+}
+
+// --- Per-IP rate limiting ----------------------------------------------------
+// Guards the receiver against connection floods / DoS. Postfix (outbound) has
+// its own anvil limits; this covers the inbound Node listener on port 25.
+const MAX_CONCURRENT_PER_IP = Number(process.env.SMTP_MAX_CONNECTIONS_PER_IP || 10);
+const CONN_RATE_LIMIT = Number(process.env.SMTP_CONN_RATE_LIMIT || 30);
+const CONN_RATE_WINDOW_MS = Number(process.env.SMTP_CONN_RATE_WINDOW_MS || 60_000);
+
+// ip -> { active: number, hits: number[] (timestamps within window) }
+const rateState = new Map();
+
+function normalizeIp(ip) {
+  if (!ip) return 'unknown';
+  // Strip IPv6-mapped IPv4 prefix for consistent keying.
+  return ip.startsWith('::ffff:') ? ip.slice(7) : ip;
+}
+
+function checkRateLimit(ip) {
+  const key = normalizeIp(ip);
+  const now = Date.now();
+  let entry = rateState.get(key);
+  if (!entry) {
+    entry = { active: 0, hits: [] };
+    rateState.set(key, entry);
+  }
+  // Drop timestamps outside the sliding window.
+  entry.hits = entry.hits.filter((t) => now - t < CONN_RATE_WINDOW_MS);
+
+  if (entry.active >= MAX_CONCURRENT_PER_IP) {
+    return { ok: false, reason: 'concurrent' };
+  }
+  if (entry.hits.length >= CONN_RATE_LIMIT) {
+    return { ok: false, reason: 'rate' };
+  }
+
+  entry.hits.push(now);
+  entry.active += 1;
+  return { ok: true, key };
+}
+
+function releaseConnection(ip) {
+  const key = normalizeIp(ip);
+  const entry = rateState.get(key);
+  if (!entry) return;
+  entry.active = Math.max(0, entry.active - 1);
+  // Forget idle IPs to avoid unbounded map growth.
+  if (entry.active === 0 && entry.hits.length === 0) {
+    rateState.delete(key);
+  }
+}
+
+// Periodically prune stale entries whose window has fully elapsed.
+const ratePruneTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateState) {
+    entry.hits = entry.hits.filter((t) => now - t < CONN_RATE_WINDOW_MS);
+    if (entry.active === 0 && entry.hits.length === 0) {
+      rateState.delete(key);
+    }
+  }
+}, CONN_RATE_WINDOW_MS);
+ratePruneTimer.unref?.();
+
 function isInboundDomainAllowed(domain) {
   // If no allowlist is configured, rely on verified-domain account checks.
   if (INBOUND_ALLOWED_DOMAINS.size === 0) return true;
@@ -160,11 +246,17 @@ async function writeToMaildir(emailAddress, rawMessage, subject, body, sentAt, s
   }
 }
 
+const tlsOptions = loadTlsOptions();
+
 const server = new SMTPServer({
   name: SMTP_BANNER_HOST,
   banner: `${SMTP_BANNER_HOST} ESMTP`,
   // We accept unauthenticated inbound from the internet (MX). Do not enable auth here.
   disabledCommands: ['AUTH'],
+  // Offer opportunistic STARTTLS when certs are available; never require it, so
+  // sending MTAs that don't support TLS can still deliver (standard MX behavior).
+  secure: false,
+  ...(tlsOptions ? { key: tlsOptions.key, cert: tlsOptions.cert, minVersion: tlsOptions.minVersion } : { hideSTARTTLS: true }),
   logger: false,
   onRcptTo(address, session, callback) {
     (async () => {
@@ -203,8 +295,21 @@ const server = new SMTPServer({
     })();
   },
   onConnect(session, callback) {
-    // Optionally restrict by IPs or use a blocklist here.
+    const result = checkRateLimit(session.remoteAddress);
+    if (!result.ok) {
+      const msg = result.reason === 'concurrent'
+        ? '421 4.7.0 Too many concurrent connections from your address'
+        : '421 4.7.0 Connection rate limit exceeded, try again later';
+      console.warn(`Rate limit (${result.reason}) for ${session.remoteAddress}`);
+      return callback(new Error(msg));
+    }
+    session._rateLimited = true;
     return callback();
+  },
+  onClose(session) {
+    if (session && session._rateLimited) {
+      releaseConnection(session.remoteAddress);
+    }
   },
   onData(stream, session, callback) {
     (async () => {
