@@ -4,21 +4,24 @@
 [![Issues](https://img.shields.io/github/issues/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/nub-coders/nubmail?color=0f766e)](https://github.com/nub-coders/nubmail/pulls)
 
-[**NubMail**](https://mails.nubcoders.com) is a powerful, lightweight email management system built with **Next.js 16**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure.
+[**NubMail**](https://mails.nubcoders.com) is a powerful, self-hosted email management system built with **Next.js**, **React 19**, and **PostgreSQL**. Designed for developers and organizations that need full control over their email infrastructure — from sending and receiving mail to managing domains, teams, and API keys.
 
 ## Key Features
 
-- 🌐 **Domain Management** – Add custom domains and verify DNS records
+- 🌐 **Domain Management** – Add custom domains and verify DNS records (SPF, DKIM, MX)
 - 📧 **Email Accounts** – Create and manage unlimited email accounts per domain
-- 📤 **Email Sending** – Send emails via built-in SMTP relay or custom providers
-- 📨 **Email Receiving** – Receive inbound emails with automatic storage
-- 🔐 **Security** – JWT authentication, API keys, DKIM signing
-- 🎨 **Modern UI** – Responsive interface built with shadcn/ui and Tailwind CSS
-- 📱 **Multi-Protocol** – IMAP, POP3, SMTP support with SSL/TLS encryption
+- 📤 **Email Sending** – Send via built-in Postfix relay or custom SMTP providers, with automatic DKIM signing
+- 📨 **Email Receiving** – Receive inbound emails via a Node.js SMTP listener (`smtp-server`)
+- 👥 **Teams** – Collaborative team management and shared mailbox access
+- 🔔 **Push Notifications** – Web push alerts for new mail (VAPID-based, opt-in)
+- 🔐 **Security** – JWT authentication, encrypted API keys, DKIM signing, field-level encryption
+- 🎨 **Modern UI** – Responsive dark/light interface built with shadcn/ui and Tailwind CSS
+- 📱 **Multi-Protocol** – IMAP, POP3, and SMTP support with SSL/TLS encryption
+- 💾 **Automated Backups** – Nightly encrypted database backups to Backblaze B2 and Cloudflare R2
 
 ## Open Source
 
-NubMail is released under the MIT License. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md) for the project rules and reporting process.
+NubMail is released under the [MIT License](LICENSE). Contributions are welcome — see the [Contributing](#contributing) section below.
 
 ## Quick Start
 
@@ -32,12 +35,12 @@ NubMail is released under the MIT License. See [LICENSE](LICENSE), [CONTRIBUTING
 
 ```bash
 # 1. Clone and install dependencies
-git clone <repo-url>
+git clone https://github.com/nub-coders/nubmail.git
 cd nubmail
 npm install
 
-# 2. Set up environment variables (see below)
-cp .env.example .env  # or .env.local for local development
+# 2. Set up environment variables
+cp .env.example .env   # fill in the required values
 
 # 3. Run the development server
 npm run dev
@@ -49,9 +52,9 @@ npm run dev
 
 ```bash
 # 1. Create environment configuration
-cp .env.example .env
+cp .env.example .env   # fill in the required values
 
-# 2. Start all services
+# 2. Build and start all services
 docker compose up -d --build
 
 # 3. Open http://localhost:5000
@@ -64,58 +67,114 @@ docker compose down
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` or `.env.local` and replace the placeholder values. The template includes the required app, database, SMTP, backup, and push-notification settings used by the codebase and Docker setup.
+Copy `.env.example` to `.env` and replace all placeholder values. Never commit `.env` to version control.
 
-For local development, the most important values are `JWT_SECRET`, `API_KEY_ENCRYPTION_SECRET`, `FIELD_ENCRYPTION_SECRET`, `POSTGRES_URL`, `ADMIN_EMAIL`, and `ADMIN_PASS`. For production deployments, also set `DOMAIN`, `HOST`, `PROTOCOL`, `SMTP_HOSTNAME`, `SMTP_BANNER_HOST`, and the optional `BACKUP_ENCRYPTION_KEY`.
+Generate strong secrets with:
+```bash
+openssl rand -base64 32
+```
+
+#### Required for all environments
+
+| Variable | Description |
+|----------|-------------|
+| `JWT_SECRET` | Signs session JWTs |
+| `API_KEY_ENCRYPTION_SECRET` | Encrypts stored API keys (AES-256-GCM) |
+| `FIELD_ENCRYPTION_SECRET` | Encrypts sensitive DB fields (e.g. DKIM private keys) |
+| `POSTGRES_URL` | PostgreSQL connection string |
+| `ADMIN_EMAIL` | Initial admin account email |
+| `ADMIN_PASS` | Initial admin account password |
+
+#### Required for production
+
+| Variable | Description |
+|----------|-------------|
+| `DOMAIN` | Apex domain this server sends mail for |
+| `HOST` | Public hostname of the mail server (A record + TLS cert CN) |
+| `PROTOCOL` | `http` or `https` |
+| `NEXT_PUBLIC_SITE_URL` | Public base URL of the web app |
+| `SMTP_HOST` | Outbound SMTP relay host |
+| `SMTP_PORT` | Outbound SMTP relay port (typically `587`) |
+| `SMTP_USER` | Outbound SMTP username |
+| `SMTP_PASS` | Outbound SMTP password |
+
+#### Optional
+
+| Variable | Description |
+|----------|-------------|
+| `BACKUP_ENCRYPTION_KEY` | Encrypts nightly database backups |
+| `VAPID_PUBLIC_KEY` | Web push public key (enable push notifications) |
+| `VAPID_PRIVATE_KEY` | Web push private key |
+| `VAPID_SUBJECT` | Web push contact (e.g. `mailto:admin@example.com`) |
+| `CERTS_DIR` | Base path for Let's Encrypt certs (default: `./certs`) |
+| `NGINX_CERTS_DIR` | Override if certs are managed by an external reverse proxy (e.g. nginx-proxy) |
+| `BIMI_LOGO_URL` | HTTPS URL of the BIMI brand logo (default: `https://<HOST>/logo.svg`) |
 
 ## Features
 
 ### Core Capabilities
-- ✅ User authentication with JWT tokens
-- ✅ Domain management with DNS verification
+- ✅ User authentication with JWT tokens and secure session management
+- ✅ Domain management with DNS verification (SPF, MX, DKIM)
 - ✅ Email account creation and administration
-- ✅ Compose and send emails
-- ✅ Full inbox, archive, spam, and trash management
-- ✅ Receive inbound emails via SMTP
-- ✅ IMAP/POP3 support for standard email clients
+- ✅ Compose, send, and reply to emails
+- ✅ Full inbox, sent, archive, drafts, spam, and trash management
+- ✅ Receive inbound emails via built-in SMTP listener
+- ✅ IMAP/POP3 support for standard email clients (via Dovecot)
 
 ### Developer Features
 - ✅ RESTful API with API key authentication
 - ✅ Programmatic email sending via API
-- ✅ DKIM automatic signing and verification
-- ✅ Admin dashboard and server management
-- ✅ User and domain administration panels
+- ✅ DKIM automatic signing and verification per domain
+- ✅ Admin dashboard and server DNS management
+- ✅ User, domain, team, and account administration panels
+- ✅ Developer settings and API key management UI
 
 ### Security & Integration
 - ✅ JWT-based session management
 - ✅ bcryptjs password hashing
+- ✅ AES-256-GCM field-level encryption for sensitive data
+- ✅ Rate limiting on API routes
+- ✅ HTML email sanitization (sanitize-html)
 - ✅ Optional Microsoft Graph / Outlook integration
 - ✅ SSL/TLS encryption for all protocols
-- ✅ Per-host Let's Encrypt cert (auto-managed by nginx-proxy/acme-companion)
+- ✅ Per-host Let's Encrypt cert (auto-managed by Traefik + traefik-certs-dumper)
+
+### Additional Features
+- ✅ Web push notifications for new mail (VAPID)
+- ✅ Team collaboration and shared mailbox access
+- ✅ Email drafts with auto-save
+- ✅ Bulk email actions (mark read/unread, archive, delete)
+- ✅ Forgot password / reset password flow
+- ✅ Email verification on registration
+- ✅ Nightly encrypted database backups to B2 + R2
 
 ## Technology Stack
 
 ### Frontend
-- **Next.js 16** – React framework with TypeScript
+- **Next.js** – React framework with TypeScript (App Router)
 - **React 19** – UI library
-- **Tailwind CSS** – Utility-first styling
+- **Tailwind CSS v4** – Utility-first styling
 - **shadcn/ui** – Component library (Radix UI + Tailwind)
+- **react-hook-form + Zod** – Form handling and validation
 
 ### Backend
-- **Next.js API Routes** – Serverless functions
-- **PostgreSQL 16** – Relational database
-- **JWT** – Token-based authentication
+- **Next.js API Routes** – Serverless-style route handlers
+- **PostgreSQL** – Relational database
+- **JWT (jsonwebtoken)** – Token-based authentication
 - **bcryptjs** – Password hashing
+- **nodemailer** – Email composition and sending
 
 ### Email Infrastructure
-- **Postfix** – SMTP relay for outbound mail
-- **Dovecot** – IMAP/POP3 server
-- **Node.js SMTP Receiver** – Inbound email processing
+- **Postfix** – Outbound SMTP relay
+- **Dovecot** – IMAP/POP3 server for email clients
+- **smtp-server** – Node.js inbound SMTP listener for receiving mail
+- **mailparser** – Parsing raw inbound email messages
 
 ### Additional Services
-- **Docker & Docker Compose** – Containerization
-- **Genkit + Google Gemini** – AI integration
-- **nginx-proxy** – Reverse proxy with Let's Encrypt support
+- **Docker & Docker Compose** – Containerization and orchestration
+- **Traefik + traefik-certs-dumper** – Reverse proxy with automatic Let's Encrypt TLS
+- **web-push** – VAPID-based web push notifications
+- **rclone + pg_dump** – Encrypted nightly backups to B2/R2
 
 ## Docker Setup
 
@@ -126,7 +185,7 @@ For local development, the most important values are `JWT_SECRET`, `API_KEY_ENCR
 | **postgres** | postgres:16 | 5432 | Database with auto-initialization |
 | **app** | nubmail (custom) | 5000 | Next.js application |
 | **smtp-sender** | boky/postfix | 587, 465 | Outbound SMTP relay |
-| **smtp-receiver** | node:22 | 25 | Inbound SMTP (Node.js) |
+| **smtp-receiver** | node:22 | 25 | Inbound SMTP (smtp-server) |
 | **dovecot** | Custom | 143, 993, 110, 995 | IMAP/POP3 server |
 
 ### Starting Services
@@ -136,7 +195,7 @@ For local development, the most important values are `JWT_SECRET`, `API_KEY_ENCR
 docker compose up -d --build
 
 # Start specific services only
-docker compose up -d postgres app-dev smtp-sender smtp-receiver
+docker compose up -d postgres app smtp-sender smtp-receiver
 
 # View logs
 docker compose logs -f app
@@ -144,7 +203,7 @@ docker compose logs -f app
 # Stop all services
 docker compose down
 
-# Clean up volumes (use with caution)
+# Clean up volumes (use with caution — deletes all data)
 docker compose down -v
 ```
 
@@ -157,53 +216,61 @@ docker exec -i $(docker ps -qf name=postgres) \
   psql -U nubmail -d nubmail < docs/postgres-schema.sql
 ```
 
+To seed the initial admin user:
+```bash
+node scripts/init-admin.js
+```
+
 ### Production Deployment
 
-#### With nginx-proxy
+#### With Traefik
 
-The application integrates with [jwilder/nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) for:
+The application integrates with [Traefik](https://traefik.io/) for:
 - Automatic reverse proxy configuration
-- SSL/TLS termination
+- SSL/TLS termination via Let's Encrypt
 - Virtual host routing
 
 **Configuration:**
-```yaml
-environment:
-  VIRTUAL_HOST: mails.example.com
-  VIRTUAL_PORT: 5000
-  LETSENCRYPT_HOST: mails.example.com
-  LETSENCRYPT_EMAIL: admin@example.com
+
+Traefik labels are pre-configured on the `app` service in `docker-compose.yml`. You need to set the `HOST` environment variable in your `.env` file to your desired domain:
+
+```env
+HOST=mail.example.com
 ```
 
 **Setup:**
-```bash
-# Ensure nginx-proxy is on the same Docker network
-docker network create web
-docker compose up -d  # Connects to 'web' network by default
-```
+
+1. Ensure the external Docker network `web` exists (which Traefik and the application use to communicate):
+   ```bash
+   docker network create web
+   ```
+
+2. Ensure the external volume `halvo_traefik_acme` is created or mapped to Traefik's `acme.json` location:
+   ```bash
+   docker volume create halvo_traefik_acme
+   ```
+
+3. Spin up the containers:
+   ```bash
+   docker compose up -d
+   ```
 
 #### Mail TLS Certificate
 
-Dovecot (IMAP/POP3) and Postfix (SMTP) share the same per-host Let's Encrypt
-certificate that `acme-companion` issues for the web app. The cert directory is
-bind-mounted directly into both containers — there is no copy step.
+Dovecot (IMAP/POP3) and Postfix (SMTP) share the same per-host Let's Encrypt certificate that Traefik issues for the web application. The `traefik-certs-dumper` service automatically extracts and dumps the certificates from Traefik's `acme.json` into the `./certs` folder.
 
 By default the bind-mount resolves to `./certs/${HOST}`.
 Override the base path or hostname via env vars in `.env`:
 
 ```bash
-NGINX_CERTS_DIR=/path/to/nginx-proxy/certs   # default: ./certs
-HOST=mail.example.com                        # your mail server hostname
+CERTS_DIR=./certs              # default cert base directory
+HOST=mail.example.com          # your mail server hostname
+# Override if using a custom path:
+# NGINX_CERTS_DIR=/path/to/certs
 ```
 
 **Certificate Renewal:**
-`acme-companion` renews the cert in place. Dovecot and Postfix only re-read the
-cert on reload, so install `scripts/reload-mail-certs.sh` as a daily cron job
-to detect changes and reload both services:
-
-```bash
-echo "0 3 * * * /root/nubmail/scripts/reload-mail-certs.sh >> /var/log/nubmail-cert-reload.log 2>&1" | crontab -
-```
+When Traefik renews the certificate, `traefik-certs-dumper` detects the change in `acme.json`, dumps the updated certificate/key to `./certs`, and triggers a post-hook that restarts the mail services (`smtp-sender`, `dovecot`, `smtp-receiver`) automatically via the Docker socket. No daily cron reload script is required when running under this setup.
 
 ### Email Client Configuration
 
@@ -211,43 +278,141 @@ Connect standard email clients using these settings:
 
 | Protocol | Server | Port | Security |
 |----------|--------|------|----------|
-| **SMTP** | smtp.example.com | 587 | STARTTLS |
-| **IMAP** | imap.example.com | 993 | SSL/TLS |
-| **POP3** | pop3.example.com | 995 | SSL/TLS |
+| **SMTP** | mail.example.com | 587 | STARTTLS |
+| **IMAP** | mail.example.com | 993 | SSL/TLS |
+| **POP3** | mail.example.com | 995 | SSL/TLS |
 | **Webmail** | mails.example.com | 443 | HTTPS |
 
 #### Example: Thunderbird Setup
 1. Email: `user@example.com`
 2. Password: `your-email-password`
-3. IMAP: `imap.example.com:993` (SSL)
-4. SMTP: `smtp.example.com:587` (STARTTLS)
+3. IMAP: `mail.example.com:993` (SSL)
+4. SMTP: `mail.example.com:587` (STARTTLS)
+
+### BIMI Brand Logo (Optional)
+
+BIMI (Brand Indicators for Message Identification) displays your brand logo next
+to your messages in supporting inboxes. It is **purely cosmetic and has no effect
+on deliverability** — treat it as a nice-to-have. The server DNS dashboard lists
+the BIMI record as an optional check.
+
+**Prerequisites**
+- DMARC published with `p=quarantine` or `p=reject` (already recommended above).
+- A logo in **SVG Tiny 1.2 Portable/Secure (SVG P/S)** format served over HTTPS.
+  A ready-made file ships at [`public/logo.svg`](public/logo.svg), served at
+  `https://<HOST>/logo.svg`. **Replace it with your own logo** before publishing.
+
+**SVG format requirements** — a normal SVG export will *not* validate. The file must:
+- Use `<svg version="1.2" baseProfile="tiny-ps" ...>` with a square `viewBox`.
+- Contain a `<title>` element (your brand name) as the first child of `<svg>`.
+- Omit `<script>`, `<defs>`, `clipPath`/`clip-path`, external references, and
+  `xlink:href`. Bake any circular crop into the shapes instead of clipping.
+- Stay under 32 KB.
+
+Validate the file at [bimigroup.org](https://bimigroup.org/bimi-generator/) before
+publishing DNS.
+
+**DNS record** (on the apex domain that appears after the `@` in your addresses):
+
+```
+default._bimi.example.com  TXT  "v=BIMI1; l=https://mail.example.com/logo.svg; a="
+```
+
+Point `l=` at your own logo URL, or set `BIMI_LOGO_URL` to override the default.
+The `a=` tag is for a paid Verified Mark Certificate (VMC) — Gmail and Apple Mail
+only render the logo when a valid VMC is present; other clients show it without one.
 
 ## Project Structure
 
 ```
 nubmail/
 ├── src/
-│   ├── app/                 # Next.js pages & API routes
-│   │   ├── api/            # API endpoints
-│   │   ├── dashboard/      # Admin dashboard pages
-│   │   ├── layout.tsx      # Root layout
-│   │   └── page.tsx        # Home page
-│   ├── components/         # Reusable React components
-│   │   ├── ui/            # shadcn/ui components
-│   │   └── main-nav.tsx    # Navigation components
-│   ├── lib/               # Utility functions
-│   │   ├── auth-provider.tsx
-│   │   ├── api-keys.ts
-│   │   └── utils.ts
-│   └── hooks/             # Custom React hooks
-├── docs/                  # Documentation & SQL schemas
-├── dovecot/              # Dovecot configuration files
-├── smtp/                 # SMTP receiver implementation
-├── Dockerfile            # Multi-stage Docker build
-└── docker-compose.yml    # Compose orchestration
+│   ├── app/                    # Next.js App Router pages & API routes
+│   │   ├── api/               # API endpoints
+│   │   │   ├── accounts/      # Email account management
+│   │   │   ├── admin/         # Admin-only routes (server DNS, users)
+│   │   │   ├── auth/          # Auth routes (login, register, API keys)
+│   │   │   ├── domains/       # Domain management
+│   │   │   ├── drafts/        # Email draft CRUD
+│   │   │   ├── emails/        # Email send/receive/manage
+│   │   │   ├── health/        # Health check endpoint
+│   │   │   ├── profile/       # User profile management
+│   │   │   ├── push/          # Web push subscription management
+│   │   │   ├── stats/         # Mailbox statistics
+│   │   │   └── teams/         # Team management
+│   │   ├── dashboard/         # Authenticated app pages
+│   │   │   ├── accounts/      # Email account management
+│   │   │   ├── admin/         # Admin dashboard
+│   │   │   ├── archive/       # Archived emails
+│   │   │   ├── billing/       # Billing & plan management
+│   │   │   ├── compose/       # Email composer
+│   │   │   ├── developer/     # API keys & developer settings
+│   │   │   ├── domains/       # Domain & DNS management
+│   │   │   ├── drafts/        # Saved drafts
+│   │   │   ├── inbox/         # Main inbox
+│   │   │   ├── profile/       # User profile
+│   │   │   ├── sent/          # Sent emails
+│   │   │   ├── settings/      # App settings
+│   │   │   ├── spam/          # Spam folder
+│   │   │   ├── teams/         # Team management
+│   │   │   └── trash/         # Deleted emails
+│   │   ├── login/             # Login page
+│   │   ├── register/          # Registration page
+│   │   ├── forgot-password/   # Password recovery
+│   │   ├── reset-password/    # Password reset
+│   │   ├── verify-email/      # Email verification
+│   │   ├── layout.tsx         # Root layout
+│   │   └── page.tsx           # Landing / home page
+│   ├── components/            # Reusable React components
+│   │   ├── ui/               # shadcn/ui components
+│   │   ├── main-nav.tsx       # Sidebar navigation
+│   │   ├── user-nav.tsx       # User avatar/menu
+│   │   ├── bulk-action-bar.tsx # Bulk email selection toolbar
+│   │   ├── email-body-frame.tsx # Sandboxed email body renderer
+│   │   ├── push-registration.tsx # Web push opt-in
+│   │   └── auth-guard.tsx     # Route authentication guard
+│   ├── lib/                   # Shared utilities & server-side logic
+│   │   ├── auth-provider.tsx  # Client-side auth context
+│   │   ├── auth-token.ts      # JWT helpers
+│   │   ├── jwt-server.ts      # Server-side JWT verification
+│   │   ├── api-keys.ts        # API key generation & encryption
+│   │   ├── field-encryption.ts # AES-256-GCM field encryption
+│   │   ├── push-notifications.ts # Web push helpers
+│   │   ├── bulk-email-actions.ts # Shared bulk action logic
+│   │   ├── email-body.ts      # Email body parsing/sanitization
+│   │   ├── rate-limit.ts      # In-memory rate limiter
+│   │   ├── postgres.ts        # PostgreSQL connection pool
+│   │   ├── admin.ts           # Admin privilege helpers
+│   │   ├── types.ts           # Shared TypeScript types
+│   │   └── utils.ts           # General utilities
+│   ├── hooks/                 # Custom React hooks
+│   ├── utils/                 # Additional utility modules
+│   └── proxy.ts               # Proxy configuration
+├── smtp/
+│   └── index.js               # Node.js inbound SMTP receiver (smtp-server)
+├── dovecot/                   # Dovecot IMAP/POP3 configuration
+├── docs/                      # Documentation & SQL schemas
+│   └── postgres-schema.sql    # Database schema (auto-loaded on first run)
+├── scripts/
+│   ├── backup-pg.sh           # Nightly encrypted DB backup to B2/R2
+│   ├── restore-pg.sh          # Restore DB from backup
+│   ├── reload-mail-certs.sh   # Reload Dovecot/Postfix after cert renewal
+│   └── init-admin.js          # Seed initial admin user
+├── certs/                     # TLS certificates (bind-mounted into containers)
+├── Dockerfile                 # Multi-stage Docker build
+├── docker-compose.yml         # Compose orchestration
+├── DNS_SETUP_GUIDE.md         # DNS records setup guide
+├── SMTP_SETUP_GUIDE.md        # SMTP configuration guide
+└── IMAP_POP3_SETUP_GUIDE.md   # IMAP/POP3 setup guide
 ```
 
 ## API Reference
+
+### Authentication
+
+All API endpoints require either:
+- **Bearer token** – `Authorization: Bearer <jwt_token>` (for user-facing routes)
+- **API key** – `X-Api-Key: <api_key>` (for programmatic access)
 
 ### Sending Email with API Keys
 
@@ -255,7 +420,6 @@ Use API keys to programmatically send emails from your application.
 
 #### Step 1: Create an Email Account
 
-Use the dashboard or API to create an email account. Example:
 ```bash
 POST /api/accounts
 Authorization: Bearer $JWT_TOKEN
@@ -288,7 +452,7 @@ Response:
 }
 ```
 
-**⚠️ Important:** Store the API key securely. You can view it again from the dashboard while the encrypted copy remains available.
+> ⚠️ **Important:** Store the API key securely. It is shown once in plaintext — afterwards only the encrypted copy is stored.
 
 #### Step 3: Send Email
 
@@ -334,15 +498,33 @@ Response (Error):
 | `text` | string | ❌ | Plain text body |
 | `html` | string | ❌ | HTML body |
 
+### Key API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/login` | Login and receive a JWT |
+| `POST` | `/api/auth/register` | Register a new user |
+| `GET/POST` | `/api/auth/api-keys` | List or create API keys |
+| `GET/POST` | `/api/accounts` | List or create email accounts |
+| `GET/POST` | `/api/domains` | List or add domains |
+| `GET/POST` | `/api/emails` | List or send emails |
+| `POST` | `/api/emails/send-api` | Send email via API key |
+| `GET/POST` | `/api/drafts` | List or save drafts |
+| `GET/POST` | `/api/teams` | List or manage teams |
+| `GET/PUT` | `/api/profile` | Get or update user profile |
+| `GET` | `/api/stats` | Mailbox statistics |
+| `GET` | `/api/health` | Health check |
+| `GET` | `/api/admin/server-dns` | Admin: check server DNS records |
+
 #### DKIM Signing
 
-- DKIM signatures are **automatically generated** on first send
-- Requires a valid domain with proper MX/SPF/DKIM DNS records
-- Private keys are stored securely in the database
+- DKIM signatures are **automatically generated** on the first send per domain
+- Requires valid MX/SPF/DKIM DNS records
+- Private keys are encrypted and stored in the database
 
-#### Using Different SMTP Providers
+#### Using a Custom SMTP Provider
 
-Configure custom SMTP credentials per account:
+Configure per-account custom SMTP credentials:
 ```bash
 POST /api/accounts/{accountId}/smtp-config
 Authorization: Bearer $JWT_TOKEN
@@ -361,17 +543,20 @@ Authorization: Bearer $JWT_TOKEN
 ### Build Commands
 
 ```bash
-# Development server with hot reload
+# Development server with hot reload (Turbopack)
 npm run dev
+
+# Type-check without emitting
+npm run typecheck
+
+# Lint code
+npm run lint
 
 # Production build
 npm run build
 
 # Start production server
 npm start
-
-# Lint code
-npm run lint
 ```
 
 ### Database Schema
@@ -384,13 +569,13 @@ The PostgreSQL container initializes the schema automatically on first boot from
 
 #### Emails not sending
 - **Verify DKIM records:** Check DNS for `default._domainkey.example.com`
-- **Check SMTP settings:** Verify `SMTP_HOST`, `SMTP_PORT`, and credentials
+- **Check SMTP settings:** Verify `SMTP_HOST`, `SMTP_PORT`, and credentials in `.env`
 - **Review logs:** `docker compose logs smtp-sender`
 
 #### Cannot receive emails
 - **Check MX records:** Verify DNS MX records point to your server
 - **Verify SMTP receiver:** `docker compose logs smtp-receiver`
-- **Check firewall:** Ensure port 25 is open and not blocked
+- **Check firewall:** Ensure port 25 is open and not blocked by your host/ISP
 
 #### Server DNS dashboard shows records as "Missing" that actually exist
 The admin **Server DNS** page checks records by resolving them from the host. If
@@ -431,8 +616,8 @@ cp /etc/resolv.conf /etc/resolvconf/resolv.conf.d/head
 - **Reset database:** `docker compose down -v && docker compose up -d postgres`
 
 #### SSL/TLS certificate issues
-- **Renew certificates:** follow your deployment's certificate renewal process
-- **Check certificate validity:** `openssl x509 -in ${NGINX_CERTS_DIR:-./certs}/${HOST}/fullchain.pem -text`
+- **Renew certificates:** Follow your deployment's certificate renewal process
+- **Check certificate validity:** `openssl x509 -in ${CERTS_DIR:-./certs}/${HOST}/fullchain.pem -text`
 - **Update LETSENCRYPT_EMAIL:** Ensure it's a valid email for renewal notifications
 
 ### Debugging
@@ -458,7 +643,7 @@ docker compose logs -f
 
 Database backups run nightly via cron. The pipeline: `pg_dump → gzip → AES-256 encrypt → upload to B2 + R2`.
 
-**Setup** (already done on the current VPS):
+**Setup:**
 ```bash
 # Add to crontab
 30 2 * * * /root/nubmail/scripts/backup-pg.sh >> /var/log/nubmail-backup.log 2>&1
@@ -524,11 +709,11 @@ You will be prompted to confirm before any data is overwritten.
 
 ## Support & Documentation
 
-- **Issues & Bugs:** Report on GitHub Issues
-- **Documentation:** See `docs/` folder for detailed guides
-- **DNS Setup:** `DNS_SETUP_GUIDE.md`
-- **SMTP Configuration:** `SMTP_SETUP_GUIDE.md`
-- **IMAP/POP3 Setup:** `IMAP_POP3_SETUP_GUIDE.md`
+- **Issues & Bugs:** [GitHub Issues](https://github.com/nub-coders/nubmail/issues)
+- **DNS Setup:** [`DNS_SETUP_GUIDE.md`](DNS_SETUP_GUIDE.md)
+- **SMTP Configuration:** [`SMTP_SETUP_GUIDE.md`](SMTP_SETUP_GUIDE.md)
+- **IMAP/POP3 Setup:** [`IMAP_POP3_SETUP_GUIDE.md`](IMAP_POP3_SETUP_GUIDE.md)
+- **Database Schema:** [`docs/postgres-schema.sql`](docs/postgres-schema.sql)
 
 ## License
 

@@ -1,19 +1,4 @@
-import DOMPurify from 'dompurify';
 import sanitizeHtmlLib from 'sanitize-html';
-
-let hookInstalled = false;
-function ensureHook() {
-  if (hookInstalled) return;
-  if (typeof window === 'undefined') return;
-  if (typeof (DOMPurify as unknown as { addHook?: unknown }).addHook !== 'function') return;
-  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-    if (node.tagName === 'A') {
-      node.setAttribute('target', '_blank');
-      node.setAttribute('rel', 'noopener noreferrer');
-    }
-  });
-  hookInstalled = true;
-}
 
 function normalizeNewlines(input: string): string {
   return input.replace(/\r\n?/g, '\n');
@@ -26,6 +11,31 @@ export function escapeHtml(input: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+export function textToSafeHtml(input: string): string {
+  return escapeHtml(input).replace(/\n/g, '<br>');
+}
+
+// Sanitizer for outbound mail we compose/relay. Wider allowlist than the
+// inbound reader (tables, headings, inline styles) since the operator is the
+// author, but still strips scripts and non-http(s)/mailto/data URLs.
+export function sanitizeOutboundHtml(input: string): string {
+  return sanitizeHtmlLib(input, {
+    allowedTags: [
+      ...sanitizeHtmlLib.defaults.allowedTags,
+      'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'span',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+    ],
+    allowedAttributes: {
+      ...sanitizeHtmlLib.defaults.allowedAttributes,
+      a: ['href', 'name', 'target', 'rel'],
+      img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
+      '*': ['style'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    allowedSchemesByTag: { img: ['http', 'https', 'data'] },
+  });
 }
 
 function looksLikeHtml(input: string): boolean {
@@ -57,18 +67,6 @@ function sanitizeServer(input: string): string {
   });
 }
 
-function sanitizeEmailHtml(input: string): string {
-  if (typeof window === 'undefined') {
-    return sanitizeServer(input);
-  }
-  ensureHook();
-  return DOMPurify.sanitize(input, {
-    USE_PROFILES: { html: true },
-    FORBID_TAGS: ['style'],
-    ADD_ATTR: ['target'],
-  });
-}
-
 export function getSafeEmailHtml(body: string | undefined): string {
   if (!body || !body.trim()) {
     return '<p class="text-muted-foreground italic">No content available</p>';
@@ -77,7 +75,7 @@ export function getSafeEmailHtml(body: string | undefined): string {
   const normalized = normalizeNewlines(body);
 
   if (looksLikeHtml(normalized)) {
-    return sanitizeEmailHtml(normalized);
+    return sanitizeServer(normalized);
   }
 
   return escapeHtml(normalized).replace(/\n/g, '<br>');

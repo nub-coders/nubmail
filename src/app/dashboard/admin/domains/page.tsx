@@ -3,7 +3,6 @@ import styles from './page.module.css';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle, Globe, Shield, Users, XCircle, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
@@ -309,7 +308,7 @@ export default function AdminDomainsPage() {
                         </button>
                       </TableCell>
                       <TableCell>{getStatusBadge(domain.verificationStatus)}</TableCell>
-                      <TableCell>{format(new Date(domain.createdAt), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>{new Date(domain.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
                       <TableCell className={styles.nu_textRight}>
                         <Button asChild variant="ghost" size="sm">
                           <Link href={`/dashboard/admin/domains/${domain.id}`}>View records</Link>
