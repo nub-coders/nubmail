@@ -4,54 +4,8 @@ import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
 import { decryptField, isEncryptedField, encryptField } from '@/lib/field-encryption';
 import { deliverLocal } from '@/utils/local-delivery';
-import sanitizeHtml from 'sanitize-html';
+import { sanitizeOutboundHtml, textToSafeHtml } from '@/lib/email-body';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
-
-function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function textToSafeHtml(input: string): string {
-  return escapeHtml(input).replace(/\n/g, '<br>');
-}
-
-function sanitizeEmailHtml(input: string): string {
-  return sanitizeHtml(input, {
-    allowedTags: [
-      ...sanitizeHtml.defaults.allowedTags,
-      'img',
-      'table',
-      'thead',
-      'tbody',
-      'tr',
-      'td',
-      'th',
-      'span',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'hr',
-    ],
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      a: ['href', 'name', 'target', 'rel'],
-      img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
-      '*': ['style'],
-    },
-    allowedSchemes: ['http', 'https', 'mailto'],
-    allowedSchemesByTag: {
-      img: ['http', 'https', 'data'],
-    },
-  });
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -195,7 +149,7 @@ export async function POST(req: NextRequest) {
     const allRecipients = Array.isArray(to) ? to : [to];
     const textBody = typeof text === 'string' ? text : '';
     const sanitizedHtml = typeof html === 'string' && html.trim().length > 0
-      ? sanitizeEmailHtml(html)
+      ? sanitizeOutboundHtml(html)
       : '';
     const safeHtmlBody = sanitizedHtml || textToSafeHtml(textBody);
     const plainTextBody = textBody || safeHtmlBody.replace(/<[^>]*>/g, '');

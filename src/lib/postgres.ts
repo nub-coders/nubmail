@@ -1,11 +1,11 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 function buildConnectionStringFromEnv(): string | null {
-  const user = process.env.PGUSER || process.env.PG_USER || null;
-  const password = process.env.PGPASSWORD || process.env.PG_PASSWORD || null;
-  const host = process.env.PGHOST || process.env.PG_HOST || null;
-  const port = process.env.PGPORT || process.env.PG_PORT || null;
-  const database = process.env.PGDATABASE || process.env.PG_DATABASE || process.env.PGDB || null;
+  const user = process.env.PGUSER || null;
+  const password = process.env.PGPASSWORD || null;
+  const host = process.env.PGHOST || null;
+  const port = process.env.PGPORT || null;
+  const database = process.env.PGDATABASE || null;
   if (user && password && host && port && database) {
     return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
   }

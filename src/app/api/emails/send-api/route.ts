@@ -5,7 +5,7 @@ import { pgQuery } from '@/lib/postgres';
 import { decryptField, isEncryptedField } from '@/lib/field-encryption';
 import { deliverLocal } from '@/utils/local-delivery';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
-import sanitizeHtml from 'sanitize-html';
+import { sanitizeOutboundHtml } from '@/lib/email-body';
 
 export async function POST(req: NextRequest) {
   try {
@@ -87,21 +87,7 @@ export async function POST(req: NextRequest) {
 
     const allRecipients = Array.isArray(to) ? to : [to];
     const sanitizedHtml = typeof html === 'string' && html.trim().length > 0
-      ? sanitizeHtml(html, {
-          allowedTags: [
-            ...sanitizeHtml.defaults.allowedTags,
-            'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'span',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
-          ],
-          allowedAttributes: {
-            ...sanitizeHtml.defaults.allowedAttributes,
-            a: ['href', 'name', 'target', 'rel'],
-            img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
-            '*': ['style'],
-          },
-          allowedSchemes: ['http', 'https', 'mailto'],
-          allowedSchemesByTag: { img: ['http', 'https', 'data'] },
-        })
+      ? sanitizeOutboundHtml(html)
       : '';
     const messageBody = sanitizedHtml || text || '';
 

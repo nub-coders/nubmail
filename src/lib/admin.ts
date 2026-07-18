@@ -17,7 +17,7 @@ function normalizeDomain(input: string): string {
 }
 
 function equalsHostname(a: string, b: string): boolean {
-  return normalizeDomain(a).replace(/\.$/, '') === normalizeDomain(b).replace(/\.$/, '');
+  return normalizeDomain(a) === normalizeDomain(b);
 }
 
 function getPrimaryDomain(): string | null {
