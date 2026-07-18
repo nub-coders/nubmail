@@ -312,7 +312,7 @@ export default function AdminServerDnsPage() {
                           <CopyButton text={record.host} />
                         </div>
                         {record.optional && (
-                          <span className={styles.nu_textXs}>Optional</span>
+                          <span className={styles.nu_textXs}>(optional)</span>
                         )}
                       </div>
                     </TableCell>
