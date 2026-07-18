@@ -165,7 +165,7 @@ services:
           --key-ext=.pem \
           --version=v2 \
           --watch \
-          --post-hook="curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-sender/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-dovecot/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-receiver/restart"
+          --post-hook="chown 0:1000 /output/${HOST:-mail.example.com}/key.pem /output/${HOST:-mail.example.com}/fullchain.pem 2>/dev/null; chmod 0640 /output/${HOST:-mail.example.com}/key.pem 2>/dev/null; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-sender/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-dovecot/restart; curl -s --unix-socket /var/run/docker.sock -X POST http://localhost/v1.52/containers/nubmail-smtp-receiver/restart"
     networks:
       - web
 

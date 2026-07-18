@@ -227,11 +227,12 @@ export async function GET(req: NextRequest) {
       ? mailHost.slice(0, mailHost.length - primaryDomain.length - 1)
       : mailHost;
 
-    const [aLookup, mxLookup, spfLookup, dmarcLookup, autodiscoverLookup, autoconfigLookup, webmailLookup, imapLookup, smtpLookup, pop3Lookup] = await Promise.all([
+    const [aLookup, mxLookup, spfLookup, dmarcLookup, bimiLookup, autodiscoverLookup, autoconfigLookup, webmailLookup, imapLookup, smtpLookup, pop3Lookup] = await Promise.all([
       safeResolveA(mailHost),
       safeResolveMx(primaryDomain),
       safeResolveTxt(primaryDomain),
       safeResolveTxt(`_dmarc.${primaryDomain}`),
+      safeResolveTxt(`default._bimi.${primaryDomain}`),
       safeResolveCname(`autodiscover.${primaryDomain}`),
       safeResolveCname(`autoconfig.${primaryDomain}`),
       safeResolveCname(`webmail.${primaryDomain}`),
@@ -356,6 +357,33 @@ export async function GET(req: NextRequest) {
             : dmarcStatus === 'missing'
               ? 'Add DMARC TXT record for reporting and enforcement'
               : 'Update DMARC record to match recommended policy',
+    });
+
+    // BIMI is optional: it only controls whether a brand logo shows next to your
+    // messages in supporting clients. It has no impact on deliverability. The logo
+    // must be an SVG Tiny 1.2 Portable/Secure file hosted over HTTPS.
+    const bimiLogoUrl = process.env.BIMI_LOGO_URL?.trim() || `https://${mailHost}/logo.svg`;
+    const bimiExpected = `v=BIMI1; l=${bimiLogoUrl};`;
+    const bimiStatus: RecordStatus = bimiLookup.error
+      ? 'check_failed'
+      : bimiLookup.values.some((txt) => normalizeTxtMatch(txt).startsWith('v=bimi1'))
+        ? 'configured'
+        : 'missing';
+    records.push({
+      key: 'domain-bimi',
+      type: 'TXT',
+      name: 'default._bimi',
+      host: `default._bimi.${primaryDomain}`,
+      expectedValue: bimiExpected,
+      status: bimiStatus,
+      observedValues: bimiLookup.values,
+      message:
+        bimiStatus === 'check_failed'
+          ? `DNS lookup failed (${bimiLookup.error}) — status unknown, try Refresh`
+          : bimiStatus === 'configured'
+            ? 'BIMI record is published (brand logo enabled)'
+            : '(optional) Add BIMI TXT record to show your brand logo in supporting inboxes (requires DMARC at quarantine/reject)',
+      optional: true,
     });
 
     const cnameRecords: Array<{ key: string; label: string; lookup: { values: string[]; error?: string }; optional?: boolean }> = [
