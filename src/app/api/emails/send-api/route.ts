@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { to, subject, text, html, from } = body;
-    if (!from || !to || !subject || (!text && !html)) {
-      return NextResponse.json({ error: 'Required: from, to, subject, and text or html' }, { status: 400 });
+    const { to, text, html, from } = body;
+    const subject = typeof body.subject === 'string' ? body.subject : '';
+    if (!from || !to || (!text && !html)) {
+      return NextResponse.json({ error: 'Required: from, to, and text or html' }, { status: 400 });
     }
 
     let accountQuery = `SELECT ea.id, ea.email_address AS "emailAddress", ea.smtp_host AS "smtpHost", ea.smtp_port AS "smtpPort",

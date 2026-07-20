@@ -21,6 +21,7 @@ function ComposeForm() {
   const [to, setTo] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [htmlMode, setHtmlMode] = useState(false);
   const [sending, setSending] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [from, setFrom] = useState('');
@@ -224,10 +225,10 @@ function ComposeForm() {
   };
 
   const handleSend = async () => {
-    if (!from || !to || !subject || !body) {
+    if (!from || !to || !body) {
       toast({
         title: 'Missing fields',
-        description: 'Please select a sender and fill in recipient, subject, and message',
+        description: 'Please select a sender and fill in recipient and message',
         variant: 'destructive'
       });
       return;
@@ -251,7 +252,8 @@ function ComposeForm() {
           
         },
         body: JSON.stringify({
-          from, to, subject, text: body,
+          from, to, subject,
+          ...(htmlMode ? { html: body } : { text: body }),
           ...(attachments.length > 0 ? {
             attachments: attachments.map(a => ({
               filename: a.name,
@@ -422,6 +424,14 @@ function ComposeForm() {
                   <Paperclip className={styles.nu_h4} />
                   Attach
                 </Button>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={htmlMode}
+                    onChange={(e) => setHtmlMode(e.target.checked)}
+                  />
+                  HTML mode
+                </label>
               </div>
 
               <div className={styles.nu_flex3}>
@@ -435,7 +445,7 @@ function ComposeForm() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={sending || !from || !to || !subject || !body}
+                  disabled={sending || !from || !to || !body}
                   className={styles.nu_minW100px}
                 >
                   {sending ? (
