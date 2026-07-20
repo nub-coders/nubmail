@@ -46,7 +46,7 @@ function getTransport(
       rejectUnauthorized: !allowSelfSigned
     },
     requireTLS: isInternal ? false : undefined,
-    ignoreTLS: undefined,
+    ignoreTLS: isInternal ? true : undefined,
   };
   if (config.user && config.pass) {
     transportConfig.auth = { user: config.user, pass: config.pass };
