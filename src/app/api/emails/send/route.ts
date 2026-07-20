@@ -4,7 +4,7 @@ import { sendSmtpEmail } from '@/utils/smtp';
 import { pgQuery } from '@/lib/postgres';
 import { decryptField, isEncryptedField, encryptField } from '@/lib/field-encryption';
 import { deliverLocal } from '@/utils/local-delivery';
-import { sanitizeOutboundHtml, textToSafeHtml } from '@/lib/email-body';
+import { sanitizeOutboundHtml, textToSafeHtml, htmlToText } from '@/lib/email-body';
 import { rateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -22,10 +22,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { to, subject, text, html, from, attachments } = body;
-    
-    if (!to || !subject || (!text && !html)) {
-      return NextResponse.json({ error: 'Missing required fields: to, subject, and message body' }, { status: 400 });
+    const { to, text, html, from, attachments } = body;
+    const subject = typeof body.subject === 'string' ? body.subject : '';
+
+    if (!to || (!text && !html)) {
+      return NextResponse.json({ error: 'Missing required fields: to and message body' }, { status: 400 });
     }
 
     const u = await pgQuery('SELECT 1 FROM users WHERE id = $1', [payload.sub]);
@@ -185,7 +186,7 @@ export async function POST(req: NextRequest) {
       ? sanitizeOutboundHtml(html)
       : '';
     const safeHtmlBody = sanitizedHtml || textToSafeHtml(textBody);
-    const plainTextBody = textBody || safeHtmlBody.replace(/<[^>]*>/g, '');
+    const plainTextBody = textBody || htmlToText(safeHtmlBody);
     const messageBody = safeHtmlBody;
 
     const { localRecipients, externalRecipients } = await deliverLocal({

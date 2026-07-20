@@ -20,19 +20,41 @@ export function textToSafeHtml(input: string): string {
 // Sanitizer for outbound mail we compose/relay. Wider allowlist than the
 // inbound reader (tables, headings, inline styles) since the operator is the
 // author, but still strips scripts and non-http(s)/mailto/data URLs.
+//
+// Full-document support: we allow <html>/<head>/<body>/<style> and inline SVG
+// so operator-authored HTML emails (with a <style> block and web fonts) survive
+// sanitization. <style> is removed from nonTextTags so its CSS is preserved;
+// <script> and <title> stay in nonTextTags so scripts are dropped and the
+// document title never leaks into the visible body. allowVulnerableTags silences
+// the <style>-is-risky warning — acceptable here because the author is the
+// authenticated operator, not an untrusted third party.
 export function sanitizeOutboundHtml(input: string): string {
   return sanitizeHtmlLib(input, {
     allowedTags: [
       ...sanitizeHtmlLib.defaults.allowedTags,
       'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'span',
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+      'html', 'head', 'body', 'style',
+      'svg', 'path', 'g', 'circle', 'rect', 'line', 'polyline', 'polygon',
     ],
     allowedAttributes: {
       ...sanitizeHtmlLib.defaults.allowedAttributes,
       a: ['href', 'name', 'target', 'rel'],
       img: ['src', 'srcset', 'alt', 'title', 'width', 'height'],
-      '*': ['style'],
+      svg: ['viewbox', 'width', 'height', 'fill', 'xmlns', 'class', 'aria-hidden'],
+      path: ['d', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin'],
+      g: ['fill', 'stroke', 'transform'],
+      circle: ['cx', 'cy', 'r', 'fill', 'stroke', 'stroke-width'],
+      rect: ['x', 'y', 'width', 'height', 'rx', 'ry', 'fill', 'stroke'],
+      line: ['x1', 'y1', 'x2', 'y2', 'stroke', 'stroke-width'],
+      polyline: ['points', 'fill', 'stroke', 'stroke-width'],
+      polygon: ['points', 'fill', 'stroke', 'stroke-width'],
+      '*': ['style', 'class'],
     },
+    // Keep <style> CSS text (drop it from the default nonTextTags list) while
+    // still discarding <script>/<title> content entirely.
+    nonTextTags: ['script', 'textarea', 'option', 'xmp', 'noscript', 'title'],
+    allowVulnerableTags: true,
     allowedSchemes: ['http', 'https', 'mailto'],
     allowedSchemesByTag: { img: ['http', 'https', 'data'] },
   });
@@ -42,7 +64,7 @@ function looksLikeHtml(input: string): boolean {
   return /<\/?[a-z][\s\S]*>/i.test(input);
 }
 
-function htmlToText(input: string): string {
+export function htmlToText(input: string): string {
   return input
     .replace(/<\s*br\s*\/?\s*>/gi, '\n')
     .replace(/<\/(p|div|li|tr|h[1-6]|blockquote|pre|table)\s*>/gi, '\n')
