@@ -43,10 +43,43 @@ export async function POST(req: NextRequest) {
        FROM email_accounts WHERE email_address = $1 AND user_id = $2`,
       [String(from).toLowerCase(), payload.sub]
     );
-    const ownedFrom = rows[0];
+    let ownedFrom = rows[0];
 
     if (!ownedFrom) {
-      return NextResponse.json({ error: 'Invalid sender account.' }, { status: 403 });
+      const senderDomain = String(from).toLowerCase().split('@')[1];
+      if (!senderDomain) {
+        return NextResponse.json({ error: 'Invalid sender email address format.' }, { status: 400 });
+      }
+
+      const { rows: domainRows } = await pgQuery<{ id: string; verification_status: string }>(
+        'SELECT id, verification_status FROM domains WHERE LOWER(domain_name) = $1 AND user_id = $2',
+        [senderDomain, payload.sub]
+      );
+      const targetDomain = domainRows[0];
+
+      if (!payload.isAdmin) {
+        if (!targetDomain || targetDomain.verification_status !== 'verified') {
+          return NextResponse.json({ error: 'Sender domain not verified or not owned by user.' }, { status: 403 });
+        }
+      }
+
+      if (targetDomain?.id) {
+        await pgQuery(
+          `INSERT INTO email_accounts (email_address, storage_quota, domain_id, user_id, use_built_in_smtp)
+           VALUES ($1, 1024, $2, $3, true)
+           ON CONFLICT (email_address) DO NOTHING`,
+          [String(from).toLowerCase(), targetDomain.id, payload.sub]
+        ).catch(() => {});
+      }
+
+      ownedFrom = {
+        emailAddress: String(from).toLowerCase(),
+        smtpHost: null,
+        smtpPort: null,
+        smtpUser: null,
+        smtpPass: null,
+        useBuiltInSmtp: true,
+      };
     }
 
   let smtpConfig;

@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
     const folder = url.searchParams.get('folder') || 'inbox';
     const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 50, 1), 100);
     const cursor = url.searchParams.get('cursor') || null;
+    const fromFilter = url.searchParams.get('from')?.toLowerCase().trim() || null;
+    const toFilter = (url.searchParams.get('to') || url.searchParams.get('account') || url.searchParams.get('email'))?.toLowerCase().trim() || null;
 
     const { rows: users } = await pgQuery<{ email: string }>('SELECT email FROM users WHERE id = $1', [apiUser.id]);
     const user = users[0];
@@ -38,18 +40,27 @@ export async function GET(req: NextRequest) {
     const { rows: userEmailAccounts } = await pgQuery<{ id: string; email_address: string }>(accountQuery, accountParams);
     const ownedEmails = userEmailAccounts.map(a => (a.email_address || '').toLowerCase());
 
-    if (apiUser.scopedDomainIds.length > 0 && apiUser.scopedAccountIds.length === 0) {
+    let userDomains: string[] = [];
+    if (apiUser.scopedDomainIds.length > 0) {
       const { rows: domainRows } = await pgQuery<{ domain_name: string }>(
         'SELECT domain_name FROM domains WHERE id = ANY($1)',
         [apiUser.scopedDomainIds]
       );
-      const scopedDomains = domainRows.map(d => d.domain_name.toLowerCase());
-      const filtered = ownedEmails.filter(e => scopedDomains.some(d => e.endsWith('@' + d)));
-      ownedEmails.length = 0;
-      ownedEmails.push(...filtered);
+      userDomains = domainRows.map(d => d.domain_name.toLowerCase());
+      if (apiUser.scopedAccountIds.length === 0) {
+        const filtered = ownedEmails.filter(e => userDomains.some(d => e.endsWith('@' + d)));
+        ownedEmails.length = 0;
+        ownedEmails.push(...filtered);
+      }
+    } else if (apiUser.scopedAccountIds.length === 0) {
+      const { rows: domainRows } = await pgQuery<{ domain_name: string }>(
+        'SELECT domain_name FROM domains WHERE user_id = $1 AND verification_status = $2',
+        [apiUser.id, 'verified']
+      );
+      userDomains = domainRows.map(d => d.domain_name.toLowerCase());
     }
 
-    if (ownedEmails.length === 0) {
+    if (ownedEmails.length === 0 && userDomains.length === 0) {
       return NextResponse.json({ emails: [], nextCursor: null });
     }
 
@@ -63,35 +74,49 @@ export async function GET(req: NextRequest) {
     const baseJoin = `FROM email_messages m
       LEFT JOIN email_reads r ON m.id = r.email_id AND r.user_id = $2`;
 
-    let query: string;
-    let params: any[];
+    const recipientMatchClause = userDomains.length > 0
+      ? `(m.recipients && $1 OR EXISTS (SELECT 1 FROM unnest(m.recipients) r_addr WHERE split_part(LOWER(r_addr), '@', 2) = ANY($3)))`
+      : `m.recipients && $1`;
+
+    let whereClause = '';
+    let params: any[] = [ownedEmails, apiUser.id];
+    if (userDomains.length > 0) {
+      params.push(userDomains);
+    }
 
     if (folder === 'sent') {
-      query = `SELECT ${baseColumns} ${baseJoin}
-        WHERE m.sender = ANY($1)
-        AND NOT (m.recipients && $1)
-        AND (r.deleted_at IS NULL)
-        ${cursor ? 'AND m.sent_at < $3' : ''}
-        ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
-      params = cursor ? [ownedEmails, apiUser.id, cursor, limit + 1] : [ownedEmails, apiUser.id, limit + 1];
+      whereClause = `WHERE m.sender = ANY($1) AND NOT (${recipientMatchClause}) AND (r.deleted_at IS NULL)`;
     } else if (folder === 'trash') {
-      query = `SELECT ${baseColumns} ${baseJoin}
-        WHERE (m.recipients && $1 OR m.sender = ANY($1))
-        AND r.deleted_at IS NOT NULL
-        ${cursor ? 'AND r.deleted_at < $3' : ''}
-        ORDER BY r.deleted_at DESC LIMIT $${cursor ? 4 : 3}`;
-      params = cursor ? [ownedEmails, apiUser.id, cursor, limit + 1] : [ownedEmails, apiUser.id, limit + 1];
+      whereClause = `WHERE (${recipientMatchClause} OR m.sender = ANY($1)) AND r.deleted_at IS NOT NULL`;
     } else {
-      query = `SELECT ${baseColumns} ${baseJoin}
-        WHERE m.recipients && $1
+      whereClause = `WHERE ${recipientMatchClause}
         AND NOT (array_length(m.recipients, 1) = 1 AND m.recipients[1] = m.sender)
         AND (r.deleted_at IS NULL)
         AND COALESCE(r.archived, false) = false
-        AND COALESCE(r.is_spam, false) = false
-        ${cursor ? 'AND m.sent_at < $3' : ''}
-        ORDER BY m.sent_at DESC LIMIT $${cursor ? 4 : 3}`;
-      params = cursor ? [ownedEmails, apiUser.id, cursor, limit + 1] : [ownedEmails, apiUser.id, limit + 1];
+        AND COALESCE(r.is_spam, false) = false`;
     }
+
+    if (fromFilter) {
+      params.push(fromFilter);
+      whereClause += ` AND LOWER(m.sender) = $${params.length}`;
+    }
+
+    if (toFilter) {
+      params.push(toFilter);
+      whereClause += ` AND EXISTS (SELECT 1 FROM unnest(m.recipients) r_addr WHERE LOWER(r_addr) = $${params.length})`;
+    }
+
+    if (cursor) {
+      params.push(cursor);
+      const cursorCol = folder === 'trash' ? 'r.deleted_at' : 'm.sent_at';
+      whereClause += ` AND ${cursorCol} < $${params.length}`;
+    }
+
+    params.push(limit + 1);
+    const limitParamIdx = params.length;
+    const orderCol = folder === 'trash' ? 'r.deleted_at' : 'm.sent_at';
+
+    const query = `SELECT ${baseColumns} ${baseJoin} ${whereClause} ORDER BY ${orderCol} DESC LIMIT $${limitParamIdx}`;
 
     const { rows: emails } = await pgQuery(query, params);
     const hasMore = emails.length > limit;
